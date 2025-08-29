@@ -1,0 +1,204 @@
+/* ========== UTILITY CLASSES ========== */
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #fff;
+  color: #111;
+  border: 1px solid #fff;
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  color: #fff;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.section-header p {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #555;
+}
+
+/* ========== HERO SECTION ========== */
+.hero {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/hero-background.jpg'); /* Replace with your hero image */
+  background-size: cover;
+  background-position: center;
+  min-height: 80vh;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 5%;
+}
+
+.hero-content {
+  max-width: 550px;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-family: 'Playfair Display', serif;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+/* ========== PRODUCT SHOWCASE ========== */
+.product-showcase {
+  padding: 80px 0;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.product-card {
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.product-image img {
+  max-width: 100%;
+  height: auto;
+  background-color: #f9f9f9;
+  margin-bottom: 15px;
+}
+
+.product-info h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.product-price {
+  color: #444;
+  font-weight: 700;
+}
+
+
+/* ========== CATEGORIES SHOWCASE ========== */
+.category-showcase {
+    padding: 60px 0;
+    background-color: #f9f9f9;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    height: 500px;
+}
+
+.small-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.category-card {
+    position: relative;
+    overflow: hidden;
+    display: block;
+}
+
+.category-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease-in-out;
+}
+
+.category-card:hover img {
+    transform: scale(1.05);
+}
+
+.category-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: #fff;
+}
+
+.category-overlay h3 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+
+/* ========== LIFESTYLE SHOWCASE ========== */
+.lifestyle-showcase {
+    padding: 80px 0;
+}
+
+.lifestyle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.lifestyle-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 992px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .category-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .lifestyle-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    text-align: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+  .section-header h2 {
+    font-size: 2rem;
+  }
+}

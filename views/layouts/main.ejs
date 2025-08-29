@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimeCraft</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Pacifico&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link rel="stylesheet" href="/css/user/main.css">
+</head>
+<body>
+  
+<header class="site-header">
+  <div class="header-container">
+    <nav class="main-nav">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/shop">Shop</a></li>
+        <li><a href="/contact">Contact Us</a></li>
+        <li><a href="/about">About Us</a></li>
+      </ul>
+    </nav>
+
+    <nav role="navigation" class="hamburger-nav">
+      <div id="menuToggle">
+        <input type="checkbox" />
+        <span></span>
+        <span></span>
+        <span></span>
+        <ul id="menu">
+          <li><a href="/">Home</a></li>
+          <li><a href="/shop">Shop</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+          <li><a href="/about">About Us</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="logo">
+      <a href="/">TimeCraft</a>
+    </div>
+
+    <!-- Icons on the right -->
+    <div class="header-icons">
+      <a href="#"><span class="material-symbols-outlined">favorite</span></a>
+      <a href="#"><span class="material-symbols-outlined">shopping_cart</span></a>
+
+      <!-- ======================================= -->
+      <!-- == CONDITIONAL LOGIC FOR USER ICON == -->
+      <!-- ======================================= -->
+      <% if (typeof user !== 'undefined' && user) { %>
+        <!-- If USER IS LOGGED IN: Show dropdown menu -->
+      <div class="user-dropdown">
+  <button id="user-menu-button" class="icon-button">
+    <span class="material-symbols-outlined">person</span>
+  </button>
+  <div id="user-menu" class="dropdown-menu">
+    <a href="/profile">My Account</a>
+    <a href="/orders">My Orders</a>
+    <div class="dropdown-divider"></div>
+
+    <!-- Logout as form -->
+    <form action="/logout" method="POST" style="margin:0; padding:0;">
+      <button type="submit" class="dropdown-link">Logout</button>
+    </form>
+  </div>
+</div>
+
+      <% } else { %>
+        <!-- If USER IS NOT LOGGED IN: Show a simple login link -->
+        <a href="/login"><span class="material-symbols-outlined">person</span></a>
+      <% } %>
+      <!-- ======================================= -->
+      <!-- == END OF CONDITIONAL LOGIC == -->
+      <!-- ======================================= -->
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main>
+  <div class="container">
+    <%- body %>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-container">
+      <div class="logo-footer">
+        <a href="/">TimeCraft</a>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>Shop</h4>
+          <a href="#">Men</a><br>
+          <a href="#">Women</a><br>
+          <a href="#">Accessories</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="#">About Us</a><br>
+          <a href="#">Careers</a><br>
+          <a href="#">Press</a>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <a href="#">Help Center</a><br>
+          <a href="#">Returns</a><br>
+          <a href="#">Shipping</a>
+        </div>
+        <div>
+          <h4>Follow Us</h4>
+          <a href="#">Instagram</a><br>
+          <a href="#">Twitter</a><br>
+          <a href="#">Facebook</a>
+        </div>
+      </div>
+      <p class="footer-copy">© 2025 TimeCraft. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- ======================================= -->
+<!-- == DROPDOWN JAVASCRIPT == -->
+<!-- ======================================= -->
+<script>
+    // This script must be placed just before the closing </body> tag.
+    const userMenuButton = document.getElementById('user-menu-button');
+
+    // Only run this code if the button actually exists (i.e., if the user is logged in).
+    if (userMenuButton) {
+        const userMenu = document.getElementById('user-menu');
+
+        // Toggle the 'show' class on the menu when the button is clicked.
+        userMenuButton.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevents the window click event from firing immediately.
+            userMenu.classList.toggle('show');
+        });
+
+        // Close the menu if the user clicks anywhere else on the page.
+        window.addEventListener('click', function(event) {
+            if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                if (userMenu.classList.contains('show')) {
+                    userMenu.classList.remove('show');
+                }
+            }
+        });
+    }
+</script>
+<!-- ======================================= -->
+<!-- == END OF JAVASCRIPT == -->
+<!-- ======================================= -->
+
+</body>
+</html>

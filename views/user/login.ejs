@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="/css/user/login.css">
+<div class="auth-page-wrapper">
+  <div class="auth-container">
+    <h2>login</h2>
+     <% if (typeof message !== 'undefined' && message) { %>
+        <div class="server-error-message">
+            <%= message %>
+        </div>
+    <% } %>
+    <form action="/login" method="POST">
+      <div class="form-group">
+        <input type="email" name="email" placeholder="Email" required>
+      </div>
+      <div class="form-group">
+        <input type="password" name="password" placeholder="Password" required>
+      </div>
+      <div class="form-links">
+        <a href="/signup">Signup</a>
+        <a href="/forgotPassword">Forget Password?</a>
+      </div>
+      <button type="submit" class="btn-auth">Login</button>
+    </form>
+    <div class="auth-divider">
+      <p>Or continue with</p>
+    </div>
+    <div class="social-login">
+      <a href="/auth/google">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" aria-label="Google logo" role="img">
+  <path fill="#FFC107" d="M43.611 20.083h-1.611V20H24v8h11.303c-1.65 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C33.64 6.053 29.037 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20c0-1.341-.138-2.651-.389-3.917z"/>
+  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.39 16.098 18.839 13 24 13c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C33.64 6.053 29.037 4 24 4 16.318 4 9.676 8.344 6.306 14.691z"/>
+  <path fill="#4CAF50" d="M24 44c5.124 0 9.727-1.977 13.242-5.197l-6.104-5.154C29.026 35.091 26.64 36 24 36c-5.202 0-9.62-3.317-11.282-7.946l-6.522 5.025C9.533 39.556 16.227 44 24 44z"/>
+  <path fill="#1976D2" d="M43.611 20.083h-1.611V20H24v8h11.303c-.792 2.239-2.289 4.16-4.165 5.538l6.104 5.154C39.879 35.763 44 30.632 44 24c0-1.341-.138-2.651-.389-3.917z"/>
+</svg>
+      </a>
+    </div>
+  </div>
+</div>
+
