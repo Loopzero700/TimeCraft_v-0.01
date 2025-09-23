@@ -1,8 +1,9 @@
 <link rel="stylesheet" href="/css/user/home.css">
-<section class="hero">
+<section class="hero" style="background-image: url('<%= imgurl %>');">
   <div class="hero-content">
     <h1>Not Just A Watch, A Legacy</h1>
-    <p>Discover our curated collection of luxury timepieces for the modern individual. A blend of classic design and state-of-the-art technology.</p>
+    <p>Discover our curated collection of luxury timepieces for the modern individual. A blend of classic design and
+      state-of-the-art technology.</p>
     <a href="/shop" class="btn btn-primary">Shop Now</a>
   </div>
 </section>
@@ -13,69 +14,28 @@
       <h2>Featured Products</h2>
     </div>
     <div class="product-grid">
-      <div class="product-card">
-        <div class="product-image">
-          <a href="/product/some-id"><img src="/images/watch-chrono-white.jpg" alt="Chronograph Watch"></a>
-        </div>
-        <div class="product-info">
-          <h3>Chronograph</h3>
-          <p class="product-price">₹15,000</p>
-        </div>
-      </div>
-      <div class="product-card">
-        <div class="product-image">
-          <a href="/product/some-id"><img src="/images/watch-aviator-rose.jpg" alt="Aviator Watch"></a>
-        </div>
-        <div class="product-info">
-          <h3>Aviator Watches</h3>
-          <p class="product-price">₹12,500</p>
-        </div>
-      </div>
-      <div class="product-card">
-        <div class="product-image">
-          <a href="/product/some-id"><img src="/images/watch-onyx-black.jpg" alt="Onyx Watch"></a>
-        </div>
-        <div class="product-info">
-          <h3>ONYX DU 3rd edition</h3>
-          <p class="product-price">₹18,000</p>
-        </div>
-      </div>
-      <div class="product-card">
-        <div class="product-image">
-          <a href="/product/some-id"><img src="/images/watch-sunmate-green.jpg" alt="SunMate Green Watch"></a>
-        </div>
-        <div class="product-info">
-          <h3>SunMate Green Edition</h3>
-          <p class="product-price">₹14,200</p>
-        </div>
-      </div>
+      <% if (FeaturedProducts && FeaturedProducts.length> 0) { %>
+        <% FeaturedProducts.forEach(product=> { %>
+          <div class="product-card">
+            <div class="product-image">
+              <a href="/product/<%= product._id %>">
+                <img src="<%= product.variants[0].image_url[0] %>" alt="<%= product.altText %>">
+              </a>
+            </div>
+            <div class="product-info">
+              <h3>
+                <%= product.name %>
+              </h3>
+              <p class="product-price">₹<%= `${product.variants[0].price}` %>
+              </p>
+            </div>
+          </div>
+          <% }) %>
+            <% } else { %>
+              <p>No featured products available at this time.</p>
+              <% } %>
     </div>
   </div>
-</section>
-
-<section class="category-showcase">
-    <div class="container">
-        <div class="section-header">
-            <h2>View Our Range Of Categories</h2>
-            <p>From timeless classics for men to elegant designs for women, find the perfect timepiece that reflects your style and sophistication.</p>
-        </div>
-        <div class="category-grid">
-            <a href="/shop/men" class="category-card large">
-                <img src="/images/category-men.jpg" alt="Men's Watches Category">
-                <div class="category-overlay"><h3>Men's Collection</h3></div>
-            </a>
-            <div class="small-categories">
-                <a href="/shop/women" class="category-card small">
-                    <img src="/images/category-women.jpg" alt="Women's Watches Category">
-                    <div class="category-overlay"><h3>Women's Timepieces</h3></div>
-                </a>
-                <a href="/shop/skeleton" class="category-card small">
-                    <img src="/images/category-skeleton.jpg" alt="Skeleton Watches Category">
-                    <div class="category-overlay"><h3>Skeleton Watches</h3></div>
-                </a>
-            </div>
-        </div>
-    </div>
 </section>
 
 
@@ -85,28 +45,49 @@
       <h2>New Launches</h2>
     </div>
     <div class="product-grid">
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-chrono-white-2.jpg" alt="Chronograph Watch"></a></div><div class="product-info"><h3>Chronograph</h3><p class="product-price">₹15,000</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-aviator-rose-2.jpg" alt="Aviator Watch"></a></div><div class="product-info"><h3>Aviator Watches</h3><p class="product-price">₹12,500</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-onyx-black-2.jpg" alt="Onyx Watch"></a></div><div class="product-info"><h3>ONYX DU 3rd edition</h3><p class="product-price">₹18,000</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-sunmate-green-2.jpg" alt="SunMate Green Watch"></a></div><div class="product-info"><h3>SunMate Green Edition</h3><p class="product-price">₹14,200</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-chrono-white-3.jpg" alt="Chronograph Watch"></a></div><div class="product-info"><h3>Chronograph</h3><p class="product-price">₹15,000</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-aviator-rose-3.jpg" alt="Aviator Watch"></a></div><div class="product-info"><h3>Aviator Watches</h3><p class="product-price">₹12,500</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-onyx-black-3.jpg" alt="Onyx Watch"></a></div><div class="product-info"><h3>ONYX DU 3rd edition</h3><p class="product-price">₹18,000</p></div></div>
-      <div class="product-card"> <div class="product-image"><a href="#"><img src="/images/watch-sunmate-green-3.jpg" alt="SunMate Green Watch"></a></div><div class="product-info"><h3>SunMate Green Edition</h3><p class="product-price">₹14,200</p></div></div>
+      <% products.forEach(function(product) { %>
+        <div class="product-card">
+          <div class="product-image">
+            <a href="/product/<%= product._id %>">
+              <img src="<%= product.variants[0].image_url[0] %>" alt="<%= product.altText %>">
+            </a>
+          </div>
+          <div class="product-info">
+            <h3>
+              <%= product.name %>
+            </h3>
+            <p class="product-price">
+              <%=`₹${product.variants[0].price}` %>
+            </p>
+          </div>
+        </div>
+        <% }); %>
     </div>
   </div>
 </section>
 
 <section class="lifestyle-showcase">
-    <div class="container">
-        <div class="section-header">
-            <h2>Hand Picked</h2>
-            <p>Discover our bestsellers and timeless pieces, chosen for their quality, craftsmanship, and enduring appeal.</p>
-        </div>
-        <div class="lifestyle-grid">
-            <div class="lifestyle-image"><img src="/images/lifestyle-1.jpg" alt="Woman wearing a watch"></div>
-            <div class="lifestyle-image"><img src="/images/lifestyle-2.jpg" alt="Close up of a watch on a wrist"></div>
-            <div class="lifestyle-image"><img src="/images/lifestyle-3.jpg" alt="Man wearing a watch"></div>
-        </div>
+  <div class="container">
+    <div class="section-header">
+      <h2>Hand Picked</h2>
+      <p>Discover our bestsellers and timeless pieces, chosen for their quality, craftsmanship, and enduring appeal.</p>
     </div>
+    <div class="lifestyle-grid">
+      <% if (productslot1 && productslot1.length> 0) { %>
+        <div class="lifestyle-image">
+          <img src="<%= productslot1[0].image_url %>" alt="HandPicked1">
+        </div>
+        <% } %>
+          <% if (productslot2 && productslot2.length> 0) { %>
+            <div class="lifestyle-image">
+              <img src="<%= productslot2[0].image_url %>" alt="HandPicked2">
+            </div>
+            <% } %>
+              <% if (productslot3 && productslot3.length> 0) { %>
+                <div class="lifestyle-image">
+                  <img src="<%= productslot3[0].image_url %>" alt="HandPicked3">
+                </div>
+                <% } %>
+    </div>
+  </div>
 </section>

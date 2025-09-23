@@ -1,0 +1,346 @@
+<link rel="stylesheet" href="/css/user/shop.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+
+
+<main class="page-container">
+    <aside class="filters-sidebar">
+        <nav aria-label="Breadcrumb">
+               <ol class="breadcrumbs">
+                   <% breadcrumbs.forEach(function(crumb) { %>
+                       <li class="breadcrumb-item">
+                           <% if (crumb.active) { %>
+                               <span aria-current="page"><%= crumb.name %></span>
+                           <% } else { %>
+                               <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                           <% } %>
+                       </li>
+                   <% }); %>
+               </ol>
+           </nav>
+
+           <hr>
+        <button id="close-filters-btn" aria-label="Close filters">&times;</button>
+        <div class="filter-group">
+            <h3>Categories</h3>
+            <% if (category && category.length> 0) { %>
+                <% category.forEach(function(cat) { %>
+                    <div class="filter-option">
+                        <input type="checkbox" id="<%= cat._id %>" name="category" value="<%= cat._id %>">
+                        <label for="<%= cat._id %>">
+                            <%= cat.name %>
+                        </label>
+                    </div>
+                    <% }) %>
+                        <% } %>
+        </div>
+
+        <hr>
+
+        <div class="filter-group">
+            <h3>BRAND</h3>
+            <% if (brand && brand.length> 0) { %>
+                <% brand.forEach(function(bran) { %>
+                    <div class="filter-option">
+                        <input type="checkbox" id="<%= bran._id %>" name="brand" value="<%= bran._id %>">
+                        <label for="<%= bran._id %>">
+                            <%= bran.brandName %>
+                        </label>
+                    </div>
+                    <% }) %>
+                        <% } %>
+        </div>
+
+        <hr>
+
+        <div class="filter-group">
+            <h3>Price</h3>
+            <div class="price-inputs">
+                <div class="price-field">
+                    <label for="min-price">Min</label>
+                    <input type="number" id="min-price" min="0">
+                </div>
+                <div class="price-field">
+                    <label for="max-price">Max</label>
+                    <input type="number" id="max-price" min="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button id="clear-filters-btn">Clear Filters</button>
+        </div>
+
+    </aside>
+
+    <section class="product-display">
+        <h2>Our Collection</h2>
+        <div class="toolbar">
+
+    <div class="search-container">
+        <input type="search" placeholder="Search an item">
+        <button class="search-clear" aria-label="Clear search">&times;</button>
+        <button class="search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+    <div class="sort-container">
+        <select name="sort" id="sort">
+            <option value="default">Sort</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="newest">Newest</option>
+        </select>
+    </div>
+
+</div>
+
+        <div class="product-grid">
+            <% if(products && products.length> 0){%>
+                <% products.forEach(function(product) { %>
+                    <article class="product-card">
+                        <a href="/product/<%= product._id %>">
+                            <div class="product-image-container">
+                                <img src="<%= product.variants[0]?.image_url?.[0] || '/images/default.png' %>"
+                                    alt="<%= product.name %>">
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">
+                                    <h3>
+                                        <%= product.name %>
+                                    </h3>
+                                    <i class="fa-regular fa-heart"></i>
+                                </div>
+                                <p class="product-price">
+                                    <% if (product.variants[0]?.discountedPrice) { %>
+                                        <span class="old-price">₹<%= product.variants[0].price %></span>
+                                        <span class="new-price">₹<%= product.variants[0].discountedPrice %></span>
+                                        <% } else { %>
+                                            <span class="new-price">₹<%= product.variants[0]?.price || "N/A" %></span>
+                                            <% }%>
+                                </p>
+                            </div>
+                        </a>
+                        <button class="addtocart">add to Cart</button>
+                    </article>
+                    <% }) %>
+                        <% } else { %>
+                            <p class="no-products">No products found.</p>
+                            <% } %>
+        </div>
+
+        <div class="pagination" <% if (pagination.totalPages <=1) { %>style="display: none;"<% } %>>
+                <button id="prev-page" <% if (pagination.page <=1) { %>disabled<% } %>>Previous</button>
+                <span>Page <%= pagination.page %> of <%= pagination.totalPages %></span>
+                <button id="next-page" <% if (pagination.page>= pagination.totalPages) { %>disabled<% } %>>Next</button>
+        </div>
+        <div class="loading" style="display: none;">Loading...</div>
+    </section>
+</main>
+<div class="overlay"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const clearFiltersBtn = document.getElementById('clear-filters-btn')
+        const searchClearBtn = document.querySelector('.search-clear')
+        const searchInput = document.querySelector('.search-container input[type="search"]')
+        const searchBtn = document.querySelector('.search-btn')
+        const sortSelect = document.getElementById('sort')
+        const prevPageBtn = document.getElementById('prev-page')
+        const nextPageBtn = document.getElementById('next-page')
+        const productGrid = document.querySelector('.product-grid')
+        const paginationContainer = document.querySelector('.pagination')
+        const paginationInfo = document.querySelector('.pagination span')
+        const loadingIndicator = document.querySelector('.loading')
+
+        let currentPage = <%= pagination.page %>;
+
+
+        async function fetchProducts() {
+            loadingIndicator.style.display = 'block'
+
+
+            const selectedCategories = Array.from(document.querySelectorAll('input[name="category"]:checked'))
+                .map(cb => cb.value)
+                .join(',')
+
+
+            const selectedBrands = Array.from(document.querySelectorAll('input[name="brand"]:checked'))
+                .map(cb => cb.value)
+                .join(',')
+
+            const minPrice = document.getElementById('min-price').value
+            const maxPrice = document.getElementById('max-price').value
+            const searchTerm = searchInput.value
+            const sortOption = sortSelect.value
+
+            const params = new URLSearchParams();
+            if (selectedCategories) params.append('category', selectedCategories)
+            if (selectedBrands) params.append('brand', selectedBrands)
+            if (minPrice) params.append('minPrice', minPrice)
+            if (maxPrice) params.append('maxPrice', maxPrice)
+            if (searchTerm) params.append('search', searchTerm)
+            if (sortOption !== 'default') params.append('sort', sortOption)
+
+            params.append('page', currentPage)
+
+            const url = `/shop?${params.toString()}`
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok')
+                }
+
+                const data = await response.json()
+                updateUI(data)
+
+            } catch (error) {
+                console.error('Failed to fetch products:', error)
+                productGrid.innerHTML = '<p class="no-products">Failed to load products. Please try again later.</p>'
+            } finally {
+                loadingIndicator.style.display = 'none'
+            }
+        }
+
+        function handleClearFilters() {
+            document.querySelectorAll('input[name="category"]:checked').forEach(cb => cb.checked = false)
+            document.querySelectorAll('input[name="brand"]:checked').forEach(cb => cb.checked = false)
+            document.getElementById('min-price').value = ''
+            document.getElementById('max-price').value = ''
+
+            if(searchInput){
+                searchInput.value = ''
+            }
+
+            if(sortSelect){
+                sortSelect.value = 'default'
+            }
+            currentPage = 1
+            fetchProducts()
+        }
+
+        function updateUI(data) {
+            updateProductGrid(data.results)
+            updatePagination(data)
+        }
+
+        function updateProductGrid(products) {
+            productGrid.innerHTML = ''
+
+            if (!products || products.length === 0) {
+                productGrid.innerHTML = '<p class="no-products">No products found matching your criteria.</p>'
+                return
+            }
+
+            products.forEach(product => {
+                const productCard = document.createElement('article')
+                productCard.className = 'product-card'
+
+                const priceHtml = product.variants[0]?.discountedPrice
+                    ? `<span class="old-price">₹${product.variants[0].price}</span>
+                       <span class="new-price">₹${product.variants[0].discountedPrice}</span>`
+                    : `<span class="new-price">₹${product.variants[0]?.price || "N/A"}</span>`
+
+                productCard.innerHTML = `
+                    <a href="/product/${product._id}">
+                        <div class="product-image-container">
+                            <img src="${product.variants[0]?.image_url?.[0] || '/images/default.png'}" alt="${product.name}">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-title">
+                                <h3>${product.name}</h3>
+                                <i class="fa-regular fa-heart"></i>
+                            </div>
+                            <p class="product-price">${priceHtml}</p>
+                        </div>
+                    </a>
+                `;
+                productGrid.appendChild(productCard)
+            })
+        }
+
+        function updatePagination(data) {
+            currentPage = data.page
+            paginationInfo.textContent = `Page ${data.page} of ${data.totalPages}`
+
+            prevPageBtn.disabled = data.page <= 1
+            nextPageBtn.disabled = data.page >= data.totalPages
+
+            paginationContainer.style.display = data.totalPages <= 1 ? 'none' : 'flex'
+        }
+
+        // --- 5. Event Listeners ---
+
+        function handleFilterChange() {
+            currentPage = 1; // Reset to the first page on any new filter/sort/search
+            fetchProducts();
+        }
+
+
+        clearFiltersBtn.addEventListener('click', handleClearFilters);
+
+
+        const allFilterCheckboxes = document.querySelectorAll('input[name="category"], input[name="brand"]');
+        allFilterCheckboxes.forEach(checkbox => checkbox.addEventListener('change', handleFilterChange));
+
+
+        const priceInputs = document.querySelectorAll('#min-price, #max-price');
+        priceInputs.forEach(input => input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleFilterChange();
+            }
+        }));
+
+
+       
+        searchBtn.addEventListener('click', handleFilterChange);
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleFilterChange();
+            }
+        })
+
+searchInput.addEventListener('input', () => {
+            searchClearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+        });
+
+        searchClearBtn.addEventListener('click', () => {
+            searchInput.value = ''; 
+            searchClearBtn.style.display = 'none';
+            handleFilterChange()
+        });
+
+        sortSelect.addEventListener('change', handleFilterChange);
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchProducts();
+            }
+        })
+
+        nextPageBtn.addEventListener('click', () => {
+            currentPage++;
+            fetchProducts();
+        })
+
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--
+                fetchProducts()
+            }
+        })
+
+        nextPageBtn.addEventListener('click', () => {
+
+            currentPage++
+            fetchProducts()
+        })
+    })
+</script>

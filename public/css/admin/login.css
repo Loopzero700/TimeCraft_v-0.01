@@ -1,0 +1,171 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* .site-header {
+  background: #0b0b0b;
+  padding: 15px 30px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);  
+  top: 0;           
+  left: 0;
+  width: 100%;
+  position: fixed;
+  z-index: 10;
+} */
+
+/*logo animation*/
+.logo {
+  font-size: 13rem;
+  font-weight: 700;
+  /* font-family: 'Pacifico', cursive; */
+  font-family: 'Playfair Display', serif;
+  background: linear-gradient(180deg, #d3d3d3,#636363, #2a2a2a, #000000);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -10%); 
+  opacity: 0;                       
+  z-index: -1;
+  pointer-events: none;
+  animation: fadeIn 1.5s ease-in-out forwards;
+}
+
+.layout-logo a {
+  font-family: 'Pacifico', cursive;
+  font-size: 2.5rem;
+  color: #fff3f3;
+  text-decoration: none;
+}
+
+.layout-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Pacifico', cursive;
+  font-size: 28px;
+}
+
+.login-container {
+  background: rgba(20, 20, 20, 0.95);
+  padding: 50px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  width: 480px;
+  backdrop-filter: blur(10px);
+  animation: slideUp 1s ease-out;
+  margin-top: 80px; /* To account for fixed header */
+  opacity: 90%;
+}
+
+.login-container h2 {
+  margin-bottom: 35px;
+  color: #e0e0e0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.input-box {
+  margin: 60px 0;
+  position: relative;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-box input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input-box input:focus {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.btn {
+  margin-top: 25px;
+  background: linear-gradient(90deg, #ffffff, #e0e0e0);
+  color: #0d0d0d;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn:hover {
+  background: linear-gradient(90deg, #e0e0e0, #ffffff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* @keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -10%) scale(0); }
+  to { opacity: 0.4; transform: translate(-50%, -10%) scale(1); }
+} */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(-100px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 400px) {
+  .login-container {
+    width: 90%;
+    padding: 30px;
+  }
+  .logo {
+    font-size: 8rem; /* Smaller for mobile */
+  }
+  .layout-logo {
+    font-size: 24px;
+  }
+  .layout-logo a {
+    font-size: 1.5rem;
+  }
+}

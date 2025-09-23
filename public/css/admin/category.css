@@ -1,0 +1,202 @@
+body {
+    background-color: #0d0d0d;
+    color: #eaeaea;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 30px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.page-header h2 {
+    font-size: 1.8rem;
+    color: #fff;
+    margin: 0;
+}
+.search-bar {
+    position: relative;
+    width: 250px;
+}
+.search-bar i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a5a5a5;
+}
+.search-bar input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #161616;
+    color: #eaeaea;
+    font-size: 0.9rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.search-bar input::placeholder {
+    color: #a5a5a5;
+}
+.search-bar input:focus {
+    outline: none;
+    border-color: #ff7e5f;
+    box-shadow: 0 0 5px rgba(255, 126, 95, 0.5);
+}
+ #clear-search-btn {
+  position: absolute;
+  right: 35px;
+  top: 50%;
+  transform: translateY(-50%);          
+  color: #888;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1.1em;
+}
+  #clear-search-btn:hover {
+    color: #333;
+}
+
+
+.data-table {
+    background: #161616;
+    border-radius: 12px;
+    padding: 10px 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.table-header, .data-row {
+    display: flex;
+    padding: 20px 0;
+    border-bottom: 1px solid #2a2a2a;
+    align-items: center;
+}
+
+.table-header {
+    color: #a5a5a5;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.data-row:last-child {
+    border-bottom: none;
+}
+
+.data-row {
+    color: #eaeaea;
+}
+
+.no-data {
+    padding: 40px 0;
+    text-align: center;
+    color: #a5a5a5;
+    font-size: 1rem;
+}
+
+
+
+.column-id { flex: 0.5; padding-right: 15px;}
+.column-name { flex: 4; padding-right: 15px;}
+.column-status { flex: 2; padding-right: 15px;}
+.column-action { 
+    flex: 1.5;
+    text-align: right; 
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+
+.status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    text-transform: capitalize;
+}
+.status-active {
+    background-color: rgb(0, 230, 119);
+    color: #ffffff;
+}
+.status-inactive {
+    background-color: rgb(255, 61, 61);
+    color: #ffffff;
+}
+
+
+
+.btn-edit, .btn-block, .btn-unblock, .btn-add {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+}
+
+.btn-block, .btn-unblock {
+    min-width: 90px;
+}
+
+.btn-edit:hover, .btn-block:hover, .btn-unblock:hover, .btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.btn-edit { background-color: #007bff; } 
+.btn-block { background-color: #ff3d3d; }
+.btn-unblock { background-color: #00e676; }
+.btn-add { display: inline-block;
+    padding: 10px 20px;
+    border: 1px solid #555;
+    background-color: transparent;
+    color: #eaeaea;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;}
+
+
+.table-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+
+.page-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+
+
+.pagination { display: flex; gap: 8px; }
+.pagination a {
+    text-decoration: none;
+    color: #a5a5a5;
+    padding: 8px 14px;
+    border-radius: 6px;
+    background-color: #161616;
+    border: 1px solid #333;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+.pagination a:hover { background-color: #333; color: #eaeaea; }
+.pagination a.active {
+    background: linear-gradient(45deg, #ff7e5f, #feb47b);
+    color: #fff;
+    border-color: #ff7e5f;
+    font-weight: 600;
+}

@@ -1,77 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/user/signup.css">
-    <style>
-        .server-error-message {
-            color: #D8000C;
-            background-color: #FFD2D2;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid #D8000C;
-        }
-    </style>
-</head>
-<body>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/user/signup.css">
+<style>
+
+</style>
 
 <div class="auth-page-wrapper">
   <div class="auth-container">
     <h2>signup</h2>
 
-    <% if (typeof message !== 'undefined' && message) { %>
-        <div class="server-error-message">
-            <%= message %>
+    <% if (typeof message !=='undefined' && message) { %>
+      <div class="server-error-message">
+        <%= message %>
+      </div>
+      <% } %>
+
+        <form action="/signup" method="POST" id="signform" novalidate>
+          <div class="form-group">
+            <input type="text" name="username" placeholder="Username" id="username"
+              value="<%= typeof input !== 'undefined' ? input.username : '' %>" required>
+            <div id="error1" class="error-message"></div>
+          </div>
+
+          <div class="form-group">
+            <input type="email" name="email" placeholder="Email" id="email"
+              value="<%= typeof input !== 'undefined' ? input.email : '' %>" required>
+            <div id="error2" class="error-message"></div>
+          </div>
+
+          <div class="form-group">
+            <input type="password" name="password" placeholder="Password" id="password" required>
+            <div id="error3" class="error-message"></div>
+          </div>
+
+          <div class="form-group">
+            <input type="password" name="Confirm_password" placeholder="Confirm-password" id="Confirm_password"
+              required>
+            <div id="error4" class="error-message"></div>
+          </div>
+
+          <div class="form-links">
+            <a href="/login">Already have an account? Login</a>
+          </div>
+          <button type="submit" class="btn-auth">Signup</button>
+        </form>
+
+        <div class="auth-divider">
+          <p>Or sign up with</p>
         </div>
-    <% } %>
-
-    <form action="/signup" method="POST" id="signform">
-      <div class="form-group">
-        <input type="text" name="username" placeholder="Username" id="username" 
-               value="<%= typeof input !== 'undefined' ? input.username : '' %>" required>
-        <div id="error1" class="error-message"></div>
-      </div>
-
-      <div class="form-group">
-        <input type="email" name="email" placeholder="Email" id="email"
-               value="<%= typeof input !== 'undefined' ? input.email : '' %>" required>
-        <div id="error2" class="error-message"></div>
-      </div>
-
-      <div class="form-group">
-        <input type="password" name="password" placeholder="Password" id="password" required>
-        <div id="error3" class="error-message"></div>
-      </div>
-
-      <div class="form-group">
-        <input type="password" name="Confirm_password" placeholder="Confirm-password" id="Confirm_password" required>
-        <div id="error4" class="error-message"></div>
-      </div>
-
-      <div class="form-links">
-        <a href="/login">Already have an account? Login</a>
-      </div>
-      <button type="submit" class="btn-auth">Signup</button>
-    </form>
-    
-    <div class="auth-divider">
-      <p>Or sign up with</p>
-    </div>
-    <div class="social-login">
-      <a href="/auth/google">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" aria-label="Google logo" role="img">
-  <path fill="#FFC107" d="M43.611 20.083h-1.611V20H24v8h11.303c-1.65 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C33.64 6.053 29.037 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20c0-1.341-.138-2.651-.389-3.917z"/>
-  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.39 16.098 18.839 13 24 13c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C33.64 6.053 29.037 4 24 4 16.318 4 9.676 8.344 6.306 14.691z"/>
-  <path fill="#4CAF50" d="M24 44c5.124 0 9.727-1.977 13.242-5.197l-6.104-5.154C29.026 35.091 26.64 36 24 36c-5.202 0-9.62-3.317-11.282-7.946l-6.522 5.025C9.533 39.556 16.227 44 24 44z"/>
-  <path fill="#1976D2" d="M43.611 20.083h-1.611V20H24v8h11.303c-.792 2.239-2.289 4.16-4.165 5.538l6.104 5.154C39.879 35.763 44 30.632 44 24c0-1.341-.138-2.651-.389-3.917z"/>
-</svg>
-      </a>
-    </div>
+        <div class="social-login">
+          <a href="/auth/google">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" aria-label="Google logo"
+              role="img">
+              <path fill="#FFC107"
+                d="M43.611 20.083h-1.611V20H24v8h11.303c-1.65 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C33.64 6.053 29.037 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20c0-1.341-.138-2.651-.389-3.917z" />
+              <path fill="#FF3D00"
+                d="M6.306 14.691l6.571 4.819C14.39 16.098 18.839 13 24 13c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C33.64 6.053 29.037 4 24 4 16.318 4 9.676 8.344 6.306 14.691z" />
+              <path fill="#4CAF50"
+                d="M24 44c5.124 0 9.727-1.977 13.242-5.197l-6.104-5.154C29.026 35.091 26.64 36 24 36c-5.202 0-9.62-3.317-11.282-7.946l-6.522 5.025C9.533 39.556 16.227 44 24 44z" />
+              <path fill="#1976D2"
+                d="M43.611 20.083h-1.611V20H24v8h11.303c-.792 2.239-2.289 4.16-4.165 5.538l6.104 5.154C39.879 35.763 44 30.632 44 24c0-1.341-.138-2.651-.389-3.917z" />
+            </svg>
+          </a>
+        </div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -89,82 +79,118 @@
 
   const signform = document.getElementById('signform')
 
- 
-  function nameVaildateChecking(){
+
+  function nameVaildateChecking() {
     const nameval = nameid.value
     const namepattern = /^[A-Za-z\s]+$/
-    if(nameval.trim()===''){
-      error1.style.display="block"
-      error1.innerHTML="Please enter a valid name"
-    }else if(!namepattern.test(nameval)){
-      error1.style.display="block"
-      error1.innerHTML="Name can only contain alphabets and spaces"
-    }else{
-      error1.style.display="none"
-      error1.innerHTML=""
+    if (nameval.trim() === '') {
+      error1.style.display = "block"
+      error1.innerHTML = "Please enter a valid name"
+    } else if (!namepattern.test(nameval)) {
+      error1.style.display = "block"
+      error1.innerHTML = "Name can only contain alphabets and spaces"
+    } else {
+      error1.style.display = "none"
+      error1.innerHTML = ""
     }
   }
 
- 
-  function emailValidateChecking(){
+
+  function emailValidateChecking() {
     const emailval = emailid.value
     const emailpattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
-    if(!emailpattern.test(emailval)){
-      error2.style.display="block"
-      error2.innerHTML="Invalid email format"
-    }else{
-      error2.style.display="none"
-      error2.innerHTML=""
+    if (!emailpattern.test(emailval)) {
+      error2.style.display = "block"
+      error2.innerHTML = "Invalid email format"
+    } else {
+      error2.style.display = "none"
+      error2.innerHTML = ""
     }
   }
 
-  
-  function passVaildateChecking(){
+
+  function passVaildateChecking() {
     const passval = passid.value
     const cpassval = cpassid.value
     const alpha = /[a-zA-Z]/
-    const digit = /\d/ 
+    const digit = /\d/
 
-    if(passval.length < 8){
-      error3.style.display="block"
-      error3.innerHTML="Should contain at least 8 characters"
-    }else if(!alpha.test(passval) || !digit.test(passval)){
-      error3.style.display="block"
-      error3.innerHTML="Password should contain letters and numbers"
-    }else{
-      error3.style.display="none"
-      error3.innerHTML=""
+    if (passval.length < 8) {
+      error3.style.display = "block"
+      error3.innerHTML = "Should contain at least 8 characters"
+    } else if (!alpha.test(passval) || !digit.test(passval)) {
+      error3.style.display = "block"
+      error3.innerHTML = "Password should contain letters and numbers"
+    } else {
+      error3.style.display = "none"
+      error3.innerHTML = ""
     }
 
-    if(cpassval === ''){
-        error4.style.display="none"
-        error4.innerHTML=""
-    } else if(passval !== cpassval){
-      error4.style.display="block"
-      error4.innerHTML="Passwords do not match"
-    }else{
-      error4.style.display="none"
-      error4.innerHTML=""
+    if (cpassval === '') {
+      error4.style.display = "none"
+      error4.innerHTML = ""
+    } else if (passval !== cpassval) {
+      error4.style.display = "block"
+      error4.innerHTML = "Passwords do not match"
+    } else {
+      error4.style.display = "none"
+      error4.innerHTML = ""
     }
   }
 
-  document.addEventListener("DOMContentLoaded",function(){
-    signform.addEventListener("submit",function(e){
+  document.addEventListener("DOMContentLoaded", function () {
+    signform.addEventListener("submit", async function (e) {
+      e.preventDefault()
+
       nameVaildateChecking()
       emailValidateChecking()
       passVaildateChecking()
 
-      if(
+      if (
         error1.innerHTML ||
         error2.innerHTML ||
         error3.innerHTML ||
         error4.innerHTML
-      ){
-        e.preventDefault()
+      ) {
+        return
+      }
+      const formData = new FormData(signform);
+      const data = Object.fromEntries(formData.entries())
+
+      try {
+        const response = await fetch('/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+
+        const result = await response.json();
+
+        if (result.success) {
+          window.location.href = result.redirectUrl;
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Signup Failed',
+            text: result.message,
+            confirmButtonColor: '#3085d6'
+          })
+        }
+      } catch (error) {
+        console.error('Error during signup:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Something went wrong! Please try again.',
+          confirmButtonColor: '#3085d6'
+        })
       }
     })
   })
-</script>
 
-</body>
-</html>
+
+
+
+</script>

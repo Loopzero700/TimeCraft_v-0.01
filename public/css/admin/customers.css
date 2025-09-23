@@ -1,0 +1,124 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.page-header h2 {
+  font-size: 1.8rem;
+}
+.search-bar {
+  position: relative;
+  width: 250px;
+}
+.search-bar i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a5a5a5;
+}
+.search-bar input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #161616;
+  color: #eaeaea;
+  font-size: 0.9rem;
+}
+ #clear-search-btn {
+  position: absolute;
+  right: 35px;
+  top: 50%;
+  transform: translateY(-50%);          
+  color: #888;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1.1em;
+}
+  #clear-search-btn:hover {
+    color: #333;
+}
+
+
+.customer-table {
+  background: #161616;
+  border-radius: 12px;
+  padding: 10px 30px;
+}
+
+.customer-table-header, .customer-row {
+  display: flex;
+  padding: 20px 0;
+  border-bottom: 1px solid #2a2a2a;
+  align-items: center;
+}
+
+.customer-table-header {
+  color: #a5a5a5;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.customer-row:last-child {
+  border-bottom: none;
+}
+
+
+.column-id { flex: 0.5; }
+.column-name { flex: 1.5; }
+.column-email { flex: 2.5; }
+.column-mobile { flex: 1.5; }
+.column-address { 
+  flex: 3; 
+  white-space: pre-line;
+  line-height: 1.4;
+}
+.column-action { 
+    flex: 1;
+    text-align: right; 
+}
+
+
+.btn-unblock, .btn-block {
+  padding: 6px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #fff;
+  text-decoration: none; 
+  display: inline-block; 
+}
+
+.btn-unblock { background-color: #00e676; }
+.btn-block { background-color: #ff3d3d; }
+
+
+.page-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+}
+
+
+.pagination { display: flex; gap: 8px; }
+.pagination a {
+  text-decoration: none;
+  color: #a5a5a5;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background-color: #161616;
+  border: 1px solid #333;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+.pagination a:hover { background-color: #333; color: #eaeaea; }
+.pagination a.active {
+  background-color: #ff7e5f;
+  color: #fff;
+  border-color: #ff7e5f;
+}

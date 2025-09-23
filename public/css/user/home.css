@@ -1,4 +1,3 @@
-/* ========== UTILITY CLASSES ========== */
 .btn {
   display: inline-block;
   padding: 12px 28px;
@@ -35,13 +34,12 @@
   color: #555;
 }
 
-/* ========== HERO SECTION ========== */
 .hero {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/hero-background.jpg'); /* Replace with your hero image */
+  background-color: #444;
   background-size: cover;
   background-position: center;
   min-height: 80vh;
-  color: #fff;
+  color: #f4f4f4;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -65,7 +63,7 @@
   line-height: 1.7;
 }
 
-/* ========== PRODUCT SHOWCASE ========== */
+
 .product-showcase {
   padding: 80px 0;
 }
@@ -91,6 +89,7 @@
   height: auto;
   background-color: #f9f9f9;
   margin-bottom: 15px;
+  border-radius: 30px;
 }
 
 .product-info h3 {
@@ -106,7 +105,7 @@
 }
 
 
-/* ========== CATEGORIES SHOWCASE ========== */
+
 .category-showcase {
     padding: 60px 0;
     background-color: #f9f9f9;
@@ -158,7 +157,7 @@
 }
 
 
-/* ========== LIFESTYLE SHOWCASE ========== */
+
 .lifestyle-showcase {
     padding: 80px 0;
 }
@@ -170,12 +169,13 @@
 }
 
 .lifestyle-image img {
+  border-radius: 30px;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-/* ========== RESPONSIVE DESIGN ========== */
+
 @media (max-width: 992px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);

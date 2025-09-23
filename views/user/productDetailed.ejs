@@ -1,0 +1,222 @@
+<link rel="stylesheet" href="/css/user/productDetailed.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+<nav aria-label="Breadcrumb">
+    <ol class="breadcrumbs">
+        <% breadcrumbs.forEach(function(crumb) { %>
+            <li class="breadcrumb-item">
+                <% if (crumb.active) { %>
+                    <span aria-current="page"><%= crumb.name %></span>
+                <% } else { %>
+                    <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                <% } %>
+            </li>
+        <% }); %>
+    </ol>
+</nav>
+<main class="container">
+
+
+    <section class="product-section">
+
+       <div class="image-gallery">
+            <div class="thumbnails">
+                <% productData.variants[0].image_url.forEach(function(image, index) { %>
+                    <img src="<%=image%>" alt="Watch Thumbnail"
+                        class="thumbnail-img <%= index === 0 ? 'active' : '' %>">
+                        <% }); %>
+                    </div>
+                    <div class="main-image-container">
+                <img id="main-product-image" src="<%=productData.variants[0].image_url[0]%>"
+                data-zoom-image="<%=productData.variants[0].image_url[0]%>" alt="<%=productData.name%>"
+                class="main-image">
+            </div>
+        </div>
+
+        <div class="product-details">
+            </div>
+            
+            <!-- <div id="zoom-window-container"></div> -->
+            
+            <div class="product-details">
+                <div class="details-header">
+                    <h1 class="product-title">
+                        <%=productData.name%>
+                    </h1>
+                    <button class="wishlist-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="price-container">
+                <span class="price-main">₹<%= productData.variants[0].discounted_price %></span>
+                <span class="price-original">₹<%= productData.variants[0].price %></span>
+                <% const originalPrice=productData.variants[0].price; const
+                    discountedPrice=productData.variants[0].discounted_price; const discount=Math.round(((originalPrice
+                    - discountedPrice) / originalPrice) * 100); %>
+
+                    <span class="price-discount"
+                    style="<%= discount > 0 ? 'display: inline-block;' : 'display: none;' %>">
+                    <% if (discount> 0) { %>
+                        <%= discount %>% off
+                        <% } %>
+                    </span>
+            </div>
+            
+            <div class="product-info">
+                <h3 class="info-title">Product Details</h3>
+                <p class="sku">SKU: <%=productData.variants[0].SKU%>
+                </p>
+            </div>
+            
+            <div>
+                <h3 class="color-title">Select Color</h3>
+                <div class="color-selector">
+                    <% productData.variants.forEach(function(variant, index) { %>
+                        <input type="radio" id="color-<%= variant.color %>-<%= index %>" name="color"
+                        value="<%= variant.color %>" data-index="<%= index %>" <%=index===0 ? 'checked' : '' %>
+                        >
+                        <label for="color-<%= variant.color %>-<%= index %>">
+                            <%= variant.color %>
+                        </label>
+                        <% }) %>
+                    </div>
+                </div>
+               <div class="actions-container" style="<%= productData.variants[0].stock == 0 ? 'display:none;' : '' %>">
+                <button class="btn">Buy Now</button>
+                <button class="btn">Add To Cart</button>
+            </div> 
+
+            <div class="out-Of-stock" style="<%= productData.variants[0].stock > 0 ? 'display:none;' : '' %>">
+         <h3>OUT OF STOCK</h3>
+        </div>
+            
+        </div>
+    </section>
+
+    <section class="similar-section">
+        <h2 class="section-title centered">Similar Collection</h2>
+        <div class="similar-grid">
+            <% cat.forEach(function(product) { %>
+                <div class="product-card">
+                    <div class="product-card-image-wrapper">
+                        <a href="/product/<%= product._id %>"> <img src="<%=product.variants[0].image_url[0]%>"
+                                alt="<%=product.name%>" class="product-card-image">
+                        </a>
+                        <button class="card-wishlist-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <h3 class="product-card-title">
+                        <%=product.name%>
+                    </h3>
+                    <p class="product-card-price">
+                        <span class="font-bold">
+                            ₹<%=product.variants[0].discounted_price%>
+                        </span>
+                        <span class="line-through">
+                            ₹<%=product.variants[0].price%>
+                        </span>
+                    </p>
+                </div>
+                <% }) %>
+        </div>
+    </section>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        const productData = <%- JSON.stringify(productData) %>
+        
+        function initializeZoom(){
+            console.log(productData)
+        $('#main-product-image').elevateZoom({
+         zoomType: 'window',
+        zoomWindowWidth: 600,
+        zoomWindowHeight: 600,
+        zoomWindowFadeIn: 400,
+        zoomWindowFadeOut: 400,
+        scrollZoom: true,
+        cursor: 'crosshair',
+    })
+        }
+
+        initializeZoom()
+
+        $('.thumbnails').on('click','.thumbnail-img',function(){
+            const newImageSrc = $(this).attr('src')
+
+            $('#main-product-image').attr('src',newImageSrc)
+
+            $('.zoomContainer').remove()
+            $('#main-product-image').data('zoom-image',newImageSrc)
+            initializeZoom()
+
+            $('.thumbnail-img').removeClass('active')
+            $(this).addClass('active')
+        })
+
+        $('input[name="color"]').on('change',function(){
+
+            const selectedIndex = $(this).data('index')
+            const selectedVariant = productData.variants[selectedIndex]
+
+            $('.price-main').text(`₹${selectedVariant.discounted_price}`)
+            $('.price-original').text(`₹${selectedVariant.price}`)
+
+            const originalPrice = selectedVariant.price
+            const discountedPrice = selectedVariant.discounted_price
+            const discount = Math.round(((originalPrice-discountedPrice)/originalPrice)*100)
+            const stock = selectedVariant.stock
+
+         if (stock <= 0) {
+            $('.actions-container').hide()
+            $('.out-Of-stock').show()
+        } else {
+ 
+            $('.actions-container').show()
+            $('.out-Of-stock').hide()
+            }
+
+            if(discount>0){
+                $('.price-discount').text(`${discount}% off`).show()
+            }else{
+                $('.price-discount').hide()
+            }
+
+            $('.sku').text(`SKU: ${selectedVariant.SKU}`)
+
+            const thumbnailsContainer = $('.thumbnails')
+            thumbnailsContainer.empty()
+
+            selectedVariant.image_url.forEach((image,index)=>{
+                const thumbnailHtml=`<img src="${image}" alt="Watch Thumbnail" class="thumbnail-img ${index === 0 ? 'active' : ''}">`
+                thumbnailsContainer.append(thumbnailHtml)
+            })
+
+            const firstImage = selectedVariant.image_url[0]
+            $('#main-product-image').attr('src',firstImage)
+
+            $(".zoomContainer").remove()
+            $('#main-product-image').data('zoom-image',firstImage)
+            initializeZoom()
+        })
+    })
+</script>

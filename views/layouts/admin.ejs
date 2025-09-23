@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimeCraft - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin/adminlayout.css">
+
+  <% if (typeof customCss !== "undefined") { %>
+    <link rel="stylesheet" href="/css/<%= customCss %>.css">
+  <% } %>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar">
+      <ul>
+        <li class="active"><i class="fas fa-tachometer-alt"></i><a href="/admin"><span> Dashboard</span></a></li>
+        <li><i class="fas fa-boxes"></i><a href="/admin/products"><span> Products</span></a></li>
+        <li><i class="fas fa-users"></i><a href="/admin/customers"><span> Customers</span></a></li>
+        <li><i class="fas fa-shopping-cart"></i><a href=""><span> Orders</span></a></li>
+        <li><i class="fas fa-tags"></i><a href=""><span> Coupons</span></a></li>
+        <li><i class="fas fa-sitemap"></i><a href="/admin/category"><span> Category</span></a></li>
+        <li><i class="fas fa-bookmark"></i><a href="/admin/brand"><span> Brands</span></a></li>
+        <li><i class="fas fa-gift"></i><a href=""><span> Offers</span></a></li>
+        <li><i class="fas fa-image"></i><a href="/admin/banner"><span> Banner</span></a></li>
+        <li><i class="fas fa-chart-bar"></i><a href=""><span> Sales Report</span></a></li>
+        <li><i class="fas fa-sign-out-alt"></i><a href="/admin/logout"><span> Logout</span></a></li>
+      </ul>
+    </nav>
+
+    <main class="main-content">
+        <h1 class="logo">TimeCraft</h1>
+         <%- body %>
+    </main>
+  </div>
+
+  <script>
+    // Hamburger toggle
+    const hamburger = document.getElementById("hamburger");
+    const sidebar = document.getElementById("sidebar");
+    hamburger.addEventListener("click", () => {
+      sidebar.classList.toggle("show");
+      hamburger.classList.toggle("active");
+    });
+  </script>
+</body>
+</html>

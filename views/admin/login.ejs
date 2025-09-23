@@ -1,0 +1,21 @@
+<link rel="stylesheet" href="/css/admin/login.css">
+
+<!-- <div class="logo">TimeCraft</div> -->
+<div class="login-container">
+
+  <% if (typeof message !== 'undefined' && message) { %>
+      <div class="server-error-message">
+          <%= message %>
+      </div>
+  <% } %>
+
+  <form method="POST" action="/admin/login" novalidate>
+    <div class="input-box">
+      <input type="email" name="email" placeholder="Email" required>
+    </div>
+    <div class="input-box">
+      <input type="password" name="password" placeholder="Password" required>
+    </div>
+    <button type="submit" class="btn">Login</button>
+  </form>
+</div>

@@ -1,0 +1,126 @@
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #212529;
+            overflow: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 1rem;
+            box-sizing: border-box;
+            position: relative; 
+        }
+
+        
+        .glitch-text {
+            font-family: 'Space Mono', monospace;
+            font-size: 8rem;
+            font-weight: 700;
+            color: #007bff;
+            margin: 0;
+            position: relative;
+            letter-spacing: 0.1em;
+        }
+
+        .glitch-text::before,
+        .glitch-text::after {
+            content: '404';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 #e83e8c;
+            animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 #17a2b8, 2px 2px #e83e8c;
+            animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+        }
+
+        .subheading {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            color: #6c757d;
+        }
+
+        .description {
+            color: #6c757d;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            max-width: 400px;
+        }
+
+        .home-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            border: 2px solid #007bff;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+        }
+
+        .home-button:hover {
+            background-color: #fff;
+            color: #007bff;
+            transform: translateY(-2px);
+        }
+        
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#dee2e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(3% 0 95% 0); }
+            20% { clip-path: inset(85% 0 1% 0); }
+            40% { clip-path: inset(50% 0 48% 0); }
+            60% { clip-path: inset(10% 0 80% 0); }
+            80% { clip-path: inset(90% 0 5% 0); }
+            100% { clip-path: inset(60% 0 38% 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(91% 0 5% 0); }
+            20% { clip-path: inset(15% 0 75% 0); }
+            40% { clip-path: inset(70% 0 3% 0); }
+            60% { clip-path: inset(33% 0 60% 0); }
+            80% { clip-path: inset(5% 0 90% 0); }
+            100% { clip-path: inset(45% 0 50% 0); }
+        }
+
+        @media (max-width: 640px) {
+            .glitch-text {
+                font-size: 5rem;
+            }
+            .subheading {
+                font-size: 1.25rem;
+            }
+        }

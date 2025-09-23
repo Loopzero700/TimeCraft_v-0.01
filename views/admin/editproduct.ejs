@@ -1,0 +1,286 @@
+<link rel="stylesheet" href="/css/admin/addproduct.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="form-wrapper">
+    <h2 class="form-title">Edit Product</h2>
+    <form id="product-form" novalidate>
+
+        <div class="form-section">
+            <div class="form-grid">
+                <div class="form-group"><label for="name">Product Name</label><input type="text" id="name" name="name" value="<%= product.name %>" required></div>
+                <div class="form-group"><label for="category_id">Category</label><select id="category_id" name="category_id" required><% categories.forEach(cat => { %><option value="<%= cat._id %>" <%= product.category.equals(cat._id) ? 'selected' : '' %>><%= cat.name %></option><% }); %></select></div>
+                <div class="form-group"><label for="brand_id">Brand</label><select id="brand_id" name="brand_id" required><% brands.forEach(brand => { %><option value="<%= brand._id %>" <%= product.brand.equals(brand._id) ? 'selected' : '' %>><%= brand.brandName %></option><% }); %></select></div>
+                <div class="form-group"><label for="status">Status</label><select id="status" name="status" required><option value="active" <%= product.status === 'active' ? 'selected' : '' %>>Active</option><option value="inactive" <%= product.status === 'inactive' ? 'selected' : '' %>>Inactive</option></select></div>
+            </div>
+            <div class="form-group"><label for="description">Description</label><textarea id="description" name="description" rows="4"><%= product.description %></textarea></div>
+        </div>
+
+        <h3 class="variants-title">Product Variants</h3>
+        <div id="variants-container">
+            <% product.variants.forEach((variant, index) => { %>
+            <div class="variant-block">
+                <input type="hidden" name="variants[<%= index %>][variantId]" value="<%= variant._id %>">
+                <div class="form-grid">
+                    <div class="form-group"><label>Color</label><input type="text" name="variants[<%= index %>][color]" value="<%= variant.color %>" required></div>
+                    <div class="form-group"><label>SKU</label><input type="text" name="variants[<%= index %>][SKU]" value="<%= variant.SKU %>" required></div>
+                    <div class="form-group"><label>Price</label><input type="number" name="variants[<%= index %>][price]" value="<%= variant.price %>" step="0.01" required></div>
+                    <div class="form-group"><label>Discounted Price</label><input type="number" name="variants[<%= index %>][discounted_price]" value="<%= variant.discounted_price %>" step="0.01"></div>
+                    <div class="form-group"><label>Stock</label><input type="number" name="variants[<%= index %>][stock]" value="<%= variant.stock %>" required></div>
+                    <div class="form-group">
+                    <label>Images</label>
+                   <input type="file" id="actual-btn-<%= index %>" class="variant-images" accept="image/*" multiple hidden>
+
+                    <label for="actual-btn-<%= index %>" class="custom-file-button">Add Images</label>
+                    <div class="image-preview-container">
+                        <% variant.image_url.forEach(url => { %>
+                            <div class="image-preview-item" data-image-url="<%= url %>">
+                                <img src="<%= url %>" alt="Existing Image">
+                                <button type="button" class="remove-image-btn">&times;</button>
+                
+                            <input type="hidden" name="variants[<%= index %>][existingImages][]" value="<%= url %>">
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+                </div>
+                <button type="button" class="btn-remove-variant">Remove</button>
+            </div>
+            <% }) %>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" id="btn-add-variant" class="btn-secondary">Add Another Variant</button>
+            <button type="submit" class="btn-primary">Update Product</button>
+        </div>
+    </form>
+</div>
+
+<div id="cropper-modal" style="display: none;">
+    <div class="cropper-content">
+        <div class="cropper-container"><img id="image-to-crop" src=""></div>
+        <div class="cropper-actions">
+            <button type="button" id="cancel-crop-button" class="btn-secondary">Cancel</button>
+            <button type="button" id="crop-button" class="btn-primary">Crop & Add</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('product-form')
+        const variantsContainer = document.getElementById('variants-container')
+        const addVariantBtn = document.getElementById('btn-add-variant')
+        const modal = document.getElementById('cropper-modal')
+        const imageToCrop = document.getElementById('image-to-crop')
+        const cropButton = document.getElementById('crop-button')
+        const cancelCropButton = document.getElementById('cancel-crop-button')
+
+        let cropper
+        let newVariantImages = new Map()
+        const imagesToRemove = new Set()
+
+        let imageQueue = []
+        let currentVariantBlockForQueue = null
+
+        function processImageQueue() {
+            if (imageQueue.length === 0) {
+                displayNewImagePreviews(currentVariantBlockForQueue)
+                return
+            }
+            const file = imageQueue.shift()
+            const reader = new FileReader()
+            reader.onload = () => {
+                imageToCrop.src = reader.result
+                modal.style.display = 'flex'
+                if (cropper) cropper.destroy()
+                cropper = new Cropper(imageToCrop, { aspectRatio: 1 / 1, viewMode: 1 })
+            }
+            reader.readAsDataURL(file)
+        }
+
+        cropButton.addEventListener('click', () => {
+            if (!cropper) return
+            const currentIndex = getCurrentVariantIndex(currentVariantBlockForQueue)
+            if (!newVariantImages.has(currentIndex)) {
+                newVariantImages.set(currentIndex, [])
+            }
+            cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob((blob) => {
+                if (blob) newVariantImages.get(currentIndex).push(blob)
+                modal.style.display = 'none'
+                processImageQueue()
+            }, 'image/webp', 0.9)
+        });
+
+        
+        cancelCropButton.addEventListener('click', () => {
+            modal.style.display = 'none'
+            imageQueue = []
+            if (cropper) {
+                cropper.destroy()
+                cropper = null
+            }
+        })
+
+        function displayNewImagePreviews(variantBlock) {
+            const previewContainer = variantBlock.querySelector('.image-preview-container')
+            const currentIndex = getCurrentVariantIndex(variantBlock)
+            const images = newVariantImages.get(currentIndex) || []
+
+            previewContainer.querySelectorAll('.new-preview').forEach(el => el.remove())
+
+            images.forEach((blob, blobIndex) => {
+                const previewItem = document.createElement('div')
+                previewItem.className = 'image-preview-item new-preview'
+                const img = document.createElement('img')
+                img.src = URL.createObjectURL(blob)
+                const removeBtn = document.createElement('button')
+                removeBtn.className = 'remove-new-preview-btn'
+                removeBtn.innerHTML = '&times;'
+                removeBtn.type = 'button'
+                removeBtn.onclick = () => {
+                    images.splice(blobIndex, 1)
+                    displayNewImagePreviews(variantBlock)
+                }
+                previewItem.appendChild(img)
+                previewItem.appendChild(removeBtn)
+                previewContainer.appendChild(previewItem)
+            })
+        }
+
+       function reindexVariants() {
+            const blocks = variantsContainer.querySelectorAll('.variant-block')
+            blocks.forEach((block, index) => {
+                block.querySelectorAll('input, select, textarea').forEach(input => {
+                    const name = input.getAttribute('name')
+                    if (name) input.setAttribute('name', name.replace(/\[\d+\]/, `[${index}]`))
+                })
+                const fileInput = block.querySelector('.variant-images')
+                const fileLabel = block.querySelector('.custom-file-button')
+                const newFileId = `actual-btn-${index}`
+                fileInput.id = newFileId
+                if (fileLabel) fileLabel.setAttribute('for', newFileId)
+            })
+        }
+
+        function reindexVariantImages() {
+            const newMap = new Map()
+            variantsContainer.querySelectorAll('.variant-block').forEach((block, newIndex) => {
+                if (newVariantImages.has(newIndex)) {
+                    newMap.set(newIndex, newVariantImages.get(newIndex))
+                }
+            })
+            newVariantImages.clear()
+            newVariantImages = newMap
+        }
+
+            reindexVariants()
+            reindexVariantImages()
+            updateRemoveButtons()
+        function updateRemoveButtons() {
+            const blocks = variantsContainer.querySelectorAll('.variant-block')
+            blocks.forEach(block => {
+                const removeBtn = block.querySelector('.btn-remove-variant')
+                if (removeBtn) removeBtn.style.display = blocks.length > 1 ? 'inline-block' : 'none'
+            })
+        }
+        
+        const getCurrentVariantIndex = (block) => {
+             return Array.from(variantsContainer.children).indexOf(block)
+        }
+
+        function initVariantBlock(block) {
+            const fileInput = block.querySelector('.variant-images')
+            fileInput.addEventListener('change', (e) => {
+                const files = e.target.files
+                if (files && files.length > 0) {
+                    imageQueue = Array.from(files)
+                    currentVariantBlockForQueue = block
+                    processImageQueue()
+                }
+                e.target.value = ''
+            })
+        }
+addVariantBtn.addEventListener('click', () => {
+    const newIndex = variantsContainer.children.length;
+    const newVariantHtml = `
+        <div class="variant-block">
+            <input type="hidden" name="variants[${newIndex}][variantId]" value="new">
+            <div class="form-grid">
+                <div class="form-group"><label>Color</label><input type="text" name="variants[${newIndex}][color]" required></div>
+                <div class="form-group"><label>SKU</label><input type="text" name="variants[${newIndex}][SKU]" required></div>
+                <div class="form-group"><label>Price</label><input type="number" name="variants[${newIndex}][price]" step="0.01" required></div>
+                <div class="form-group"><label>Discounted Price</label><input type="number" name="variants[${newIndex}][discounted_price]" step="0.01"></div>
+                <div class="form-group"><label>Stock</label><input type="number" name="variants[${newIndex}][stock]" required></div>
+                <div class="form-group">
+                    <label>Images</label>
+                    <input type="file" id="actual-btn-${newIndex}" class="variant-images" accept="image/*" multiple hidden>
+                    <label for="actual-btn-${newIndex}" class="custom-file-button">Add Images</label>
+                    <div class="image-preview-container"></div>
+                </div>
+            </div>
+            <button type="button" class="btn-remove-variant">Remove</button>
+        </div>`;
+
+    variantsContainer.insertAdjacentHTML('beforeend', newVariantHtml);
+    const newBlock = variantsContainer.lastElementChild;
+    initVariantBlock(newBlock);
+    updateRemoveButtons();
+});
+
+        variantsContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('btn-remove-variant')) {
+                const block = e.target.closest('.variant-block')
+                const currentIndex = getCurrentVariantIndex(block)
+                const variantIdInput = block.querySelector('input[name*="[variantId]"]')
+                if (variantIdInput && variantIdInput.value !== 'new') {
+                     block.querySelectorAll('.image-preview-item[data-image-url]').forEach(item => {
+                        imagesToRemove.add(item.dataset.imageUrl)
+                    })
+                }
+                newVariantImages.delete(currentIndex)
+                block.remove()
+                reindexVariants()
+                updateRemoveButtons()
+            }
+            if (e.target.classList.contains('remove-image-btn')) {
+                const previewItem = e.target.closest('.image-preview-item')
+                const imageUrl = previewItem.dataset.imageUrl;
+                if (imageUrl) {
+                    imagesToRemove.add(imageUrl)
+
+                    previewItem.remove()
+                }
+            }
+        })
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const formData = new FormData(form)
+
+            newVariantImages.forEach((blobs, index) => {
+                blobs.forEach((blob, fileIndex) => {
+                    formData.append(`variants[${index}][newImages]`, blob, `variant-${index}-new-image-${fileIndex}.webp`)
+                })
+            })
+
+            formData.append('imagesToRemove', JSON.stringify(Array.from(imagesToRemove)))
+            
+            try {
+                const response = await fetch('/admin/editproduct/<%= product._id %>', { method: 'POST', body: formData })
+                if (response.ok) {
+                    window.location.href = '/admin/products'
+                } else {
+                    const errorText = await response.text()
+                    Swal.fire('Error', errorText, 'error')
+                }
+            } catch (error) {
+                Swal.fire('Error', 'An error occurred during submission.', 'error')
+            }
+        })
+
+        document.querySelectorAll('.variant-block').forEach(block => initVariantBlock(block))
+        updateRemoveButtons()
+    })
+</script>

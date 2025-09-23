@@ -1,0 +1,568 @@
+/* ================== */
+/* GENERAL          */
+/* ================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-text: #212121;
+    --secondary-text: #757575;
+    --border-color: #e0e0e0;
+    --background-color: #f9f9f9;
+    --strikethrough-color: #bdbdbd;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fff;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+.page-container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem 4rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1.5rem 0;
+}
+
+
+/* ================== */
+/* FILTER SIDEBAR   */
+/* ================== */
+.filters-sidebar {
+    flex: 0 0 250px;
+    /* Sidebar will not grow or shrink */
+}
+
+.filter-group h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.filter-option label {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+/* Custom Checkbox */
+.filter-option input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    top: -1px;
+}
+
+.filter-option input[type="checkbox"]:checked {
+    background-color: var(--primary-text);
+    border-color: var(--primary-text);
+}
+
+.filter-option input[type="checkbox"]:checked::after {
+    content: '\f00c';
+    /* Font Awesome check icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: white;
+    font-size: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.price-inputs {
+    display: flex;
+    gap: 1rem;
+}
+
+.price-field {
+    width: 100%;
+}
+
+.price-field label {
+    font-size: 0.8rem;
+    color: var(--secondary-text);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.price-field input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    /* Ensures padding doesn't affect width */
+}
+
+/* =================== */
+/* PRODUCT DISPLAY   */
+/* =================== */
+.product-display {
+    flex: 1;
+    /* Product grid takes remaining space */
+}
+
+.product-display h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-top: 0;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.search-container {
+    position: relative;
+    width: 300px;
+    display: flex;
+    width: 40dvh;
+}
+.search-area{
+    display: flex;
+    justify-content: space-between; 
+}
+
+/* =================== */
+/* TOOLBAR STYLES       */
+/* =================== */
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.search-container {
+    position: relative; /* Crucial for positioning the buttons inside */
+    width: 350px; /* Adjust width as needed */
+}
+
+.search-container input[type="search"] {
+    width: 100%;
+    padding: 0.75rem 3.5rem 0.75rem 1rem; /* Increased right padding for two buttons */
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+/* Style for the main search icon button */
+.search-container .search-btn {
+    position: absolute;
+    right: 5px; /* Positioned at the far right */
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background-color: var(--primary-text);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* NEW: Correct styling for the clear button */
+.search-container .search-clear {
+    position: absolute;
+    right: 45px; /* Positioned just left of the search button */
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.4rem;  /* Larger size for the '×' icon */
+    color: var(--secondary-text);
+    padding: 0;
+    line-height: 1;
+    display: none;
+}
+
+.search-container .search-clear:hover {
+    color: var(--primary-text);
+    display: none;
+}
+
+
+.sort-container select {
+    padding: 0.75rem 2rem 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.search-container .search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background-color: var(--primary-text);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.sort-container select {
+    padding: 0.75rem 2rem 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+
+/* =================== */
+/* PRODUCT GRID      */
+/* =================== */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.product-card {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.product-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-color: var(--border-color);
+}
+
+.product-image-container {
+    background-color: var(--background-color);
+    padding: 1rem;
+}
+
+.product-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
+
+.product-info {
+    padding: 1rem;
+}
+
+.product-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.product-title h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.product-title .fa-heart {
+    color: var(--secondary-text);
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.product-price {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: var(--strikethrough-color);
+    margin-right: 0.5rem;
+}
+
+.new-price {
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.filter-actions button {
+    background-color: #212121;
+    border-radius: 10px;
+    color: #f9f9f9;
+    width: 10rem;
+    padding: .8rem;
+    margin-top: 1rem;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.addtocart {
+    background-color: black;
+    color: #fff;
+    border-radius: 5px;
+    padding: .5rem;
+}
+
+/* ================================= */
+/* RESPONSIVE STYLES (REVISED FOR MODAL) */
+/* ================================= */
+
+/* Initially hide mobile-only elements on desktop */
+#filter-toggle-btn {
+    display: none;
+}
+
+#close-filters-btn {
+    display: none;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.overlay.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Medium devices (tablets, less than 992px) */
+@media (max-width: 992px) {
+    .page-container {
+        padding: 2rem;
+    }
+}
+
+/* Small devices (tablets and phones, less than 768px) */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1.5rem;
+    }
+
+    /* --- Style the Filter button to look like the Sort dropdown --- */
+    #filter-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        border: 1px solid var(--border-color);
+        background-color: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        /* Make space for the arrow */
+    }
+
+    .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* Two columns for filter/sort */
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-container {
+        grid-column: 1 / -1;
+        /* Make search span full width */
+        width: 100%;
+    }
+
+
+    /* --- Pop-up Modal Styles --- */
+    .filters-sidebar {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 90vw;
+        /* 90% of the viewport width */
+        max-width: 450px;
+        max-height: 85vh;
+        background-color: #fff;
+        z-index: 1000;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+
+        /* Centering and hiding logic */
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+        pointer-events: none;
+        transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+
+        /* Layout for modal content */
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        box-sizing: border-box;
+    }
+
+    .filters-sidebar.is-open {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        /* Animate into view */
+        pointer-events: auto;
+    }
+
+    #close-filters-btn {
+        display: block;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 2rem;
+        line-height: 1;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--secondary-text);
+        padding: 0;
+    }
+
+    /* Make filter groups scrollable if they overflow */
+    .filters-sidebar .filter-group {
+        overflow-y: auto;
+    }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 576px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .product-display h2 {
+        font-size: 1.5rem;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0; 
+    font-size: 0.875rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: '>';
+    margin: 0 0.75rem;
+    color: #9ca3af; 
+}
+
+.breadcrumbs a {
+    color: #4b5563; 
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.breadcrumbs a:hover {
+    color: #111827; 
+    text-decoration: underline;
+}
+
+.breadcrumb-item span {
+    color: #1f2937; 
+    font-weight: 500;
+}
+.pagination{
+    display: flex;
+    justify-content: center;
+    margin-top: 60px;
+}
+#prev-page{
+    background-color: #1f2937;
+    color: #f9f9f9;
+    padding: .5rem;
+    border-radius: 5px;
+}
+
+#next-page{
+    background-color: #1f2937;
+    color: #f9f9f9;
+    padding: .5rem;
+    border-radius: 5px;
+}

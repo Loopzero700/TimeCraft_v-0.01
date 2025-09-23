@@ -1,0 +1,114 @@
+<link rel="stylesheet" href="/css/admin/brand.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="page-header">
+    <h2>Brands</h2>
+    <div class="search-bar">
+        <form action="/admin/brand" method="GET">
+            <i class="fas fa-search"></i>
+            <input 
+                type="text" 
+                name="search"
+                placeholder="Search..." 
+                value="<%= typeof search !== 'undefined' ? search : '' %>"
+            />
+            <a id="clear-search-btn" href="/admin/brand">
+                <i class="fas fa-times"></i>
+            </a>
+        </form>
+    </div>
+</div>
+
+<div class="brands-table">
+    <div class="brands-table-header">
+        <div class="column-sl">Sl.No</div>
+        <div class="column-logo">Logo</div>
+        <div class="column-name">Name</div>
+        <div class="column-status">Status</div>
+        <div class="column-edit">Actions</div>
+    </div>
+    <div id="brand-rows">
+        <% if (brands && brands.length > 0) { %>
+            <% brands.forEach((brand, index) => { %>
+                <% const sequentialId = (pagination.currentPage - 1) * pagination.limit + index + 1; %>
+                <div class="brand-row">
+                    <div class="column-sl"><%= sequentialId %></div>
+                    <div class="column-logo">
+                        <img src="<%= brand.brandImage || '/images/default-logo.png' %>" alt="<%= brand.brandName %> Logo">
+                    </div>
+                    <div class="column-name"><%= brand.brandName %></div>
+                    <div class="column-status">
+                        <span class="status-<%= brand.status %>"><%= brand.status %></span>
+                    </div>
+                    <div class="column-edit">
+                        <a href="/admin/brand/edit/<%= brand._id %>" class="btn-edit">Edit</a>
+                        
+                        <% if (brand.status === 'active') { %>
+                            <a href="#" onclick="confirmAction('block', '<%= brand._id %>')" class="btn-Block">Block</a>
+                        <% } else { %>
+                            <a href="#" onclick="confirmAction('unblock', '<%= brand._id %>')" class="btn-Unblock">Unblock</a>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="brand-row" style="text-align: center; display: block;">No brands found</div>
+        <% } %>
+    </div>
+</div>
+
+<div class="action-bar">
+    <a href="/admin/addbrand" class="btn-add-new">Add new Brand</a>
+</div>
+
+<div class="page-footer">
+    <div class="pagination" id="pagination">
+        <% if (pagination && pagination.totalPages > 1) { %>
+            <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
+            <% if (pagination.currentPage > 1) { %>
+                <a href="/admin/brand?page=<%= pagination.currentPage - 1 %><%= searchParam %>">Previous</a>
+            <% } %>
+            <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                <a href="/admin/brand?page=<%= i %><%= searchParam %>" class="<%= i === pagination.currentPage ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+            <% if (pagination.currentPage < pagination.totalPages) { %>
+                <a href="/admin/brand?page=<%= pagination.currentPage + 1 %><%= searchParam %>">Next</a>
+            <% } %>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    function confirmAction(action, brandId) {
+        const isBlocking = action === 'block';
+        const url = `/admin/brand/${action}/${brandId}`
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to ${action} this brand.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: isBlocking ? '#ff3d3d':'#00e676',
+            cancelButtonColor: '#a5a5a5',
+            confirmButtonText: `Yes, ${action} it!`
+        }).then((result) => {
+            if (result.isConfirmed) {   
+               fetch(url, { method: 'POST' })
+                    .then(response => {
+                        if (!response.ok) {
+                           return response.json().then(err => { throw new Error(err.error || 'Action failed') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.fire('Success!', `The brand has been ${action}ed.`, 'success')
+                            .then(() => location.reload());
+                })
+                .catch(error => {
+                Swal.fire('Error!', error.message, 'error');
+                })
+            }
+        });
+    }
+</script>

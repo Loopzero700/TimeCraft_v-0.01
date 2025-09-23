@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="/css/admin/addbrand.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="form-container">
+    <h2>Edit Brand</h2>
+    <form id="edit-brand-form">
+        <div class="form-group">
+            <label for="brandName">Brand Name</label>
+            <input type="text" id="brandName" name="brandName" value="<%= brand.brandName %>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="brandImage">Brand Logo</label>
+            <input type="file" id="brandImageInput" accept="image/*" hidden>
+            <label for="brandImageInput" class="file-upload-label">
+                <i class="fas fa-image"></i>
+                <span id="file-name-display">Choose new logo (optional)</span>
+            </label>
+            <img id="image-preview" src="<%= brand.brandImage %>" alt="Brand logo preview" style="max-width: 100px; margin-top: 10px; border-radius: 8px;">
+        </div>
+
+        <button type="submit" class="submit-btn">Update Brand</button>
+    </form>
+</div>
+
+<div id="cropper-modal">
+    <div>
+        <div class="cropper-container">
+            <img id="image-to-crop" src="">
+        </div>
+        <button type="button" id="crop-button">Crop</button>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('edit-brand-form');
+    const brandNameInput = document.getElementById('brandName');
+    const fileInput = document.getElementById('brandImageInput');
+    const preview = document.getElementById('image-preview');
+    const modal = document.getElementById('cropper-modal');
+    const imageToCrop = document.getElementById('image-to-crop');
+    const cropButton = document.getElementById('crop-button');
+
+    let cropper;
+    let croppedBlob = null; 
+
+    
+    fileInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                imageToCrop.src = reader.result;
+                modal.style.display = 'flex';
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imageToCrop, { aspectRatio: 1 / 1, viewMode: 1 });
+            };
+
+            reader.readAsDataURL(files[0]);
+        }
+    });
+    
+    cropButton.addEventListener('click', () => {
+        cropper.getCroppedCanvas({ width: 500, height: 500 }).toBlob((blob) => {
+            croppedBlob = blob;
+            preview.src = URL.createObjectURL(blob); 
+        }, 'image/png');
+        modal.style.display = 'none';
+        cropper.destroy();
+    });
+
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('brandName', brandNameInput.value);
+        
+      
+        if (croppedBlob) {
+            formData.append('brandImage', croppedBlob, 'brand-logo-updated.webp');
+        }
+
+        try {
+      
+            const response = await fetch(`/admin/brand/edit/<%= brand._id %>`, { 
+                method: 'PUT',
+                body: formData 
+            });
+
+            if (response.ok) {
+                window.location.href = '/admin/brand';
+            } else {
+                const errorText = await response.text();
+                Swal.fire('Error', errorText, 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'An error occurred while updating.', 'error');
+        }
+    });
+</script>

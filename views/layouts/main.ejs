@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TimeCraft</title>
   
-  <!-- Google Fonts -->
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Pacifico&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
-  <!-- Main CSS File -->
+
   <link rel="stylesheet" href="/css/user/main.css">
 </head>
 <body>
@@ -44,16 +44,13 @@
       <a href="/">TimeCraft</a>
     </div>
 
-    <!-- Icons on the right -->
+
     <div class="header-icons">
       <a href="#"><span class="material-symbols-outlined">favorite</span></a>
       <a href="#"><span class="material-symbols-outlined">shopping_cart</span></a>
 
-      <!-- ======================================= -->
-      <!-- == CONDITIONAL LOGIC FOR USER ICON == -->
-      <!-- ======================================= -->
+     
       <% if (typeof user !== 'undefined' && user) { %>
-        <!-- If USER IS LOGGED IN: Show dropdown menu -->
       <div class="user-dropdown">
   <button id="user-menu-button" class="icon-button">
     <span class="material-symbols-outlined">person</span>
@@ -63,7 +60,7 @@
     <a href="/orders">My Orders</a>
     <div class="dropdown-divider"></div>
 
-    <!-- Logout as form -->
+    <!-- Logout form -->
     <form action="/logout" method="POST" style="margin:0; padding:0;">
       <button type="submit" class="dropdown-link">Logout</button>
     </form>
@@ -71,17 +68,14 @@
 </div>
 
       <% } else { %>
-        <!-- If USER IS NOT LOGGED IN: Show a simple login link -->
+        
         <a href="/login"><span class="material-symbols-outlined">person</span></a>
       <% } %>
-      <!-- ======================================= -->
-      <!-- == END OF CONDITIONAL LOGIC == -->
-      <!-- ======================================= -->
+
     </div>
   </div>
 </header>
 
-<!-- Main Content -->
 <main>
   <div class="container">
     <%- body %>
@@ -124,24 +118,21 @@
     </div>
 </footer>
 
-<!-- ======================================= -->
-<!-- == DROPDOWN JAVASCRIPT == -->
-<!-- ======================================= -->
+
 <script>
-    // This script must be placed just before the closing </body> tag.
+    
     const userMenuButton = document.getElementById('user-menu-button');
 
-    // Only run this code if the button actually exists (i.e., if the user is logged in).
-    if (userMenuButton) {
+   
         const userMenu = document.getElementById('user-menu');
 
-        // Toggle the 'show' class on the menu when the button is clicked.
+        
         userMenuButton.addEventListener('click', function(event) {
-            event.stopPropagation(); // Prevents the window click event from firing immediately.
+            event.stopPropagation(); 
             userMenu.classList.toggle('show');
         });
 
-        // Close the menu if the user clicks anywhere else on the page.
+       
         window.addEventListener('click', function(event) {
             if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
                 if (userMenu.classList.contains('show')) {
@@ -149,11 +140,9 @@
                 }
             }
         });
-    }
+    
 </script>
-<!-- ======================================= -->
-<!-- == END OF JAVASCRIPT == -->
-<!-- ======================================= -->
+
 
 </body>
 </html>

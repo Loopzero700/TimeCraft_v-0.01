@@ -1,0 +1,108 @@
+<link rel="stylesheet" href="/css/admin/products.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="content-header">
+    <h2>Products</h2>
+    <div class="search-bar">
+        <form action="/admin/products" method="GET">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" placeholder="Search..." value="<%= typeof search !== 'undefined' ? search : '' %>">
+            <a id="clear-search-btn" href="/admin/products">
+                <i class="fas fa-times"></i>
+            </a>
+        </form>
+    </div>
+</div>
+
+<div class="products-table">
+    <div class="table-header">
+        <div class="col col-product">Product</div>
+        <div class="col col-price">Price</div>
+        <div class="col col-stock">Stock</div>
+        <div class="col col-category">Category</div>
+        <div class="col col-action">Action</div>
+    </div>
+
+    <% if (products && products.length > 0) { %>
+        <% products.forEach(product => { %>
+            <div class="table-row">
+                <div class="col col-product"><%= product.name %></div>
+                <div class="col col-price">₹<%= product.variants[0] ? product.variants[0].price.toLocaleString('en-IN') : 'N/A' %></div>
+                <div class="col col-stock">
+                    <span class="stock-badge"><%= product.variants[0] ? product.variants[0].stock : 'N/A' %></span>
+                </div>
+                <div class="col col-category"><%= product.category ? product.category.name : 'Uncategorized' %></div>
+                <div class="col col-action">
+                   <a href="/admin/editproduct/<%= product._id %>" class="btn btn-edit">Edit</a>
+                    
+                    <% if (product.status === 'active') { %>
+                        <a href="#" onclick="confirmAction('block', '<%= product._id %>')" class="btn btn-remove">Delete</a>
+                    <% } else { %>
+                        <a href="#" onclick="confirmAction('unblock', '<%= product._id %>')" class="btn btn-unblock">active</a>
+                    <% } %>
+                </div>
+            </div>
+        <% }); %>
+    <% } else { %>
+        <div class="table-row no-data">No products found.</div>
+    <% } %>
+</div>
+
+<div class="table-actions">
+    <a href="/admin/addproduct" class="btn btn-add">Add new Product</a>
+</div>
+
+<div class="content-footer">
+    <div class="pagination">
+        <% if (pagination && pagination.totalPages > 1) { %>
+            <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
+            
+            <% if (pagination.currentPage > 1) { %>
+                <a href="/admin/products?page=<%= pagination.currentPage - 1 %><%= searchParam %>">Previous</a>
+            <% } %>
+
+            <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                <a href="/admin/products?page=<%= i %><%= searchParam %>" class="<%= i === pagination.currentPage ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+
+            <% if (pagination.currentPage < pagination.totalPages) { %>
+                <a href="/admin/products?page=<%= pagination.currentPage + 1 %><%= searchParam %>">Next</a>
+            <% } %>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    function confirmAction(action, productId) {
+        const isBlocking = action === 'block';
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to ${action} this product.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: isBlocking ? '#dc3545' : '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: `Yes, ${action} it!`
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/product/${action}/${productId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Success!', `The product has been ${action}ed.`, 'success')
+                            .then(() => location.reload());
+                    } else {
+                        throw new Error(data.error || 'Action failed');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error!', error.message, 'error');
+                });
+            }
+        });
+    }
+</script>

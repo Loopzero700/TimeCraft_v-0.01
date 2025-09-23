@@ -1,0 +1,354 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fff;
+    color: #1f2937;
+    margin: 0;
+}
+
+/* Container */
+.container {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 3rem 1rem;
+}
+
+@media (min-width: 640px) {
+    .container {
+        padding: 3rem 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        padding: 3rem 2rem;
+    }
+}
+
+
+.product-section {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    align-items: flex-start;
+    position: relative;
+}
+
+
+#zoom-window-container {
+  position: absolute;
+  top: 0;
+  left: 430px;
+  z-index: 1000;
+  width: 500px;
+  height: 500px;
+  display: block !important;
+  position: absolute !important;
+  align-self: auto !important;
+  flex: none !important;
+}
+
+.zoomWindow {
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.image-gallery {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+}
+
+.thumbnails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.thumbnail-img {
+    width: 5rem;
+    height: 6rem;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.thumbnail-img.active {
+    border-color: black;
+}
+
+.main-image-container {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 500px;
+    width: 100%;
+}
+
+.main-image {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.product-details>*+* {
+    margin-top: 1.5rem;
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.product-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.wishlist-btn {
+    padding: 0.5rem;
+    color: #6b7280;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 300ms;
+}
+
+.wishlist-btn:hover {
+    color: #ef4444;
+}
+
+.price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.price-main {
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.price-original {
+    font-size: 1.25rem;
+    color: #6b7280;
+    text-decoration: line-through;
+}
+
+.price-discount {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #16a34a;
+}
+
+.product-info {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1.5rem;
+}
+
+.info-title {
+    font-weight: 600;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+}
+
+.color-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.sku {
+    color: #4b5563;
+}
+
+.color-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.color-selector input[type="radio"] {
+    display: none;
+}
+
+.color-selector input[type="radio"]+label {
+    background-color: white;
+    color: black;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease-in-out;
+}
+
+.color-selector input[type="radio"]+label:hover {
+    background-color: #f3f4f6;
+}
+
+.color-selector input[type="radio"]:checked+label {
+    background-color: black;
+    color: white;
+    border-color: black;
+}
+
+.actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+@media (min-width: 640px) {
+    .actions-container {
+        flex-direction: row;
+    }
+}
+
+.btn {
+    width: 100%;
+    background-color: black;
+    color: white;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    transition: background-color 300ms;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn:hover {
+    background-color: #374151;
+}
+
+/* Similar Products Section */
+.review-section,
+.similar-section {
+    margin-top: 5rem;
+}
+
+.section-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.section-title.centered {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.similar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .similar-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.product-card {
+    text-align: center;
+}
+
+.product-card-image-wrapper {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card-image {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    transition: transform 300ms;
+}
+
+.product-card:hover .product-card-image {
+    transform: scale(1.05);
+}
+
+.card-wishlist-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.375rem;
+    color: #9ca3af;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 300ms;
+}
+
+.card-wishlist-btn:hover {
+    color: #ef4444;
+}
+
+.product-card-title {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.product-card-price {
+    color: #4b5563;
+}
+
+.product-card-price .font-bold {
+    font-weight: 700;
+}
+
+.product-card-price .line-through {
+    text-decoration: line-through;
+    font-size: 0.875rem;
+    margin-left: 0.25rem;
+}
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0; 
+    font-size: 0.875rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: '>';
+    margin: 0 0.75rem;
+    color: #9ca3af; 
+}
+
+.breadcrumbs a {
+    color: #4b5563; 
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.breadcrumbs a:hover {
+    color: #111827; 
+    text-decoration: underline;
+}
+
+.breadcrumb-item span {
+    color: #1f2937; 
+    font-weight: 500;
+}

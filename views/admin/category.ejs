@@ -1,0 +1,123 @@
+<%- /* File: views/admin/category.ejs */ %>
+<link rel="stylesheet" href="/css/admin/category.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<main>
+    <div class="page-header">
+        <h2>Category Management</h2>
+        <div class="search-bar">
+            <form action="/admin/category" method="GET">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    name="search"
+                    placeholder="Search by category name..." 
+                    value="<%= typeof search !== 'undefined' ? search : '' %>"
+                />
+                <a id="clear-search-btn" href="/admin/category?search">
+                    <i class="fas fa-times"></i>
+                </a>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="data-table">
+
+        <div class="table-header">
+            <div class="column-id">Sl.No</div>
+            <div class="column-name">Name</div>
+            <div class="column-status">Status</div>
+            <div class="column-action">Action</div>
+            
+        </div>
+
+        <% if (cat && cat.length > 0) { %>
+            <% cat.forEach((category, index) => { %>
+                <%# Calculate the sequential number for each row %>
+                <% const sequentialId = (currentPage - 1) * 5 + index + 1; %>
+                <% const isBlocked = category.status !== 'active'; %>
+
+                <div class="data-row">
+                    <div class="column-id"><%= sequentialId %></div>
+                    <div class="column-name"><%= category.name %></div>
+                    <div class="column-status">
+                        <span class="status <%= !isBlocked ? 'status-active' : 'status-inactive' %>">
+                            <%= category.status %>
+                        </span>
+                    </div>
+                    <div class="column-action">
+                        <a class="btn-edit" href="/admin/categories/edit/<%= category._id %>">Edit</a>
+                        
+                       
+                        <% if (isBlocked) { %>
+                            <button onclick="confirmStatusChange('<%= category._id %>', true)" class="btn-unblock">active</button>
+                        <% } else { %>
+                            <button onclick="confirmStatusChange('<%= category._id %>', false)" class="btn-block">Delete</button>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="no-data">No categories found</div>
+        <% } %>
+    </div>
+
+    <div class="table-actions">
+        <a class="btn-add" href="/admin/addCategory">Add new Category</a>
+    </div>
+
+   <div class="page-footer">
+    <div class="pagination">
+        <% if (totalPages > 1) { %>
+            <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
+            <% if (currentPage > 1) { %>
+                <a href="/admin/category?page=<%= currentPage - 1 %><%= searchParam %>">Previous</a>
+            <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a href="/admin/category?page=<%= i %><%= searchParam %>" class="<%= i === currentPage ? 'active' : '' %>">
+                    <%= i %>
+                </a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+                <a href="/admin/category?page=<%= currentPage + 1 %><%= searchParam %>">Next</a>
+            <% } %>
+        <% } %>
+    </div>
+</div>
+</main>
+
+<script>
+ 
+    function confirmStatusChange(categoryId, isCurrentlyBlocked) {
+        const action = isCurrentlyBlocked ? 'unblock' : 'block';
+        const url = `/admin/categories/${action}/${categoryId}`; 
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `This will ${action} the category.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: isCurrentlyBlocked ? '#00e676' : '#ff3d3d',
+            cancelButtonColor: '#a5a5a5',
+            confirmButtonText: `Yes, ${action} it!`
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(url, { method: 'POST' })
+                    .then(response => {
+                        if (!response.ok) {
+                           return response.json().then(err => { throw new Error(err.error || 'Action failed') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.fire('Success!', `The category has been ${action}ed.`, 'success')
+                            .then(() => window.location.reload());
+                })
+                .catch(error => {
+                Swal.fire('Error!', error.message, 'error');
+                });
+            }
+        });
+    }
+</script>

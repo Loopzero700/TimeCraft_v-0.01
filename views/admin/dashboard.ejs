@@ -1,0 +1,96 @@
+<link rel="stylesheet" href="/css/admin/dashboard.css">
+
+<div class="sales-header">
+  <h2>Sales Summary</h2>
+  <div>
+    <select>
+      <option></option>
+      <option></option>
+    </select>
+    <button>Download</button>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <p class="metric-title">Revenue</p>
+    <p class="metric-value"></p>
+    <p class="metric-change positive"></p>
+  </div>
+  <div class="metric-card">
+    <p class="metric-title">Orders</p>
+    <p class="metric-value"></p>
+    <p class="metric-change negative"></p>
+  </div>
+  <div class="metric-card">
+    <p class="metric-title">Products Sold</p>
+    <p class="metric-value"></p>
+    <p class="metric-change positive"></p>
+  </div>
+  <div class="metric-card">
+    <p class="metric-title">Total Customers</p>
+    <p class="metric-value"></p>
+    <p class="metric-change positive"></p>
+  </div>
+</div>
+
+<div class="chart-section">
+  <div class="chart-header">
+    <h3>Orders Update</h3>
+    <button>View Details →</button>
+  </div>
+  <canvas id="ordersChart" height="120"></canvas>
+</div>
+
+<!-- <script>
+  // Chart.js initialization
+  const ctx = document.getElementById('ordersChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36", "38", "40"],
+      datasets: [{
+        label: 'Orders',
+        data: [500, 1000, 2000, 1500, 1800, 1200, 2500, 2000, 2200, 1500, 1700, 2300, 2800],
+        borderColor: 'rgba(255, 126, 95, 1)',
+        backgroundColor: 'rgba(255, 126, 95, 0.2)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: 'rgba(255, 126, 95, 1)'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#eaeaea'
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#a5a5a5'
+          },
+          grid: {
+            color: '#333'
+          }
+        },
+        y: {
+          ticks: {
+            color: '#a5a5a5'
+          },
+          grid: {
+            color: '#333'
+          }
+        }
+      }
+    }
+  });
+</script> -->

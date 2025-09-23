@@ -1,0 +1,142 @@
+<link rel="stylesheet" href="/css/admin/addcategory.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="data-table">
+  
+    <div class="page-header">
+        <h2>Add Category</h2>
+    </div>
+
+    <div class="add-category-form-container">
+        <form id="addCategoryForm" action="/admin/addCategory" method="POST" class="add-category-form">
+        
+            <div class="form-group">
+                <label for="categoryName">Category Name</label>
+                <input 
+                    type="text" 
+                    id="categoryName" 
+                    name="name" 
+                    placeholder="e.g., Men's Watches" 
+                    required
+                >
+                <div id="name-error" class="error-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="categoryDescription">Description</label>
+                <textarea 
+                    id="categoryDescription" 
+                    name="description" 
+                    rows="4"
+                    placeholder="Enter a brief description for the category"
+                ></textarea>
+                <div id="description-error" class="error-message"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    
+    document.getElementById('addCategoryForm').addEventListener('submit', handleFormSubmit);
+
+    function handleFormSubmit(e) {
+       
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        const name = document.getElementById("categoryName").value;
+        const description = document.getElementById("categoryDescription").value;
+
+        fetch('/admin/addCategory', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, description })
+        })
+        .then(response => {
+            if (!response.ok) {
+               
+                return response.json().then(err => {
+                    throw new Error(err.error || 'An unknown error occurred.');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Category added successfully.',
+                timer: 1500, 
+                showConfirmButton: false
+            }).then(() => {
+                 window.location.replace('/admin/category'); 
+            });
+        })
+        .catch(error => {
+           
+            if (error.message === "Category already exists") {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "A category with this name already exists!"
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "An error occurred while adding the category."
+                });
+            }
+        });
+    }
+
+    const validateForm = () => {
+        clearErrorMessages();
+        const name = document.getElementById("categoryName").value.trim();
+        const description = document.getElementById("categoryDescription").value.trim();
+        
+        let isValid = true; 
+        
+        if (name === "") {
+            displayErrorMessage("name-error", "Please enter a category name.");
+            isValid = false;
+        } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+            displayErrorMessage("name-error", "Category name should only contain letters and spaces.");
+            isValid = false;
+        }
+
+        if (description === "") {
+            displayErrorMessage("description-error", "Please enter a description.")
+            isValid = false
+        }
+        
+        return isValid
+    };
+
+    const displayErrorMessage = (elementId, message) => {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.innerText = message;
+            errorElement.style.display = "block";
+        }
+    }
+
+    const clearErrorMessages = () => {
+        const errorElements = document.getElementsByClassName("error-message")
+        Array.from(errorElements).forEach((element) => {
+            element.innerText = "";
+            element.style.display = "none";
+        })
+    }
+</script>

@@ -1,0 +1,120 @@
+<%- /* File: views/admin/customers.ejs */ %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+    
+    <link rel="stylesheet" href="/css/admin/customers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <div class="page-header">
+        <h2>Customers</h2>
+        <div class="search-bar">
+            <form action="/admin/customers" method="GET">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    name="search"
+                    placeholder="Search by name or email..." 
+                    value="<%= typeof search !== 'undefined' ? search : '' %>"
+                />
+                <a id="clear-search-btn" href="/admin/customers?search">
+                    <i class="fas fa-times"></i>
+                </a>
+            </form>
+        </div>
+    </div>
+    <div class="customer-table">
+        <div class="customer-table-header">
+            <div class="column-id">Id</div>
+            <div class="column-name">Name</div>
+            <div class="column-email">Email</div>
+            <div class="column-mobile">Mobile</div>
+            <div class="column-address">Address</div>
+            <div class="column-action">Action</div>
+        </div>
+        <div id="customer-rows">
+            <% if (customers && customers.length > 0) { %>
+                <% customers.forEach((cust, index) => { %>
+                    <% const sequentialId = (pagination.currentPage - 1) * pagination.limit + index + 1; %>
+                    <div class="customer-row">
+                        <div class="column-id"><%= sequentialId %></div>
+                        <div class="column-name"><%= cust.username %></div>
+                        <div class="column-email"><%= cust.email %></div>
+                        <div class="column-mobile"><%= cust.phone || "-" %></div>
+                        <div class="column-address"><%= cust.Address || "-" %></div>
+                        <div class="column-action">
+                            <% if (cust.isBlocked) { %>
+                                <a href="#" onclick="confirmUnblock('<%= cust._id %>')" class="btn-unblock">Unblock</a>
+                            <% } else { %>
+                                <a href="#" onclick="confirmBlock('<%= cust._id %>')" class="btn-block">Block</a>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="customer-row" style="text-align: center; display: block;">No customers found</div>
+            <% } %>
+        </div>
+    </div>
+    
+    <div class="page-footer">
+        <div class="pagination" id="pagination">
+            <% if (pagination && pagination.totalPages > 1) { %>
+                <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
+                <% if (pagination.currentPage > 1) { %>
+                    <a href="/admin/customers?page=<%= pagination.currentPage - 1 %><%= searchParam %>">Previous</a>
+                <% } %>
+                <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                    <a href="/admin/customers?page=<%= i %><%= searchParam %>" class="<%= i === pagination.currentPage ? 'active' : '' %>"><%= i %></a>
+                <% } %>
+                <% if (pagination.currentPage < pagination.totalPages) { %>
+                    <a href="/admin/customers?page=<%= pagination.currentPage + 1 %><%= searchParam %>">Next</a>
+                <% } %>
+            <% } %>
+        </div>
+    </div>
+
+<script>
+    
+    function confirmBlock(customerId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This customer will be blocked from their account.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3d3d',
+            cancelButtonColor: '#a5a5a5',
+            confirmButtonText: 'Yes, block them!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                
+                window.location.href = `/admin/blockCustomer?id=${customerId}`
+            }
+        })
+    }
+
+    function confirmUnblock(customerId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will restore the customer's access.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#00e676',
+            cancelButtonColor: '#a5a5a5',
+            confirmButtonText: 'Yes, unblock them!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/admin/unBlockCustomer?id=${customerId}`
+            }
+        })
+    }
+</script>
+
+</body>
+</html>
