@@ -274,10 +274,10 @@
             paginationContainer.style.display = data.totalPages <= 1 ? 'none' : 'flex'
         }
 
-        // --- 5. Event Listeners ---
+        
 
         function handleFilterChange() {
-            currentPage = 1; // Reset to the first page on any new filter/sort/search
+            currentPage = 1; 
             fetchProducts();
         }
 

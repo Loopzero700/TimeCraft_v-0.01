@@ -250,3 +250,12 @@ input #file-upload-button {
 #crop-button:hover {
     background-color: #0056b3;
 }
+
+.is-invalid {
+    border-color: #dc3545;
+}
+.error-message {
+    color:  #dc3545;
+    font: size 0.8em;margin-top: 0.25rem;
+    display: block; 
+}

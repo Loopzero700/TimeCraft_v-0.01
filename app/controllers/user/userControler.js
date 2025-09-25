@@ -266,7 +266,11 @@ const logout = (req, res, next) => {
 
 const loadforgotPassword = (req, res) => {
     try {
+      if(!req.session.user){
         res.render('user/forgotPassword')
+      }else{
+        res.redirect('/')
+      }
     } catch (error) {
         console.log("Error loading forgot password:", error)
         res.status(500).send("Server Error")

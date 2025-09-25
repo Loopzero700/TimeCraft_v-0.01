@@ -5,7 +5,7 @@ const paginatehelper = require("../../helpers/paginate");
 
 
 const categoryInfo = asynchandler(async(req,res)=>{
-    const { page = 1, limit = 5, search = "" } = req.query;
+    const { page = 1, limit = 2, search = "" } = req.query;
 
   const data = await paginatehelper(Category, {
     page,

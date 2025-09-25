@@ -22,12 +22,21 @@ const loadaddproduct = asynchandler(async(req,res)=>{
 })
 
 const addproduct = asynchandler (async(req,res)=>{
-    const { name, description, category_id, brand_id, status, variants } = req.body;
+    const { name, description, category_id, brand_id, status} = req.body;
+    
+    let variantData;
+if (typeof req.body.variants === "string") {
+  variantData = JSON.parse(req.body.variants)
+} else {
+  variantData = req.body.variants
+}
 
+    console.log(variantData)
+    
     const allVariants = []
 
-    for(let i =0; i<variants.length; i++){
-        const variant = variants[i]
+    for(let i =0; i<variantData.length; i++){
+        const variant = variantData[i]
         const imageUrls = []
 
         const fileForVariant = req.files.filter(file=>file.fieldname===`variants[${i}][newImages]`)
@@ -49,10 +58,7 @@ const addproduct = asynchandler (async(req,res)=>{
                 )
                 uploadStream.end(processedImageBuffer)
             })
-            imageUrls.push({
-        url:uploadResult.secure_url,
-        public_id: uploadResult.public_id
-        })
+            imageUrls.push(uploadResult.secure_url)
         }
         allVariants.push({
             ...variant,

@@ -5,7 +5,7 @@ const userShopController = require("../controllers/user/userShopControler")
 const passport = require('passport')
 const productController = require('../controllers/user/productControler')
 const { errorMonitor } = require('nodemailer/lib/xoauth2')
-const req = require('express/lib/request')
+const {userAuth,adminAuth} = require('../middleware/auth')
 
 router.get('/',userController.loadhome)
 router.get('/login',userController.loadlogin)
@@ -35,9 +35,9 @@ router.get("/shop",userShopController.getShopPage)
 //product Detailed page
 router.get('/product/:id',productController.getproductPage)
 
-router.use((req, res, next) => {
-  res.status(404).render('user/pageNotFound'); 
-})
+// router.use((req, res, next) => {
+//   res.status(404).render('user/pageNotFound'); 
+// })
 
 
 module.exports = router

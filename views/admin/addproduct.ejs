@@ -55,7 +55,7 @@
                         <input type="file" id="actual-btn" class="variant-images" accept="image/*" multiple required
                             hidden>
                         <label for="actual-btn" class="custom-file-button">Choose Files</label>
-                        <span id="file-chosen">No file chosen</span>
+                        <span id="file-chosen"></span>
                         <div class="image-preview-container"></div>
                     </div>
                 </div>
@@ -71,6 +71,7 @@
 </div>
 
 
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const variantsContainer = document.getElementById('variants-container');
@@ -83,7 +84,139 @@
         let imageQueue = [];
         let currentVariantBlockForQueue = null;
         let currentVariantIndexForQueue = -1;
+// form validation
+        function showError(input,message){
+            input.classList.add('is-invalid')
+            const formGroup = input.closest('.form-group')
+            if(formGroup){
+                const error = document.createElement('small')
+                error.className = 'error-message'
+                error.textContent=message
+                formGroup.appendChild(error)
+            }
+        }
 
+        function clearError(){
+            document.querySelectorAll('.is-invalid').forEach((input)=>{
+                input.classList.remove('.is-invalid')
+            })
+
+            document.querySelectorAll('.error-message').forEach((error)=>{
+                error.remove()
+            })
+        }
+
+        function validateForm(){
+            clearError()
+            let isValid=true
+            const productName = form.querySelector('#name')
+            if(productName.value.trim()===''){
+                showError(productName,'Product name is required')
+                isValid=false
+            }
+
+            const category = form.querySelector('#category_id')
+            if(category.value===''){
+                showError(category,"pleasw select a category")
+                isValid=false
+            }
+
+            const brand = form.querySelector('#brand_id')
+            if(brand.value===''){
+                showError(brand, 'please select a brand;')
+                isValid = false
+            }
+
+            const variantBlocks = form.querySelectorAll('.variant-block')
+            variantBlocks.forEach((block)=>{
+                const color = block.querySelector('input[name*="[color]"]')
+                if(color.value.trim()===''){
+                    showError(color,'color is required')
+                    isValid=false
+                }
+
+                const price = block.querySelector('input[name*="[price]"]')
+                if(price.value.trim()===''||parseFloat(price.value)<=0){
+                    showError(price,'price is need to be a positive number')
+                    isValid=false
+                }
+
+                const stock = block.querySelector('input[name*="[stock]"]')
+                if(stock.value.trim()===''||parseFloat(stock.value)<0){
+                    showError(stock,'stock is need to be a positive number')
+                    isValid = false
+                }
+
+                const sku = block.querySelector('input[name*="[SKU]"]')
+                if(sku.value.trim()===''||parseFloat(stock.value)<0){
+                    showError(sku,'SKU is required')
+                    isValid = false
+                }
+            })
+            return isValid
+        }
+
+        form.addEventListener('submit',async(e)=>{
+            e.preventDefault()
+
+            if(!validateForm()){
+                return
+            }
+
+            const formData = new FormData()
+            formData.append('name',form.querySelector('#name').value)
+            formData.append('description', form.querySelector('#description').value)
+            formData.append('category_id', form.querySelector('#category_id').value)
+            formData.append('brand_id', form.querySelector('#brand_id').value)
+            formData.append('status', form.querySelector('#status').value)
+
+            const currentVariantBlocks = Array.from(variantsContainer.children);
+            let imageValidationError = false;
+            const variantsData = []
+
+            for (let i = 0; i < currentVariantBlocks.length; i++) {
+            const block = currentVariantBlocks[i]
+            const originalIndex = parseInt(block.querySelector('input[name*="[color]"]').name.match(/\[(\d+)\]/)[1])
+            const blobs = variantImages.get(originalIndex)
+            
+
+            if (!blobs || blobs.length === 0) {
+            Swal.fire('Error', `Variant ${i + 1} must have at least one image.`, 'error')
+            imageValidationError = true
+            break
+        }
+
+        const variantObject = {
+            color: block.querySelector(`input[name="variants[${originalIndex}][color]"]`).value,
+            SKU: block.querySelector(`input[name="variants[${originalIndex}][SKU]"]`).value,
+            price: block.querySelector(`input[name="variants[${originalIndex}][price]"]`).value,
+            discounted_price: block.querySelector(`input[name="variants[${originalIndex}][discounted_price]"]`).value,
+            stock: block.querySelector(`input[name="variants[${originalIndex}][stock]"]`).value
+        }
+        variantsData.push(variantObject)
+
+        blobs.forEach((blob, fileIndex) => {
+            const fieldName = `variants[${i}][newImages]`; 
+            formData.append(fieldName, blob, `variant-${i}-image-${fileIndex}.webp`)
+        })
+    }
+
+    if(imageValidationError) return
+
+    formData.append('variants',JSON.stringify(variantsData))
+    try {
+        const response = await fetch('/admin/addproduct', { method: 'POST', body: formData })
+        if (response.ok) {
+            window.location.href = '/admin/products'
+        } else {
+            const errorText = await response.text()
+            Swal.fire('Error', errorText, 'error')
+        }
+    } catch (error) {
+        Swal.fire('Error', 'An error occurred during submission.', 'error')
+    }
+
+        })
 
         function showCropperModal(imageDataUrl) {
             return Swal.fire({
@@ -226,45 +359,6 @@
                 if (removeBtn) removeBtn.style.display = blocks.length > 1 ? 'inline-block' : 'none'
             })
         }
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault()
-            const formData = new FormData(form)
-            let imageValidationError = false
-
-            const currentVariantBlocks = Array.from(variantsContainer.children);
-
-            for (let i = 0; i < currentVariantBlocks.length; i++) {
-                const block = currentVariantBlocks[i];
-                const originalIndex = parseInt(block.querySelector('input[name*="[color]"]').name.match(/\[(\d+)\]/)[1]);
-                const blobs = variantImages.get(originalIndex);
-
-                if (!blobs || blobs.length === 0) {
-                    Swal.fire('Error', `Variant ${i + 1} must have at least one image.`, 'error');
-                    imageValidationError = true;
-                    break;
-                }
-
-                blobs.forEach((blob, fileIndex) => {
-                    const fieldName = `variants[${i}][images]`;
-                    formData.append(fieldName, blob, `variant-${i}-image-${fileIndex}.webp`);
-                });
-            }
-
-            if (imageValidationError) return
-
-            try {
-                const response = await fetch('/admin/addproduct', { method: 'POST', body: formData })
-                if (response.ok) {
-                    window.location.href = '/admin/products'
-                } else {
-                    const errorText = await response.text()
-                    Swal.fire('Error', errorText, 'error')
-                }
-            } catch (error) {
-                Swal.fire('Error', 'An error occurred during submission.', 'error')
-            }
-        })
 
         initVariantBlock(variantsContainer.children[0], 0)
         updateRemoveButtons()
