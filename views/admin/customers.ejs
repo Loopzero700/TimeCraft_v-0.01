@@ -92,8 +92,7 @@
             cancelButtonColor: '#a5a5a5',
             confirmButtonText: 'Yes, block them!'
         }).then((result) => {
-            if (result.isConfirmed) {
-                
+            if (result.isConfirmed) {  
                 window.location.href = `/admin/blockCustomer?id=${customerId}`
             }
         })

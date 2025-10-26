@@ -38,15 +38,14 @@
 
         <div class="product-details">
             </div>
-            
-            <!-- <div id="zoom-window-container"></div> -->
+        
             
             <div class="product-details">
                 <div class="details-header">
                     <h1 class="product-title">
                         <%=productData.name%>
                     </h1>
-                    <button class="wishlist-btn">
+                    <button class="wishlist-btn" data-id="<%= productData._id %>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path
@@ -80,19 +79,19 @@
             <div>
                 <h3 class="color-title">Select Color</h3>
                 <div class="color-selector">
-                    <% productData.variants.forEach(function(variant, index) { %>
+                    <%productData.variants.forEach(function(variant,index){%>
                         <input type="radio" id="color-<%= variant.color %>-<%= index %>" name="color"
                         value="<%= variant.color %>" data-index="<%= index %>" <%=index===0 ? 'checked' : '' %>
                         >
                         <label for="color-<%= variant.color %>-<%= index %>">
                             <%= variant.color %>
                         </label>
-                        <% }) %>
+                        <%}) %>
                     </div>
                 </div>
                <div class="actions-container" style="<%= productData.variants[0].stock == 0 ? 'display:none;' : '' %>">
                 <button class="btn">Buy Now</button>
-                <button class="btn">Add To Cart</button>
+                <button class="btn" id="addCart" data-id="<%=productData._id%>">Add To Cart</button>
             </div> 
 
             <div class="out-Of-stock" style="<%= productData.variants[0].stock > 0 ? 'display:none;' : '' %>">
@@ -100,20 +99,28 @@
         </div>
             
         </div>
+
     </section>
+    
+    <div class="description">
+            <h3>Description</h3>
+            <p><%=productData.description%></p>
+        </div>
+
+
 
     <section class="similar-section">
         <h2 class="section-title centered">Similar Collection</h2>
         <div class="similar-grid">
-            <% cat.forEach(function(product) { %>
+            <%cat.forEach(function(product){%>
                 <div class="product-card">
                     <div class="product-card-image-wrapper">
                         <a href="/product/<%= product._id %>"> <img src="<%=product.variants[0].image_url[0]%>"
                                 alt="<%=product.name%>" class="product-card-image">
                         </a>
-                        <button class="card-wishlist-btn">
+                        <button class="card-wishlist-btn" data-id="<%=product._id%>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                fill="none" stroke="currentColor"  stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
                                 <path
                                     d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
@@ -133,28 +140,136 @@
                         </span>
                     </p>
                 </div>
-                <% }) %>
+                <%})%>
         </div>
     </section>
 </main>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const wishlistbtn = document.querySelector('.wishlist-btn') 
+    wishlistbtn.addEventListener('click', async (e) => {
+                const productId = e.currentTarget.dataset.id
+                const selectedVariant = document.querySelector('input[name="color"]:checked')
+                const index = selectedVariant ? selectedVariant.dataset.index : 0
+                try {
+                    const response = await fetch('/addWishlist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            productId,
+                            index
+                        })
+                    })
+                    const data = await response.json()
+
+                    if(response.status==401){
+                        window.location.href='/login'
+                    }
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Wishlist ❤️',
+                            text: data.message || 'Item saved successfully!',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        })
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to add item.',
+                            icon: 'error'
+                        })
+                    }
+                } catch (err) {
+                    console.error('Wishlist error:', err)
+                    Swal.fire('Error', 'Something went wrong', 'error')
+                }
+            })
+        })
+
+            document.querySelectorAll('.card-wishlist-btn').forEach(btn=>{
+                btn.addEventListener('click',async(e)=>{
+                    e.preventDefault()
+                    const productId = e.currentTarget.dataset.id
+                    try {
+                    const response = await fetch('/addWishlist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            productId
+                        })
+                    })
+                    const data = await response.json()
+
+                    if (response.status === 401 || data.message === "user not found") {
+                       window.location.href = '/login'
+                        return
+                        }
+                    
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Added to Wishlist ❤️',
+                            text: data.message || 'Item saved successfully!',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        })
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to add item.',
+                            icon: 'error'
+                        })
+                    }
+                } catch (err) {
+                    console.error('Wishlist error:', err)
+                    Swal.fire('Error', 'Something went wrong', 'error')
+                }
+                })
+            })
+
+
     $(document).ready(function() {
         const productData = <%- JSON.stringify(productData) %>
+
+        const productId = productData._id
+        const socket = new WebSocket('ws://localhost:5000')
+
+        socket.onopen=()=>{
+            console.log('WebSocket connection established.')
+            socket.send(JSON.stringify({
+                event: 'viewing_product',
+                productId:productId
+            }))
+        }
+           socket.onmessage = (event)=>{
+            const data = JSON.parse(event.data)
+
+            if(data.event === 'product_blocked'){
+                window.location.href='/shop'
+            }
+           } 
+
         
         function initializeZoom(){
             console.log(productData)
         $('#main-product-image').elevateZoom({
          zoomType: 'window',
-        zoomWindowWidth: 600,
-        zoomWindowHeight: 600,
+        zoomWindowWidth: 500,
+        zoomWindowHeight: 500,
         zoomWindowFadeIn: 400,
         zoomWindowFadeOut: 400,
         scrollZoom: true,
         cursor: 'crosshair',
+        easing: true,
     })
         }
 
@@ -219,4 +334,45 @@
             initializeZoom()
         })
     })
+
+
+   const addCart = document.getElementById('addCart')
+   addCart.addEventListener('click', async(e)=>{
+    const productId = e.target.dataset.id
+    const selectedVariant = document.querySelector('input[name="color"]:checked')
+    const index = selectedVariant ? selectedVariant.dataset.index : 0
+
+    if(!productId) return
+
+    try {
+       const response = await fetch('/addCart', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          variant: Number(index),
+          quantity: 1
+        })
+      })
+      const data = await response.json()
+      if (response.ok) {
+        Swal.fire({
+          title: "Added to Cart 🛒",
+          text: data.message || "Item successfully added to your cart!",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false
+        })
+      } else {
+        Swal.fire({
+          title: "Error!",
+          text: data.message || "Failed to add item to cart.",
+          icon: "error"
+        })
+      }
+    } catch (error) {
+        
+    }
+
+   }) 
 </script>

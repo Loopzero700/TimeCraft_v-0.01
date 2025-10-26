@@ -1,0 +1,237 @@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+   
+    <main class="container mx-auto px-6 py-12"> 
+
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+    
+            <aside class="lg:col-span-4 xl:col-span-3">
+                <div class="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Order: <span class="font-medium text-gray-800">#<%=data.order_id%></span></p>
+                        <p class="text-sm text-gray-600">Date: <span class="font-medium text-gray-800"><%=new Date(data.order_date).toDateString()%></span></p>
+                        <p class="text-sm text-gray-600">Status: <span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full"><%= data.status %></span></p>
+                    </div>
+
+                    <hr class="border-gray-200">
+
+                    <div>
+                        <h3 class="font-semibold mb-2">Shipping Address</h3>
+                        <address class="text-sm text-gray-600 not-italic">
+                             <%= data.address_name %><br>
+                            <%= data.address_house_name %>, <%= data.address_locality %><br>
+                            <%= data.address_city %>, <%= data.address_state %> <%= data.address_pincode %><br>
+                            <%= data.address_country %><br>
+                            Phone: <%= data.address_phone_number %>
+                        </address>
+                    </div>
+
+                    <hr class="border-gray-200">
+
+                    <div>
+                        <h3 class="font-semibold mb-2">Payment Method</h3>
+                        <p class="text-sm text-gray-600"><%= data.payment_method %></p>
+                    </div>
+
+                    <hr class="border-gray-200">
+
+                    <div>
+                        <h3 class="font-semibold mb-2">Order Summary</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span>₹ <%= data.subtotal %></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shipping:</span>
+                                <span>Free</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-base">
+                                <span>Total:</span>
+                                <span>₹ <%= data.total %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+    
+            <section class="lg:col-span-8 xl:col-span-9">
+                <div class="bg-white border border-gray-200 rounded-lg ">
+                    <div class="p-6 border-b border-gray-200 flex-auto flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">Order Details</h2>
+                   <button 
+                    class="w-full md:w-auto bg-black text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-300"
+                    onclick="window.location.href='/invoice/<%= data._id %>'">
+                    Download Invoice
+                  </button>
+
+                </div>
+                    
+                    <div class="p-6">
+    
+                        <% data.items.forEach(item => { %>
+                          <div class="grid grid-cols-12 gap-4 items-center py-6 border-b border-gray-200">
+                            <div class="col-span-2">
+                              <img src="<%= item.product_id.variants[item.variant].image_url[0] %>" alt="<%= item.product_id.name %>" class="rounded-md w-24 h-24 object-cover">
+                            </div>
+                            <div class="col-span-10 md:col-span-3">
+                              <p class="font-semibold"><%= item.product_id.name %></p>
+                            </div>
+                            <div class="col-span-4 md:col-span-2 text-sm text-gray-600">
+                              Qty: <%= item.quantity %>
+                            </div>
+                            <div class="col-span-8 md:col-span-2 font-medium">
+                              ₹ <%= item.discounted_price*item.quantity || item.price*item.quantity %>
+                            </div>
+                            <div class="col-span-12 md:col-span-3 text-sm flex flex-col md:items-end space-y-2">
+                              <div class="flex items-center space-x-2">
+                                <span class="h-2 w-2 bg-green-500 rounded-full"></span>
+                                <span class="text-green-700" id="<%=item._id%>"><%= item.item_status %></span>
+                              </div>
+                              <% if (item.item_status === 'Ordered') { %>
+                                <button class="w-full md:w-auto bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300" data-id="<%=item._id%>">
+                                  Cancel
+                                </button>
+                              <% } %>
+                              <% if (item.item_status === 'Delivered') { %>
+                                <button class="w-full md:w-auto bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300" data-rid="<%=item._id%>">
+                                  Return
+                                </button>
+                              <% } %>
+                            </div>
+                          </div>
+                        <% }) %>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  const cancelBtn = document.querySelectorAll('[data-id]')
+  cancelBtn.forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault()
+      const itemId = e.currentTarget.dataset.id
+      const orderId = "<%= data._id %>"
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This will cancel the item.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff3d3d',
+        cancelButtonColor: '#a5a5a5',
+        confirmButtonText: 'Yes, cancel!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch('/itemCancel',{
+              method: "PATCH",
+              headers: { 'Content-Type': 'application/json'},
+              body: JSON.stringify({itemId,orderId})
+            })
+            console.log("itemId:",itemId,"orderId:",orderId)
+            const data = await response.json()
+
+            if (response.ok) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Cancelled!',
+                text: data.message || 'Item has been cancelled successfully.',
+                confirmButtonColor: '#3085d6'
+              }).then(() => {
+                
+                const status = document.querySelector((`[id="${itemId}"]`))
+                status.textContent = 'Cancelled'
+                btn.style.display = 'none'
+              })
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: data.message || 'Something went wrong!'
+              })
+            }
+
+          } catch (error) {
+            console.error(error)
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'Failed to cancel the item. Please try again.'
+            })
+          }
+        }
+      })
+    })
+  })
+
+  const returnBtn = document.querySelectorAll('[data-rid]')
+  returnBtn.forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault()
+      const itemId = e.currentTarget.dataset.rid
+      const orderId = "<%= data._id %>"
+
+      Swal.fire({
+           title: 'Enter your reason for return',
+           input: 'textarea',
+           inputPlaceholder: 'Type your comments here...',
+           inputAttributes: {'aria-label': 'Type your comments here'},
+           showCancelButton: true,
+           confirmButtonText: 'Submit',
+           cancelButtonText: 'Cancel'
+         }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch('/itemReturn',{
+              method: "PATCH",
+              headers: { 'Content-Type': 'application/json'},
+              body: JSON.stringify({itemId,orderId,reason:result.value})
+            })
+            console.log("itemId:",itemId,"orderId:",orderId)
+            const data = await response.json()
+
+            if (response.ok) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Return!',
+                text: data.message || ' Return request has been successfully submitted.',
+                confirmButtonColor: '#3085d6'
+              }).then(() => {
+                
+                const status = document.querySelector((`[id="${itemId}"]`))
+                status.textContent = 'Return'
+                btn.style.display = 'none'
+              })
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: data.message || 'Something went wrong!'
+              })
+            }
+
+          } catch (error) {
+            console.error(error)
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'We couldn’t process your return. Please try again later.'
+            })
+          }
+        }
+      })
+    })
+  })
+  
+</script>
+
+
+

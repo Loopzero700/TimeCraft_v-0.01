@@ -19,8 +19,9 @@ passport.use(
             googleId: profile.id,
             username: profile.displayName,
             email: profile.emails?.[0]?.value || null,
+            profile_photo: profile.photos?.[0]?.value ||`https://placehold.co/100x100/dfdcd9/31343C?text=${profile.displayName?.charAt(0)?.toUpperCase()}`,
             isBlocked: false, 
-          });
+          })
         }
 
         

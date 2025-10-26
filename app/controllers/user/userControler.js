@@ -6,20 +6,18 @@ const env = require('dotenv').config()
 const category = require('../../models/categorySchema')
 const product = require('../../models/productSchema')
 const banner = require('../../models/bannerSchema')
-const req = require('express/lib/request')
-const { single } = require('../../middleware/multerstorage')
+
 
 
 const loadhome = asynchandler(async(req,res)=>{
 
-  const categories = await category.find({status:"active"})
-  const newProduct = await product.find({ status:"active" }).sort({ createdAt: -1 }).limit(4)
+  const newProduct = await product.find({status:"active",isListed:true}).sort({ createdAt: -1 }).limit(4)
   
   const F_Products = await product.aggregate(
-    [{$addFields: {maxPrice: { $max: "$variants.price" }}},
-     {$sort: { maxPrice: -1 }},
-     {$limit: 4}]
-  )
+    [ {$match:{status: "active",isListed: true}},
+      {$addFields: {maxPrice: {$max: "$variants.price"}}},
+      {$sort: { maxPrice: -1 }},
+      {$limit: 4}])
   
   const handPicked1 = await banner.find({type:"handpicked-1"})
   const handPicked2 = await banner.find({type:"handpicked-2"})
@@ -29,19 +27,20 @@ const loadhome = asynchandler(async(req,res)=>{
   const userId = req.session.user||req.user
     if(userId){
       const userData = await User.findById(userId)
-
+      
       if(!userData){
         req.session.user=null
         return res.render("user/home",{imgurl:mainBanner[0].image_url,products:newProduct,FeaturedProducts:F_Products, productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
       }
-
+      
       if(userData.isBlocked){
         req.session.destroy()
-        return res.render("user/home",{imgurl:mainBanner[0].image_url,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
+        return res.render("user/home",{imgurl:mainBanner[0].image_url,user:null,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
       }
+      console.log(userData)
       return res.render("user/home",{imgurl:mainBanner[0].image_url,user:userData,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
     }
-    res.render("user/home",{imgurl:mainBanner[0].image_url,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
+    res.render("user/home",{imgurl:mainBanner[0].image_url,user:null,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
   })
 
 //login
@@ -159,13 +158,21 @@ const verifyOtp = asynchandler(async(req,res)=>{
      return res.status(400).json({success:false, message:"Invalid session. Please sign up again."})
   }
 
+  const timeElapsed = (Date.now()-req.session.otpContext.timestamp)/1000
+
+  if (timeElapsed > 60) {
+    // delete req.session.otpContext
+    return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." })
+  }
+
   if(otp===req.session.otpContext.otp){
     const user = req.session.otpContext.userData
     const passwordHash = await securePassword(user.password)
     const saveUserData = new User({
       username:user.username,
       email:req.session.otpContext.email,
-      password:passwordHash
+      password:passwordHash,
+      profile_photo: 'https://placehold.co/100x100/dfdcd9/31343C?text=' + user.username.charAt(0).toUpperCase()
     })
     await saveUserData.save()
     req.session.user = saveUserData._id;
@@ -174,7 +181,7 @@ const verifyOtp = asynchandler(async(req,res)=>{
   
     res.json({success:true,redirectUrl:"/login"})
   }else{
-    res.status(400).json({success:false,message:"Invalid OTP Please try angain"})
+    res.json({success:false,message:"Invalid OTP Please try angain"})
   }
 })
 
@@ -257,9 +264,9 @@ const logout = (req, res, next) => {
   req.logout(err => {       
     if (err) return next(err);
     req.session.destroy(() => {
-      res.clearCookie("user.sid");   
+      res.clearCookie("user.sid")   
       res.redirect('/');             
-    });
+    })
   })
 }
 
@@ -322,13 +329,13 @@ const forgotverifyOtp = asynchandler(async(req, res) => {
    const { otp } = req.body;
 
     if (!req.session.otpContext || req.session.otpContext.purpose !== 'forgot-password') {
-        return res.status(400).json({ success: false, message: "Invalid session. Please try again." });
+        return res.status(400).json({ success: false,message: "Invalid session. Please try again." });
     }
 
     
     const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000; 
     if (timeElapsed > 60) {
-        delete req.session.otpContext;
+        // delete req.session.otpContext
         return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." })
     }
 
@@ -371,6 +378,8 @@ const resetpass = asynchandler(async(req,res)=>{
     res.status(200).json({ success:true, message: "Password is changed" })
 
 })
+
+
 
 module.exports = {
     loadhome,

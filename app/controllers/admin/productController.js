@@ -6,6 +6,8 @@ const asynchandler = require("express-async-handler")
 const sharp = require("sharp")
 const cloudinary = require("../../middleware/productCloudinary")
 const paginate = require('../../helpers/paginate')
+const {NotFoundError} = require('../../helpers/errorClasses')
+const {productStatusUpdate,productUpdateShop,homeUpdata,wishlistUpdata}=require('../../helpers/websocket')
 
 
 const loadaddproduct = asynchandler(async(req,res)=>{
@@ -23,6 +25,11 @@ const loadaddproduct = asynchandler(async(req,res)=>{
 
 const addproduct = asynchandler (async(req,res)=>{
     const { name, description, category_id, brand_id, status} = req.body;
+
+    const product = await Product.findOne({name:name})
+    if(product){
+       return res.status(400).send('a product with this already exists')
+    }
     
     let variantData;
 if (typeof req.body.variants === "string") {
@@ -77,7 +84,7 @@ if (typeof req.body.variants === "string") {
 
     await newProduct.save()
 
-    res.redirect('/admin/products')
+    res.status(200).json({message:"Product has been added successfully."})
 })
 
 const getProductsPage = asynchandler(async (req, res) => {
@@ -106,6 +113,7 @@ const getProductsPage = asynchandler(async (req, res) => {
 
 const blockProduct = asynchandler (async(req,res)=>{
     const productid = req.params.id
+    console.log(productid)
 
     const updatedProduct = await Product.findByIdAndUpdate(
             productid,{status: "inactive" },{ new: true }) 
@@ -113,7 +121,12 @@ const blockProduct = asynchandler (async(req,res)=>{
               if (!updatedProduct) {
                 return res.status(404).json({ success: false, error: 'Product not found.' });
             }
-            res.status(200).json({ success: true , message: 'Product has been blocked successfully.' })
+
+            productStatusUpdate(productid)
+            productUpdateShop()
+            homeUpdata()
+            wishlistUpdata()
+            res.status(200).json({ success: true , message: 'Product has been inactive successfully.' })
     
 })
 
@@ -126,8 +139,10 @@ const unblockProduct = asynchandler (async(req,res)=>{
               if (!updatedProduct) {
                 return res.status(404).json({ success: false, error: 'Product not found.' });
             }
-    
-            res.status(200).json({ success: true,message: 'Product has been unblocked successfully.' })
+            productUpdateShop()
+            homeUpdata()
+            wishlistUpdata()
+            res.status(200).json({ success: true,message: 'Product has been active successfully.' })
 })
 
 const getEditProduct = asynchandler(async(req, res) => {
@@ -143,8 +158,7 @@ const getEditProduct = asynchandler(async(req, res) => {
 
     
     if (!product) {
-        req.flash('error_msg', 'Product not found.')
-        return res.redirect('/admin/products')
+       if(!product) throw new NotFoundError
     }
 
     
@@ -243,9 +257,14 @@ const editProduct = asynchandler(async(req,res)=>{
     product.brand = brand_id
     product.status = status
     product.variants = updatedVariants
-    
+
+   const existsProduct = await Product.findOne({ name: name, _id: { $ne: productId } })
+    if (existsProduct) {
+    return res.status(400).send('A product with this name already exists')
+    }
+
     await product.save()
-    res.redirect('/admin/products')
+    res.status(200).json({message:"product is updated.."})
 
 })
 

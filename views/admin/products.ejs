@@ -21,6 +21,7 @@
         <div class="col col-price">Price</div>
         <div class="col col-stock">Stock</div>
         <div class="col col-category">Category</div>
+        <div class="col col-status">status</div>
         <div class="col col-action">Action</div>
     </div>
 
@@ -33,13 +34,19 @@
                     <span class="stock-badge"><%= product.variants[0] ? product.variants[0].stock : 'N/A' %></span>
                 </div>
                 <div class="col col-category"><%= product.category ? product.category.name : 'Uncategorized' %></div>
+                   <div class="col col-status">
+                       <span class="status <%= product.status !== 'active' ? 'status-inactive' : 'status-active' %>">
+                        <%= product.status %>
+                    </span>
+
+                    </div>
                 <div class="col col-action">
                    <a href="/admin/editproduct/<%= product._id %>" class="btn btn-edit">Edit</a>
                     
                     <% if (product.status === 'active') { %>
-                        <a href="#" onclick="confirmAction('block', '<%= product._id %>')" class="btn btn-remove">Delete</a>
+                        <a href="#" onclick="confirmAction('inactive', '<%= product._id %>')" class="btn btn-remove">inactive</a>
                     <% } else { %>
-                        <a href="#" onclick="confirmAction('unblock', '<%= product._id %>')" class="btn btn-unblock">active</a>
+                        <a href="#" onclick="confirmAction('active', '<%= product._id %>')" class="btn btn-unblock">active</a>
                     <% } %>
                 </div>
             </div>
@@ -75,7 +82,7 @@
 
 <script>
     function confirmAction(action, productId) {
-        const isBlocking = action === 'block';
+        const isBlocking = action === 'inactive';
 
         Swal.fire({
             title: 'Are you sure?',

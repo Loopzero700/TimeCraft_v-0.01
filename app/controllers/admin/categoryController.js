@@ -1,11 +1,13 @@
 const Category = require("../../models/categorySchema")
+const Product = require("../../models/productSchema")
+const Brand = require("../../models/brandSchema")
 const asynchandler = require("express-async-handler")
-const paginatehelper = require("../../helpers/paginate");
-
+const paginatehelper = require("../../helpers/paginate")
+const {productStatusUpdate,productUpdateShop,homeUpdata}=require('../../helpers/websocket')
 
 
 const categoryInfo = asynchandler(async(req,res)=>{
-    const { page = 1, limit = 2, search = "" } = req.query;
+    const { page = 1, limit = 5, search = "" } = req.query;
 
   const data = await paginatehelper(Category, {
     page,
@@ -51,28 +53,46 @@ const addCategory = asynchandler(async(req,res)=>{
 
 const blockCategory = asynchandler(async(req,res)=>{
       const categoryId = req.params.id
-      console.log(`this id is${categoryId}`)
+
+      await Product.updateMany(
+        {category:categoryId},
+        {$set:{isListed:false}}
+      )
 
       const updatedCategory = await Category.findByIdAndUpdate(
-        categoryId,{status: 'blocked' },{ new: true }) 
+        categoryId,{status: 'inactive' },{ new: true }) 
 
           if (!updatedCategory) {
-            return res.status(404).json({ error: 'Category not found.' });
+            return res.status(404).json({ error: 'Category not found.' })
         }
-
-        res.status(200).json({ message: 'Category has been blocked successfully.' });
+        productUpdateShop()
+        homeUpdata()
+        res.status(200).json({ message: 'Category has been blocked successfully.' })
 })
 
 const unblockCategory = asynchandler(async(req,res)=>{
       const categoryId = req.params.id
+      const activeBrands = await Brand.find({ status: 'active' }).select('_id')
+      const activeBrandIds = activeBrands.map(brand => brand._id)
 
-      const updatedCategory = await Category.findByIdAndUpdate(
-        categoryId,{status: "active" },{ new: true }) 
+
+       if (activeBrandIds.length > 0) {
+        await Product.updateMany(
+            {category:categoryId,
+             brand:{$in:activeBrandIds}}
+             ,{ $set:{isListed:true}})}
+
+            const updatedCategory = await Category.findByIdAndUpdate(
+            categoryId,
+            { status: "active" },
+            { new: true }
+            )
 
           if (!updatedCategory) {
             return res.status(404).json({ error: 'Category not found.' });
         }
-
+        productUpdateShop()
+        homeUpdata()
         res.status(200).json({ message: 'Category has been unblocked successfully.' })
 })
 
@@ -92,11 +112,11 @@ const editCategory = asynchandler(async(req,res)=>{
   const existingCategory = await Category.findOne({name: name, _id: { $ne: categoryId }})
 
   if(existingCategory){
-    return res.status(400).send('A category with this name already exists.')
+    return res.status(400).json({message:'A category with this name already exists.'})
   }
 
   await Category.findByIdAndUpdate(categoryId,{name:name,description:description,slug:name})
-  res.status(200).json({ message: "Category updated successfully" });
+  res.status(200).json({ message: "Category updated successfully" })
 
 })
 

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Successful</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="flex items-center justify-center min-h-screen px-4 py-12">
+        <div class="w-full max-w-lg">
+            
+            <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div class="p-8 md:p-12">
+                    <div class="text-center">
+                        
+                        
+                        <div class="mb-6">
+                            <svg class="w-20 h-20 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        
+                        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+                            Order Successful!
+                        </h1>
+                        
+                        <p class="text-gray-600 text-lg mb-8">
+                            Thank you for your purchase. We've received your order and are getting it ready for shipment.
+                        </p>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-left mb-8">
+                            <h2 class="text-xl font-semibold text-gray-700 mb-4">Order Summary</h2>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Order ID:</span>
+                                    <span class="font-medium text-gray-800">#<%=orderData.order_id%></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Order Date:</span>
+                                    <span class="font-medium text-gray-800"><%=new Date(orderData.order_date).toDateString()%></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Total Amount:</span>
+                                    <span class="font-medium text-gray-800"><%=orderData.total%></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row sm:justify-center gap-4">
+                            <a href="/shop" class="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out">
+                                Continue Shopping
+                            </a>
+                            <a href="/account/orders" class="w-full sm:w-auto px-8 py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-300 ease-in-out">
+                                Track Your Order
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-center text-gray-500 mt-6">
+                You will receive an email confirmation shortly.
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

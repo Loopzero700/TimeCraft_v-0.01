@@ -8,10 +8,10 @@
     </div>
 
     <div class="add-category-form-container">
-        <form id="addCategoryForm" action="/admin/addCategory" method="POST" class="add-category-form">
+        <form id="addCategoryForm" action="/admin/addCategory" method="POST" class="add-category-form" novalidate>
         
             <div class="form-group">
-                <label for="categoryName">Category Name</label>
+                <label for="categoryName">Category Name *</label>
                 <input 
                     type="text" 
                     id="categoryName" 
@@ -23,7 +23,7 @@
             </div>
 
             <div class="form-group">
-                <label for="categoryDescription">Description</label>
+                <label for="categoryDescription">Description *</label>
                 <textarea 
                     id="categoryDescription" 
                     name="description" 
@@ -42,20 +42,20 @@
 
 <script>
     
-    document.getElementById('addCategoryForm').addEventListener('submit', handleFormSubmit);
+    document.getElementById('addCategoryForm').addEventListener('submit', handleFormSubmit)
 
     function handleFormSubmit(e) {
        
-        e.preventDefault();
+        e.preventDefault()
 
         if (!validateForm()) {
             return;
         }
 
-        const name = document.getElementById("categoryName").value;
-        const description = document.getElementById("categoryDescription").value;
+        const name = document.getElementById("categoryName").value
+        const description = document.getElementById("categoryDescription").value
 
-        fetch('/admin/addCategory', {
+        fetch('/admin/category', {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -66,10 +66,10 @@
             if (!response.ok) {
                
                 return response.json().then(err => {
-                    throw new Error(err.error || 'An unknown error occurred.');
-                });
+                    throw new Error(err.error || 'An unknown error occurred.')
+                })
             }
-            return response.json();
+            return response.json()
         })
         .then(data => {
             
@@ -80,7 +80,7 @@
                 timer: 1500, 
                 showConfirmButton: false
             }).then(() => {
-                 window.location.replace('/admin/category'); 
+                 window.location.replace('/admin/category')
             });
         })
         .catch(error => {
@@ -96,23 +96,23 @@
                     icon: "error",
                     title: "Oops...",
                     text: "An error occurred while adding the category."
-                });
+                })
             }
-        });
+        })
     }
 
     const validateForm = () => {
-        clearErrorMessages();
-        const name = document.getElementById("categoryName").value.trim();
-        const description = document.getElementById("categoryDescription").value.trim();
+        clearErrorMessages()
+        const name = document.getElementById("categoryName").value.trim()
+        const description = document.getElementById("categoryDescription").value.trim()
         
-        let isValid = true; 
+        let isValid = true
         
         if (name === "") {
-            displayErrorMessage("name-error", "Please enter a category name.");
+            displayErrorMessage("name-error", "Please enter a category name.")
             isValid = false;
         } else if (!/^[a-zA-Z\s]+$/.test(name)) {
-            displayErrorMessage("name-error", "Category name should only contain letters and spaces.");
+            displayErrorMessage("name-error", "Category name should only contain letters and spaces.")
             isValid = false;
         }
 
@@ -122,21 +122,36 @@
         }
         
         return isValid
-    };
+    }
 
     const displayErrorMessage = (elementId, message) => {
-        const errorElement = document.getElementById(elementId);
+        const errorElement = document.getElementById(elementId)
         if (errorElement) {
-            errorElement.innerText = message;
-            errorElement.style.display = "block";
+            errorElement.innerText = message
+            errorElement.style.display = "block"
         }
     }
 
     const clearErrorMessages = () => {
         const errorElements = document.getElementsByClassName("error-message")
         Array.from(errorElements).forEach((element) => {
-            element.innerText = "";
-            element.style.display = "none";
+            element.innerText = ""
+            element.style.display = "none"
         })
     }
+
+
+     document.getElementById("categoryName").addEventListener("input", function () {
+        if (this.value.trim() !== "" && /^[a-zA-Z\s]+$/.test(this.value.trim())) {
+            document.getElementById("name-error").innerText = ""
+            document.getElementById("name-error").style.display = "none"
+        }
+    })
+
+    document.getElementById("categoryDescription").addEventListener("input", function () {
+        if (this.value.trim() !== "") {
+            document.getElementById("description-error").innerText = ""
+            document.getElementById("description-error").style.display = "none"
+        }
+    })
 </script>

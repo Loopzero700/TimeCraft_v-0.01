@@ -8,11 +8,12 @@ const adminRouter = require("./app/routes/adminRouter")
 const env = require("dotenv").config()
 const db = require('./app/config/db')
 const passport = require('./app/config/passport')
-db()
 const morgan = require('morgan')
+const http = require('http')
+const websocketHelper = require('./app/helpers/websocket')
 
 
-
+db()
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 const userSession = session({
@@ -39,7 +40,7 @@ const adminSession = session({
   }
 })
 
-app.use(morgan("dev"))
+// app.use(morgan("dev"))
 
 app.use((req,res,next)=>{
     res.set('cache-control','no-store')
@@ -65,11 +66,46 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 
-app.use("/", userRouter)
 app.use("/admin", adminRouter)
+app.use("/", userRouter)
 
-app.listen(process.env.PORT,()=>{
-    console.log("server is Running in port 5000")
+app.use((req, res, next) => { 
+  const { NotFoundError } = require('./app/utils/errorClasses')
+  next(new NotFoundError(`Can't find ${req.originalUrl} on this server!`))
 })
 
-module.exports = app
+
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.message = err.message || 'Something went wrong!';
+
+ 
+  if (err.statusCode === 404) {
+    if (req.originalUrl.startsWith('/admin')) {
+      return res.status(404).render('admin/pageNotFound', { 
+         layout: 'layouts/admin-layout', 
+         title: 'Page Not Found',
+         errorMessage: err.message 
+      })
+    } else {
+  
+      return res.status(404).render('user/pageNotFound', { 
+         title: 'Page Not Found',
+         errorMessage: err.message 
+      })
+    }
+  }
+
+  res.status(err.statusCode).render('user/error-page', { 
+    title: 'Error!',
+    errorMessage: err.message
+  })
+})
+
+const server = http.createServer(app)
+websocketHelper.init(server)
+
+server.listen(process.env.PORT, () => {
+    console.log(`Server with WebSocket is running on port ${process.env.PORT}`)
+})
+

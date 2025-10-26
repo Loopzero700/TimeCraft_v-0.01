@@ -1,0 +1,207 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/user/address.css">
+<link rel="stylesheet" href="/css/user/account.css">
+
+    <style>
+    .breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0; 
+    font-size: 0.875rem;
+    }
+    
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: '>';
+        margin: 0 0.75rem;
+        color: #9ca3af; 
+    }
+    
+    .breadcrumbs a {
+        color: #4b5563; 
+        text-decoration: none;
+        transition: color 0.2s ease-in-out;
+    }
+    
+    .breadcrumbs a:hover {
+        color: #111827; 
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item span {
+        color: #1f2937; 
+        font-weight: 500;
+    }
+    </style>
+    
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumbs">
+        <% breadcrumbs.forEach(function(crumb) { %>
+          <li class="breadcrumb-item">
+            <% if (crumb.active) { %>
+                               <span aria-current="page"><%= crumb.name %></span>
+                           <% } else { %>
+                               <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                               <% } %>
+                              </li>
+                              <% }); %>
+                            </ol>
+                          </nav>
+<div class="account-page-container">
+    <aside class="account-sidebar">
+        <div class="account-sidebar-card">
+            <h2 class="sidebar-title">My Account</h2>
+            <nav class="sidebar-nav">
+                <a href="/account" class="nav-link">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>Personal Information</span>
+                </a>
+                <a href="/account/address" class="nav-link active">
+                    <span class="material-symbols-outlined">home</span>
+                    <span>Address</span>
+                </a>
+                <a href="/account/orders" class="nav-link">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span>Order</span>
+                </a>
+                <a href="/account/wallet" class="nav-link">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <span>Wallet</span>
+                </a>
+                <a href="/account/coupons" class="nav-link">
+                    <span class="material-symbols-outlined">local_offer</span>
+                    <span>Coupon</span>
+                </a>
+                <a href="/account/change-password" class="nav-link">
+                    <span class="material-symbols-outlined">lock</span>
+                    <span>Password Change</span>
+                </a>
+                <form action="/logout" method="POST" style="margin:0; padding:0;">
+                    <button class="nav-link">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </nav>
+        </div>
+    </aside>
+
+    <section class="account-content">
+        <div class="content-card">
+            <h2 class="content-title">Address</h2>
+            <p class="address-subtitle">Save all your addresses for a faster checkout experience.</p>
+            
+            <div class="address-header">
+                <button class="btn add-address-btn" id="add-address">
+                    <span class="material-symbols-outlined">add</span>
+                    Add New Address
+                </button>
+            </div>
+           <div class="address-cards-container" id="address-list">
+  <% if(address){ %>
+    <% let sortedAddress = address.sort((a, b) => {
+     return b.is_default - a.is_default}) %>
+    <% sortedAddress.forEach(add => { %>
+      <div class="address-card-wrapper" id="a-<%= add._id %>">
+        <div class="address-card">
+          <% if(add.is_default){ %>
+            <div class="default-badge">Default</div>
+          <% } %>
+          <h3 class="address-name"><%= add.name %></h3>
+          <p class="address-details">
+            <%= add.house_name %>, <%= add.locality %><br>
+            <%= add.city %>, <%= add.state %><br>
+            - <%= add.pincode %>
+          </p>
+          <p class="address-mobile">Mobile :<%= add.phone_number %></p>
+          <div class="address-actions">
+            <button class="btn btn-edit" data-id="<%= add._id %>">Edit</button>
+            <%if(address.length>1){%>
+            <button class="btn btn-delete" data-id="<%= add._id %>">Delete</button>
+            <%}%>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+        </div>
+    </section>
+</div>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const addaddress = document.getElementById('add-address')
+  if (addaddress) {
+    addaddress.addEventListener('click',(e)=>{
+      e.preventDefault()
+      window.location.href = '/account/addAddress'
+    })
+  }
+  
+  function attachAddressEvents(){
+    document.querySelectorAll('.btn-edit').forEach(btn=>{
+      btn.addEventListener('click',async(e)=>{
+        const addressId = e.currentTarget.dataset.id
+        window.location.href = `/address/edit/${addressId}`
+      })
+    })
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click',async(e)=>{
+        const addressId=e.currentTarget.dataset.id
+
+        const result=await Swal.fire({
+          title: 'Are you sure?',
+          text: 'This will permanently delete the address.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, delete it!',
+          cancelButtonText: 'Cancel'
+        })
+
+        if (result.isConfirmed) {
+          try {
+            const response=await fetch(`/address/delete/${addressId}`, { method: "DELETE" })
+
+            if (response.ok){
+              Swal.fire({
+                title: 'Deleted!',
+                text: 'Address has been deleted.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+              })
+              const addressContainer = document.querySelector('#address-list')
+              const updatedList = await fetch('/address/list')
+              addressContainer.innerHTML = await updatedList.text()
+              attachAddressEvents()
+
+            } else {
+              Swal.fire({ title: 'Error!', text: 'Failed to delete address.', icon: 'error' })
+            }
+          } catch (error) {
+            console.log(error)
+            Swal.fire('Error', 'Something went wrong', 'error')
+          }
+        }
+      })
+    })
+  }
+  attachAddressEvents()
+})
+</script>

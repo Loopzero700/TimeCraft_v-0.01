@@ -1,49 +1,56 @@
-const Product = require("../../models/productSchema");
-const Category = require("../../models/categorySchema");
-const Brand = require("../../models/brandSchema");
-const paginatehelper = require("../../helpers/paginate");
+const Product = require("../../models/productSchema")
+const Category = require("../../models/categorySchema")
+const Brand = require("../../models/brandSchema")
+const User = require('../../models/userSchema')
+const paginatehelper = require("../../helpers/paginate")
+
 
 async function getShopPage(req, res) {
   try {
-    const activeCategories = await Category.find({ status: "active" });
-    const activeBrands = await Brand.find({ status: "active" });
-    const activeCategoryIds = activeCategories.map((cat) => cat._id.toString());
-    const activeBrandIds = activeBrands.map((brand) => brand._id.toString());
-
+    const activeCategories = await Category.find({ status: "active" })
+    const activeBrands = await Brand.find({ status: "active" })
+    const activeCategoryIds = activeCategories.map((cat) => cat._id.toString())
+    const activeBrandIds = activeBrands.map((brand) => brand._id.toString())
+    const userId = req.session.user||req.user
     const filters = {
       status: "active",
       category: { $in: activeCategoryIds.map(id => id) },
       brand: { $in: activeBrandIds.map(id => id) },
     }
-
+    let userData= null
+    if(userId){
+      userData = await User.findById(userId)
+    }
+    console.log(userId)
+    console.log(userData)
     if (req.query.category) {
-      const userSelectedCategories = (req.query.category || '').split(',').filter(id => id.trim());
+      const userSelectedCategories = (req.query.category || '').split(',').filter(id => id.trim())
       filters.category = {
         $in: userSelectedCategories.filter((id) => activeCategoryIds.includes(id)),
-      };
+      }
     }
 
     if (req.query.brand) {
-      const userSelectedBrands = (req.query.brand || '').split(',').filter(id => id.trim());
+      const userSelectedBrands = (req.query.brand || '').split(',').filter(id => id.trim())
       filters.brand = {
         $in: userSelectedBrands.filter((id) => activeBrandIds.includes(id)),
       }
     }
 
-    const variantFilters = {};
+    const variantFilters = {}
     const minPrice = parseFloat(req.query.minPrice)
     const maxPrice = parseFloat(req.query.maxPrice)
     if (!isNaN(minPrice) || !isNaN(maxPrice)) {
-      variantFilters.price = {};
+      variantFilters.price = {}
       if (!isNaN(minPrice)) {
-        variantFilters.price.$gte = minPrice;
+        variantFilters.price.$gte = minPrice
       }
       if (!isNaN(maxPrice)) {
-        variantFilters.price.$lte = maxPrice;
+        variantFilters.price.$lte = maxPrice
       }
     }
     if (Object.keys(variantFilters).length > 0) {
-      filters.variants = { $elemMatch: variantFilters };
+      filters.variants = { $elemMatch: variantFilters }
     }
 
     let sortquery={}
@@ -56,6 +63,12 @@ async function getShopPage(req, res) {
       case 'price-desc':
         sortquery = {'variants.price':-1}
         break;
+      case 'az': 
+        sortquery = { name: 1 }
+        break;
+      case 'za':
+        sortquery = { name: -1 }
+        break;
       default:
         sortquery = {'createdAt':-1}
     }
@@ -66,23 +79,25 @@ async function getShopPage(req, res) {
       sort: sortquery,
       populate: "category brand",
       filters: filters,
-    };
+    }
 
     if (req.query.search) {
-      options.search = req.query.search;
-      options.searchFields = ["name", "description", "variants.SKU"];
+      options.search = req.query.search
+      options.searchFields = ["name", "description","variants.SKU"];
     }
 
     const result = await paginatehelper(Product, options)
+    
 
       const breadcrumbs = [
         { name: 'Home', link: '/' },
         { name: 'shop', link: `/shop` },
     ]
-
+    
     if (req.headers.accept && req.headers.accept.includes("application/json")) {
       return res.status(200).json({
         success: true,
+        user:userData,
         message: "Products fetched successfully",
         results: result.results,
         page: result.pagination.currentPage,
@@ -92,8 +107,9 @@ async function getShopPage(req, res) {
         breadcrumbs: breadcrumbs
       })
     }
-
+    // console.log(result)
     return res.render('user/shop', {
+      user:userData,
       category: activeCategories,
       brand: activeBrands,
       products: result.results || [], 
@@ -104,9 +120,10 @@ async function getShopPage(req, res) {
         limit: result.pagination.limit
       }
     })
+    
 
   } catch (err) {
-    console.error("Shop page error:", err);
+    console.error("Shop page error:", err)
     if (req.headers.accept && req.headers.accept.includes("application/json")) {
       return res.status(500).json({
         success: false,
@@ -114,10 +131,9 @@ async function getShopPage(req, res) {
         error: err.message,
       })
     }
-    return res.status(500).render('user/error', { message: "Failed to load shop page." });
+    return res.status(500).render('user/error', { message: "Failed to load shop page." })
   }
 }
-
 module.exports = {
   getShopPage,
 }

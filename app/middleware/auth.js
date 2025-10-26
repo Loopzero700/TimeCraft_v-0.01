@@ -2,10 +2,11 @@ const User = require("../models/userSchema")
 
 const userAuth = async (req, res, next) => {
     try {
-        if (req.session.user) {
-            const user = await User.findById(req.session.user)
+        const userId = req.session.user||req.user
+        if (userId) {
+            const user = await User.findById(userId)
             if (user && !user.isBlocked) {
-                next();
+                next()
             } else {
                 req.session.user=null
                 res.redirect('/login')
@@ -36,7 +37,7 @@ const adminAuth = async (req, res, next) => {
         console.error("Error in adminAuth middleware:", error)
         res.status(500).send("Internal Server Error")
     }
-};
+}
 
 
 module.exports = {

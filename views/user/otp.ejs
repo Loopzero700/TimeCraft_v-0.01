@@ -79,7 +79,7 @@
         body: JSON.stringify({ otp })
       })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
         Swal.fire({
@@ -121,7 +121,7 @@
         headers: { "Content-Type": "application/json" }
       });
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
         Swal.fire({
@@ -146,7 +146,7 @@
         icon: "error",
         title: "Server Error",
         text: "Could not resend OTP, please try again"
-      });
+      })
     }
   }
 </script>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400 Bad Request</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <!-- Load Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white text-gray-900">
+    <!-- Main container to center content -->
+    <div class="min-h-screen flex flex-col items-center justify-center text-center px-4">
+        <!-- Error code -->
+        <h1 class="text-8xl md:text-9xl font-bold text-indigo-600">400</h1>
+        <!-- Error message -->
+        <h2 class="mt-4 text-3xl md:text-4xl font-semibold">Bad Request</h2>
+        <!-- Description -->
+        <p class="mt-2 text-base md:text-lg text-gray-700">
+            Sorry, your request could not be understood by the server.
+        </p>
+        <!-- Home button -->
+        <a href="/" class="mt-8 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+            Go to Homepage
+        </a>
+    </div>
+</body>
+</html>

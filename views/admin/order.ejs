@@ -1,0 +1,316 @@
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+      .search-bar {
+          position: relative;
+          width: 250px;
+        }
+        .search-bar i {
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #a5a5a5;
+        }
+        .search-bar input {
+          width: 100%;
+          padding: 10px 15px 10px 40px;
+          border-radius: 8px;
+          border: 1px solid #333;
+          background: #161616;
+          color: #eaeaea;
+          font-size: 0.9rem;
+        }
+        .pagination { display: flex; gap: 8px; }
+        .pagination a {
+          text-decoration: none;
+          color: #a5a5a5;
+          padding: 8px 14px;
+          border-radius: 6px;
+          background-color: #161616;
+          border: 1px solid #333;
+          font-size: 0.9rem;
+          transition: all 0.3s;
+        }
+        .pagination a:hover { background-color: #333; color: #eaeaea; }
+        .pagination a.active {
+          background-color: #ff7e5f;
+          color: #fff;
+          border-color: #ff7e5f;
+        }
+    </style>
+
+    <div class="min-h-screen p-4">
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <!-- Header -->
+            
+         <div class="flex justify-between items-center mb-8">
+              <h2 class="text-3xl font-bold text-white">Orders</h2>
+              
+              <form class="flex gap-4 items-center" id="controls-form">
+                  <div>
+                      <select name="status" id="status-filter" class="p-2.5 rounded-md border border-[#333] bg-[#161616] text-[#eaeaea] text-sm focus:ring-blue-500 focus:border-blue-500">
+                          <option value="all" selected>All Statuses</option>
+                          <option value="Pending">Pending</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
+                          <option value="Returned">Returned</option>
+                      </select>
+                  </div>
+                  
+                  <div>
+                      <select name="sort" id="sort-filter" class="p-2.5 rounded-md border border-[#333] bg-[#161616] text-[#eaeaea] text-sm focus:ring-blue-500 focus:border-blue-500">
+                          <option value="newest" selected>Sort by Newest</option>
+                          <option value="oldest">Sort by Oldest</option>
+                          <option value="price_high">Price: High to Low</option>
+                          <option value="price_low">Price: Low to High</option>
+                      </select>
+                  </div>
+                  
+                  <div class="search-bar">
+                      <i class="fas fa-search"></i>
+                      <input 
+                          type="text" 
+                          name="search"
+                          placeholder="Search..." 
+                          value="<%= typeof search !== 'undefined' ? search : '' %>"
+                      />
+                  </div>
+              </form>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="bg-[#1C1C1C] rounded-2xl p-6">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="text-gray-400 font-medium p-4">Order-Id</th>
+                            <th class="text-gray-400 font-medium p-4">Address</th>
+                            <th class="text-gray-400 font-medium p-4">Payment</th>
+                            <th class="text-gray-400 font-medium p-4">Status</th>
+                            <th class="text-gray-400 font-medium p-4">Price</th>
+                            <th class="text-gray-400 font-medium p-4">Action</th>
+                        </tr>
+                    </thead>
+                 <tbody class="divide-y divide-gray-700" id="orders-tbody">
+                  <% data.forEach((order) => { %>
+                  <tr >
+                    <td class="p-4 text-white font-medium">#<%= order.order_id %></td>
+                    <td class="p-4 text-white">
+                      <%= [
+                       order.address_name,
+                       order.address_state,
+                       order.address_country,
+                      ].filter(Boolean).join(', ') %><br>
+                      <%= [
+                       order.address_pincode,
+                       order.address_phone_number
+                      ].filter(Boolean).join(', ') %>
+                    </td>
+
+                    <td class="p-4 text-gray-300"><%= order.payment_method %></td>
+                    <td class="p-4 font-semibold
+                        <%= order.status === 'Delivered' ? 'text-green-400' : 
+                             order.status === 'Cancelled' ? 'text-red-400' : 
+                             order.status === 'Returned' ? 'text-yellow-400' : 
+                             'text-blue-400' %>">
+                      <%= order.status %>
+                    </td>
+                    <td class="p-4 text-white">₹<%= order.total%></td>
+                    <td class="p-4">
+                      <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-4 rounded-md transition-colors" data-id="<%=order._id%>">
+                        More Details
+                      </button>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+            </table>
+            </div>
+
+            
+            <div class="pagination">
+        <% if (totalPages > 1) { %>
+            <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
+            <% if (currentPage > 1) { %>
+                <a href="/admin/order=<%= currentPage - 1 %><%= searchParam %>">Previous</a>
+            <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a href="/admin/order?page=<%= i %><%= searchParam %>" class="<%= i === currentPage ? 'active' : '' %>">
+                    <%= i %>
+                </a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+                <a href="/admin/order?page=<%= currentPage + 1 %><%= searchParam %>">Next</a>
+            <% } %>
+        <% } %>
+    </div>
+        </main>
+    </div>
+
+   <script>
+  
+    function debounce(func, delay = 350) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                func.apply(this, args)
+            }, delay)
+        }
+    }
+
+  
+    const ordersContainer = document.querySelector('#orders-tbody')
+    const searchInput = document.querySelector('[name="search"]')
+    const paginationContainer = document.querySelector('.pagination')
+    const statusFilter = document.querySelector('#status-filter')
+    const sortFilter = document.querySelector('#sort-filter')
+    const controlsForm = document.querySelector('#controls-form')
+    async function fetchAndRenderOrders(page = 1) {
+        const search = searchInput.value.trim()
+        const status = statusFilter.value
+        const sort = sortFilter.value
+        const url = new URL('/admin/orders/search', window.location.origin)
+        url.searchParams.set('search', search)
+        url.searchParams.set('status', status)
+        url.searchParams.set('sort', sort)
+        url.searchParams.set('page', page)
+        
+        try {
+            const res = await fetch(url)
+            if (!res.ok) throw new Error('Fetch request failed')
+            const response = await res.json()
+            renderOrderRows(response.data)
+            renderPagination(response.totalPages, response.currentPage)
+
+        } catch (err) {
+            console.error('Fetch failed:', err)
+            ordersContainer.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-red-500 py-10">
+                        Failed to load results.
+                    </td>
+                </tr>`;
+            paginationContainer.innerHTML = ''
+        }
+    }
+
+    function renderOrderRows(data) {
+        ordersContainer.innerHTML = ''; 
+        if (data.length === 0) {
+            ordersContainer.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-gray-500 py-10">
+                        No orders found.
+                    </td>
+                </tr>`;
+            return;
+        }
+        data.forEach(order => {
+            const statusColor = order.status === 'Delivered' ? 'text-green-400' :
+                                order.status === 'Cancelled' ? 'text-red-400' :
+                                order.status === 'Returned' ? 'text-yellow-400' :
+                                'text-blue-400';
+            const addressLine1 = [order.address_name, order.address_state, order.address_country].filter(Boolean).join(', ');
+            const addressLine2 = [order.address_pincode, order.address_phone_number].filter(Boolean).join(', ');
+            
+            const orderRowHTML = `
+                <tr>
+                    <td class="p-4 text-white font-medium">#${order.order_id}</td>
+                    <td class="p-4 text-white">${addressLine1}<br>${addressLine2}</td>
+                    <td class="p-4 text-gray-300">${order.payment_method}</td>
+                    <td class="p-4 font-semibold ${statusColor}">${order.status}</td>
+                    <td class="p-4 text-white">₹${order.total}</td>
+                    <td class="p-4">
+                        <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-4 rounded-md transition-colors" data-id="${order._id}">
+                            More Details
+                        </button>
+                    </td>
+                </tr>
+            `;
+            ordersContainer.insertAdjacentHTML('beforeend', orderRowHTML)
+        })
+    }
+
+    
+    function renderPagination(totalPages, currentPage) {
+        paginationContainer.innerHTML = ''
+        if (totalPages <= 1) return
+
+        let paginationHTML = '';
+        
+        if (currentPage > 1) {
+         
+            paginationHTML += `<a href="#" data-page="${currentPage - 1}">Previous</a>`;
+        }
+        
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+                <a href="#" 
+                   data-page="${i}" 
+                   class="${i === currentPage ? 'active' : ''}">
+                   ${i}
+                </a>`;
+        }
+        if (currentPage < totalPages) {
+            paginationHTML += `<a href="#" data-page="${currentPage + 1}">Next</a>`;
+        }
+        
+        paginationContainer.innerHTML = paginationHTML
+    }
+
+    if (controlsForm) {
+        controlsForm.addEventListener('submit', (e) => e.preventDefault())
+    }
+    
+    if (searchInput) {
+        
+        searchInput.addEventListener('input', debounce(() => {
+            fetchAndRenderOrders(1)
+        }, 350))
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+            fetchAndRenderOrders(1)
+        })
+    }
+    
+    if (sortFilter) {
+        sortFilter.addEventListener('change', () => {
+            fetchAndRenderOrders(1)
+        })
+    }
+    if (paginationContainer) {
+        paginationContainer.addEventListener('click', (e) => {
+            e.preventDefault()
+            
+            
+            const link = e.target.closest('a[data-page]')
+            
+            if (link) {
+                const page = parseInt(link.dataset.page, 10);
+                fetchAndRenderOrders(page)
+            }
+        })
+    }
+    if (ordersContainer) {
+        ordersContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-id]')
+            if (button) {
+                const orderId = button.dataset.id;
+                window.location.href = `/admin/orderDetails/${orderId}`
+            }
+        })
+    }
+</script>
+
+
+

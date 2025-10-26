@@ -1,8 +1,12 @@
 const Brand = require('../../models/brandSchema')
+const Product = require('../../models/productSchema')
+const Category = require('../../models/categorySchema')
 const paginate = require('../../helpers/paginate')
 const asynchandler = require('express-async-handler')
 const cloudinary = require('../../config/cloudinaryConfig')
 const sharp = require('sharp')
+const {productUpdateShop,homeUpdata,} = require('../../helpers/websocket')
+const { NotFoundError } = require('../../helpers/errorClasses')
 
 
 const getBrandPage = asynchandler(async (req, res) => {
@@ -64,10 +68,9 @@ const addBrand = asynchandler(async (req, res) => {
                 if (error) return reject(error)
                 resolve(result)
             }
-        );
+        )
         uploadStream.end(processedImageBuffer)
-    });
-        
+    })
      const newBrand = new Brand({
         brandName:brand,
         brandImage: uploadResult.secure_url,
@@ -80,34 +83,50 @@ const addBrand = asynchandler(async (req, res) => {
 
 const blockBrand = asynchandler (async(req,res)=>{
     const Brandid = req.params.id
+
+          await Product.updateMany(
+            {brand:Brandid},
+            {$set:{isListed:false}}
+          )
+    
     const updatedBrand = await Brand.findByIdAndUpdate(
         Brandid,{status: 'blocked' },{ new: true }) 
 
           if (!updatedBrand) {
             return res.status(404).json({ error: 'Brand not found.' })
         }
-
+        productUpdateShop()
+        homeUpdata()
         res.status(200).json({ message: 'Brand has been blocked successfully.' })
 })
 
 const unblockBrand = asynchandler (async(req,res)=>{
     const Brandid = req.params.id
+
+    const activeCategories = await Category.find({ status: 'active' }).select('_id')
+    const activeCategoryIds = activeCategories.map(cat => cat._id)
+
+      if (activeCategoryIds.length > 0) {
+        await Product.updateMany(
+            {brand:Brandid,
+            category:{$in:activeCategoryIds}
+            },{$set:{isListed:true}})}
+
     const updatedBrand = await Brand.findByIdAndUpdate(
         Brandid,{status: 'active' },{ new: true }) 
 
           if (!updatedBrand) {
             return res.status(404).json({ error: 'Brand not found.' })
         }
-
+        productUpdateShop()
+        homeUpdata()
         res.status(200).json({ message: 'Brand has been unblocked successfully.' })
 })
 
 const loadeditBrand = asynchandler(async(req,res)=>{
     const Brandid = req.params.id
     const findBrand = await Brand.findById(Brandid)
-    if(!findBrand){
-     return res.redirect('admin/brand')
-}
+    if(!findBrand) throw new NotFoundError
  res.render('admin/editbrand',{layout: 'layouts/admin',
         brand:findBrand })
 })

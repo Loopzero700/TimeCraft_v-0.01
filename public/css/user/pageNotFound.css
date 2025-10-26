@@ -124,3 +124,10 @@
                 font-size: 1.25rem;
             }
         }
+        .home-btn{
+            padding: 10px;
+            background-color: #007bff;
+            color: #f8f9fa;
+            cursor:pointer;
+            border-radius: 10px;
+        }

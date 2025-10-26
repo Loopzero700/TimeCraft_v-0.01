@@ -19,4 +19,4 @@ const storage = new CloudinaryStorage({
 
 const upload = require('multer')({ storage: storage });
 
-module.exports = upload;
+module.exports = {cloudinary,upload}

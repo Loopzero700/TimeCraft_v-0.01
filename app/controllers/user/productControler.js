@@ -1,21 +1,31 @@
 const asynchandler = require('express-async-handler')
 const Product = require("../../models/productSchema")
+const User = require('../../models/userSchema')
 const paginatehelper = require('../../helpers/paginate')
 const Category = require('../../models/categorySchema')
+const {NotFoundError} = require('../../helpers/errorClasses')
 
 const getproductPage = asynchandler(async(req,res)=>{
 
     const productId = req.params.id
     const product = await Product.findById(productId)
+    //product not founded error handelin
+    if(!product) throw new NotFoundError('Product not found with that ID')
+    
     const catId = product. category
     const category = await Category.findById(catId)
+    const userId = req.session.user||req.user
+     let userData= null
+        if(userId){
+          userData = await User.findById(userId)
+        }
     
     if(!product){
-      return res.status(404).render('user/404',{message:"Product not found"})
+      return res.status(404).render('user/pageNotFound',{message:"Product not found"})
     }
     
     if(product.status!=="active"){
-      return res.status(404).render('user/404',{message:"This Product is currently unavailable"})
+      return res.status(404).render('user/pageNotFound',{message:"This Product is currently unavailable"})
     }
 
      const breadcrumbs = [
@@ -38,7 +48,7 @@ const getproductPage = asynchandler(async(req,res)=>{
     const result = await paginatehelper(Product, options)
     console.log(result.results)
     if(product.status=="active"){
-        res.render('user/productDetailed',{productData:product,cat:result.results,breadcrumbs: breadcrumbs})
+        res.render('user/productDetailed',{productData:product,cat:result.results,breadcrumbs: breadcrumbs,user:userData})
     }
     
 

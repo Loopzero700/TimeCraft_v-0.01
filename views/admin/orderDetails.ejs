@@ -1,0 +1,223 @@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+
+    <div class="flex min-h-screen">
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+
+            <h2 class="text-3xl font-semibold mb-8">Edit Orders</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Product Details -->
+                  <div class="bg-[#1C1C1C] p-6 rounded-2xl border border-gray-700/50">
+    <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-700/50">
+        <h3 class="text-xl font-semibold">Product</h3>
+        <h3 class="text-xl font-semibold">Quantity</h3>
+        <h3 class="text-xl font-semibold">Status</h3>
+        <h3 class="text-xl font-semibold">Price</h3>
+    </div>
+
+    <div class="space-y-4" id="product-list">
+        <% products.forEach(item => { %>
+            <div class="flex justify-between items-center text-gray-300">
+                <p><%= item.name.length > 14 ? item.name.substring(0, 14) + '...' : item.name %></p>
+                <p class="bg-[#2D2D2D] border border-gray-600 px-3 py-1 rounded-md"><%= item.quantity %></p>
+                
+                <p class="<%= item.status === 'Returned' ? 'text-yellow-400 font-semibold' : '' %>">
+                    <%= item.status %>
+                </p>
+                
+                <p>₹<%= item.variant.discounted_price*item.quantity || item.variant.price*item.quantity %></p>
+            </div>
+
+            <% if (item.status === 'Returned') { %>
+                <div class="bg-[#2D2D2D]/50 p-4 rounded-lg ml-4 border border-gray-700/50 space-y-3" id="<%= item.itemId %>">
+                    <div>
+                        <span class="text-gray-400 font-semibold">Reason for Return:</span>
+                        <p class="text-gray-200 italic">"<%= item.Reason %>"</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button 
+                            data-order-id="<%= item.orderId %>" 
+                            data-item-id="<%= item.itemId %>" 
+                            data-action="Return-Approved"
+                            class="return-action-btn bg-green-600 text-white px-4 py-1 rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
+                            Approve Return
+                        </button>
+                        <button 
+                            data-order-id="<%= item.orderId %>" 
+                            data-item-id="<%= item.itemId %>" 
+                            data-action="Return-Rejected"
+                            class="return-action-btn bg-red-600 text-white px-4 py-1 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
+                            Reject Return
+                        </button>
+                    </div>
+                </div>
+            <% } %>
+            <% }) %>
+           </div>
+       </div>
+
+
+                    <div class="bg-[#1C1C1C] p-6 rounded-2xl border border-gray-700/50">
+                       <div class="pb-3 mb-3 border-b border-gray-700/50">
+                           <h3 class="text-xl font-semibold">Customer Details</h3>
+                       </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-3 gap-4 items-center">
+                                <p class="text-gray-400">Customer Name</p>
+                                <p class="col-span-2"><%=data.address_name%></p>
+                            </div>
+                             <div class="grid grid-cols-3 gap-4 items-center">
+                                <p class="text-gray-400">Mobile Number</p>
+                                <p class="col-span-2"><%=data.address_phone_number%></p>
+                            </div>
+                             <div class="grid grid-cols-3 gap-4 items-center">
+                                <p class="text-gray-400">Type of Payment</p>
+                                <p class="col-span-2"><%=data.payment_method%></p>
+                            </div>
+                             <div class="grid grid-cols-3 gap-4 items-center">
+                                <p class="text-gray-400">Address</p>
+                                <p class="col-span-2"> 
+                                    <%= [data.address_city,
+                                    data.address_state,
+                                    data.address_country,
+                                    data.address_pincode
+                                    ].filter(Boolean).join(', ') %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="bg-[#1C1C1C] p-6 rounded-2xl border border-gray-700/50">
+                        <div class="pb-3 mb-4 border-b border-gray-700/50">
+                            <h3 class="text-xl font-semibold">Order Update</h3>
+                        </div>
+                        <div class="space-y-5">
+                            <div>
+                              <p class="text-gray-400">
+                                Ordered On : 
+                                <span class="text-gray-200"><%= new Date(data.order_date).toLocaleDateString('en-GB') %></span>
+                              </p>
+                            </div>
+
+                            <div>
+                              <p class="text-gray-400">
+                                Current State : 
+                                <span id="current-status" class="<%= data.status === 'Delivered' ? 'text-green-400 font-semibold' :
+                                  data.status === 'Cancelled' ? 'text-red-400 font-semibold' :
+                                  data.status === 'Returned' ? 'text-yellow-400 font-semibold' :
+                                  'text-blue-400 font-semibold' %>">
+                                    <%= data.status %>
+                                </span>
+                              </p>
+                            </div>
+
+                            
+                             <div>
+                                <label for="order-status" class="block text-gray-400 mb-2">Order Status</label>
+                               <select id="order-status" class="w-full bg-[#2D2D2D] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                  <% ['Pending', 'Shipped', 'Delivered', 'Cancelled', 'Out for Delivery', 'Returned'].forEach(status => { %>
+                                    <option value="<%= status %>" <%= data.status === status ? 'selected' : '' %>><%= status %></option>
+                                  <% }) %>
+                                </select>
+                            </div>
+                             <button class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200" id="update">
+                                Update
+                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.querySelector('#update').addEventListener('click', async () => {
+    const newStatus = document.querySelector('#order-status').value
+    const orderId = '<%= data._id %>'
+    const statusSpan = document.querySelector('#current-status') 
+    try {
+      const response = await fetch(`/admin/updateOrder/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+      if (response.ok) {
+        statusSpan.textContent = newStatus
+        statusSpan.className = newStatus === 'Delivered' ? 'text-green-400 font-semibold' :
+        newStatus === 'Cancelled' ? 'text-red-400 font-semibold' :
+        newStatus === 'Returned' ? 'text-yellow-400 font-semibold' :
+        'text-blue-400 font-semibold'
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Updated!',
+          text: 'Order status updated successfully!',
+          timer: 1500,
+          showConfirmButton: false
+        })
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops!',
+          text: 'Failed to update order.',
+          confirmButtonColor: '#EF4444'
+        })
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Something went wrong while updating order.',
+        confirmButtonColor: '#EF4444'
+      })
+    }
+  })
+
+  document.querySelectorAll('.return-action-btn').forEach((btn) => {
+    
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault()
+        
+        const orderId = e.currentTarget.dataset.orderId
+        const itemId = e.currentTarget.dataset.itemId
+        const action = e.currentTarget.dataset.action
+        const con = document.getElementById(itemId)
+        try {
+            const response = await fetch(`/admin/handleReturn/${orderId}/${itemId}`, { 
+                method: "PUT",   
+                headers: {
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ action:action })
+            })
+            
+            if (response.ok) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Updated!',
+                text: 'Order status updated successfully!',
+                timer: 1500,
+                showConfirmButton: false
+              })
+              con.style.display = "none";
+
+            } else {
+                console.error('Request failed')
+            }
+        } catch (err) {
+            console.error('Error:', err)
+        }
+    })
+})
+</script>

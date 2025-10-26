@@ -86,7 +86,7 @@
         try {
       
             const response = await fetch(`/admin/brand/edit/<%= brand._id %>`, { 
-                method: 'PUT',
+                method: 'PATCH',
                 body: formData 
             });
 

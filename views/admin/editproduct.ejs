@@ -9,12 +9,12 @@
 
         <div class="form-section">
             <div class="form-grid">
-                <div class="form-group"><label for="name">Product Name</label><input type="text" id="name" name="name" value="<%= product.name %>" required></div>
-                <div class="form-group"><label for="category_id">Category</label><select id="category_id" name="category_id" required><% categories.forEach(cat => { %><option value="<%= cat._id %>" <%= product.category.equals(cat._id) ? 'selected' : '' %>><%= cat.name %></option><% }); %></select></div>
-                <div class="form-group"><label for="brand_id">Brand</label><select id="brand_id" name="brand_id" required><% brands.forEach(brand => { %><option value="<%= brand._id %>" <%= product.brand.equals(brand._id) ? 'selected' : '' %>><%= brand.brandName %></option><% }); %></select></div>
+                <div class="form-group"><label for="name">Product Name *</label><input type="text" id="name" name="name" value="<%= product.name %>" required></div>
+                <div class="form-group"><label for="category_id">Category *</label><select id="category_id" name="category_id" required><% categories.forEach(cat => { %><option value="<%= cat._id %>" <%= product.category.equals(cat._id) ? 'selected' : '' %>><%= cat.name %></option><% }); %></select></div>
+                <div class="form-group"><label for="brand_id">Brand *</label><select id="brand_id" name="brand_id" required><% brands.forEach(brand => { %><option value="<%= brand._id %>" <%= product.brand.equals(brand._id) ? 'selected' : '' %>><%= brand.brandName %></option><% }); %></select></div>
                 <div class="form-group"><label for="status">Status</label><select id="status" name="status" required><option value="active" <%= product.status === 'active' ? 'selected' : '' %>>Active</option><option value="inactive" <%= product.status === 'inactive' ? 'selected' : '' %>>Inactive</option></select></div>
             </div>
-            <div class="form-group"><label for="description">Description</label><textarea id="description" name="description" rows="4"><%= product.description %></textarea></div>
+            <div class="form-group"><label for="description">Description *</label><textarea id="description" name="description" rows="4"><%= product.description %></textarea></div>
         </div>
 
         <h3 class="variants-title">Product Variants</h3>
@@ -23,13 +23,13 @@
             <div class="variant-block">
                 <input type="hidden" name="variants[<%= index %>][variantId]" value="<%= variant._id %>">
                 <div class="form-grid">
-                    <div class="form-group"><label>Color</label><input type="text" name="variants[<%= index %>][color]" value="<%= variant.color %>" required></div>
-                    <div class="form-group"><label>SKU</label><input type="text" name="variants[<%= index %>][SKU]" value="<%= variant.SKU %>" required></div>
-                    <div class="form-group"><label>Price</label><input type="number" name="variants[<%= index %>][price]" value="<%= variant.price %>" step="0.01" required></div>
+                    <div class="form-group"><label>Color *</label><input type="text" name="variants[<%= index %>][color]" value="<%= variant.color %>" required></div>
+                    <div class="form-group"><label>SKU *</label><input type="text" name="variants[<%= index %>][SKU]" value="<%= variant.SKU %>" required></div>
+                    <div class="form-group"><label>Price *</label><input type="number" name="variants[<%= index %>][price]" value="<%= variant.price %>" step="0.01" required></div>
                     <div class="form-group"><label>Discounted Price</label><input type="number" name="variants[<%= index %>][discounted_price]" value="<%= variant.discounted_price %>" step="0.01"></div>
-                    <div class="form-group"><label>Stock</label><input type="number" name="variants[<%= index %>][stock]" value="<%= variant.stock %>" required></div>
+                    <div class="form-group"><label>Stock *</label><input type="number" name="variants[<%= index %>][stock]" value="<%= variant.stock %>" required></div>
                     <div class="form-group">
-                    <label>Images</label>
+                    <label>Images *</label>
                    <input type="file" id="actual-btn-<%= index %>" class="variant-images" accept="image/*" multiple hidden>
 
                     <label for="actual-btn-<%= index %>" class="custom-file-button">Add Images</label>
@@ -77,6 +77,116 @@
         const cropButton = document.getElementById('crop-button')
         const cancelCropButton = document.getElementById('cancel-crop-button')
 
+
+       function showError(input, message) {
+       input.classList.add('is-invalid')
+       const formGroup = input.closest('.form-group')
+        if (formGroup) {
+        const error = document.createElement('small')
+        error.className = 'error-message'
+        error.textContent = message
+    
+        formGroup.appendChild(error)
+        }
+    }
+
+    function clearError(input) {
+    if (input) {
+        input.classList.remove('is-invalid')
+        const formGroup = input.closest('.form-group')
+        if (formGroup) {
+            const error = formGroup.querySelector('.error-message')
+            if (error) error.remove()
+            const star = formGroup.querySelector('.required-star')
+            if (star) star.remove()
+        }
+    } else {
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'))
+        document.querySelectorAll('.error-message').forEach(el => el.remove())
+        }
+    }
+
+    function validateForm() {
+    clearError()
+    let isValid = true
+    const productName = form.querySelector('#name')
+    if (productName.value.trim() === '') {
+        showError(productName, 'Product name is required')
+        isValid = false
+    }
+
+    const category = form.querySelector('#category_id')
+    if (!category.value) {
+        showError(category, 'Please select a category')
+        isValid = false
+    }
+
+    const brand = form.querySelector('#brand_id')
+    if (!brand.value) {
+        showError(brand, 'Please select a brand')
+        isValid = false
+    }
+
+    // Validate variants
+    const variantBlocks = form.querySelectorAll('.variant-block')
+    variantBlocks.forEach(block => {
+        const color = block.querySelector('input[name*="[color]"]')
+        if (!color.value.trim()) {
+            showError(color, 'Color is required')
+            isValid = false
+        }
+        const sku = block.querySelector('input[name*="[SKU]"]')
+        if (!sku.value.trim()) {
+            showError(sku, 'SKU is required')
+            isValid = false
+        }
+        const price = block.querySelector('input[name*="[price]"]')
+        if (!price.value || parseFloat(price.value) <= 0) {
+            showError(price, 'Price must be positive')
+            isValid = false
+        }
+        const stock = block.querySelector('input[name*="[stock]"]')
+        if (!stock.value || parseFloat(stock.value) < 0) {
+            showError(stock, 'Stock must be 0 or more')
+            isValid = false
+        }
+        })
+
+        return isValid
+        }
+
+        form.addEventListener('submit', async e => {
+    e.preventDefault()
+
+    if (!validateForm()) return
+
+    const formData = new FormData(form)
+
+    // Add cropped images
+    newVariantImages.forEach((blobs, index) => {
+        blobs.forEach((blob, fileIndex) => {
+            formData.append(`variants[${index}][newImages]`, blob, `variant-${index}-new-image-${fileIndex}.webp`)
+            })
+        })
+            formData.append('imagesToRemove', JSON.stringify(Array.from(imagesToRemove)))
+            try {
+            const response = await fetch('/admin/editproduct/<%= product._id %>', { method: 'PATCH', body: formData })
+            if (response.ok) {
+            window.location.href = '/admin/products'
+            } else {
+            const errorText = await response.text()
+            Swal.fire('Error', errorText, 'error')
+            }
+            } catch (error) {
+            Swal.fire('Error', 'An error occurred during submission.', 'error')
+            }
+        })
+
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+        input.addEventListener('input', () => clearError(input))
+        })
+
+
         let cropper
         let newVariantImages = new Map()
         const imagesToRemove = new Set()
@@ -111,7 +221,7 @@
                 modal.style.display = 'none'
                 processImageQueue()
             }, 'image/webp', 0.9)
-        });
+        })
 
         
         cancelCropButton.addEventListener('click', () => {
@@ -223,11 +333,11 @@ addVariantBtn.addEventListener('click', () => {
             <button type="button" class="btn-remove-variant">Remove</button>
         </div>`;
 
-    variantsContainer.insertAdjacentHTML('beforeend', newVariantHtml);
-    const newBlock = variantsContainer.lastElementChild;
-    initVariantBlock(newBlock);
-    updateRemoveButtons();
-});
+    variantsContainer.insertAdjacentHTML('beforeend', newVariantHtml)
+    const newBlock = variantsContainer.lastElementChild
+    initVariantBlock(newBlock)
+    updateRemoveButtons()
+})
 
         variantsContainer.addEventListener('click', e => {
             if (e.target.classList.contains('btn-remove-variant')) {
@@ -252,31 +362,6 @@ addVariantBtn.addEventListener('click', () => {
 
                     previewItem.remove()
                 }
-            }
-        })
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault()
-            const formData = new FormData(form)
-
-            newVariantImages.forEach((blobs, index) => {
-                blobs.forEach((blob, fileIndex) => {
-                    formData.append(`variants[${index}][newImages]`, blob, `variant-${index}-new-image-${fileIndex}.webp`)
-                })
-            })
-
-            formData.append('imagesToRemove', JSON.stringify(Array.from(imagesToRemove)))
-            
-            try {
-                const response = await fetch('/admin/editproduct/<%= product._id %>', { method: 'POST', body: formData })
-                if (response.ok) {
-                    window.location.href = '/admin/products'
-                } else {
-                    const errorText = await response.text()
-                    Swal.fire('Error', errorText, 'error')
-                }
-            } catch (error) {
-                Swal.fire('Error', 'An error occurred during submission.', 'error')
             }
         })
 

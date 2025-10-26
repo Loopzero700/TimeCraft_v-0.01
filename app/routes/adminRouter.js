@@ -4,61 +4,89 @@ const customerController = require("../controllers/admin/customerController")
 const categoryController = require('../controllers/admin/categoryController')
 const productController = require('../controllers/admin/productController')
 const bannerController = require('../controllers/admin/bannerController')
-const router = express.Router()
-const {userAuth,adminAuth} = require('../middleware/auth')
-const brandController = require('../controllers/admin/brandController');
+const orderController = require('../../app/controllers/admin/orderController')
+const brandController = require('../controllers/admin/brandController')
 const upload = require('../middleware/multerstorage')
+const { userAuth, adminAuth } = require('../middleware/auth')
+const validateObjectId = require('../../app/middleware/validateObjectId')
+const router = express.Router()
 
 
-router.use((req, res, next)=>{
-    req.session.admin = "68b2ffe590ff367dfe521acd"
-    next()
-})
+// ----------------------------------------------
+// Admin authentication routes
+// ----------------------------------------------
+router.get('/login', adminController.loadlogin)
+router.post('/login', adminController.login)
+router.get('/logout', adminController.logout)
 
+router.use(adminAuth)
+router.get('/', adminController.loadDashboard)
 
-router.get('/login',adminController.loadlogin)
-router.post('/login',adminController.login)
-router.get('/logout',adminController.logout)
-router.get('/',adminAuth,adminController.loadDashboard)
+// ----------------------------------------------
+// Customer management routes
+// ----------------------------------------------
+router.get("/customers", customerController.getCustomersPage)
+router.get('/blockCustomer', customerController.customersBlocked)
+router.get('/unblockCustomer', customerController.customersUnblocked)
 
+// ----------------------------------------------
+// Category management routes
+// ----------------------------------------------
+router.route('/category')
+  .get(categoryController.categoryInfo)
+  .post(categoryController.addCategory)
 
-//customer mangment router
-router.get("/customers",adminAuth,customerController.getCustomersPage)
-router.get('/blockCustomer',adminAuth,customerController.customersBlocked)
-router.get('/unblockCustomer',adminAuth,customerController.customersUnblocked)
+router.get('/addCategory', categoryController.loadAddCategory)
+router.post('/categories/active/:id',validateObjectId, categoryController.unblockCategory)
+router.post('/categories/inactive/:id',validateObjectId, categoryController.blockCategory)
 
+router.route('/categories/edit/:id')
+  .get(validateObjectId,categoryController.loadeditCategory)
+  .patch(validateObjectId,categoryController.editCategory)
 
+// ----------------------------------------------
+// Brand management routes
+// ----------------------------------------------
+router.route('/brand')
+  .get(brandController.getBrandPage)
+  .post(upload.single('brandImage'), brandController.addBrand)
 
-//category mangment router
-router.get('/category',adminAuth,categoryController.categoryInfo)
-router.get('/addCategory',adminAuth,categoryController.loadAddCategory)
-router.post('/addCategory',adminAuth,categoryController.addCategory)
-router.post('/categories/unblock/:id',adminAuth, categoryController.unblockCategory)
-router.post('/categories/block/:id',adminAuth,categoryController.blockCategory)
-router.get('/categories/edit/:id',adminAuth,categoryController.loadeditCategory)
-router.post('/categories/edit/:id',adminAuth,categoryController.editCategory)
+router.get('/addBrand', brandController.loadAddBrand)
+router.post('/brand/block/:id', validateObjectId,brandController.blockBrand)
+router.post('/brand/unblock/:id', validateObjectId,brandController.unblockBrand)
 
-//brand mangment router
-router.get('/brand',adminAuth,brandController.getBrandPage)
-router.get('/addBrand',adminAuth,brandController.loadAddBrand)
-router.post('/addBrand',adminAuth,upload.single('brandImage'),brandController.addBrand)
-router.post('/brand/block/:id',adminAuth,brandController.blockBrand)
-router.post('/brand/unblock/:id',adminAuth,brandController.unblockBrand)
-router.get("/brand/edit/:id",adminAuth,brandController.loadeditBrand)
-router.put("/brand/edit/:id",adminAuth,upload.single('brandImage'),brandController.editBrand)
+router.route("/brand/edit/:id")
+  .get(validateObjectId,brandController.loadeditBrand)
+  .patch(upload.single('brandImage'),validateObjectId,brandController.editBrand)
 
-//product mangment router
-router.get('/addproduct',adminAuth,productController.loadaddproduct)
-router.post('/addproduct',adminAuth,upload.any(),productController.addproduct)
-router.get('/products',adminAuth,productController.getProductsPage)
-router.post('/product/block/:id',adminAuth,productController.blockProduct)
-router.post('/product/unblock/:id',adminAuth,productController.unblockProduct)
-router.get('/editproduct/:id',adminAuth,productController.getEditProduct)
-router.post('/editproduct/:id',adminAuth,upload.any(),productController.editProduct)
+// ----------------------------------------------
+// Product management routes
+// ----------------------------------------------
+router.route('/products')
+  .get(productController.getProductsPage)
+  .post(upload.any(), productController.addproduct)
 
-//banner mangement router
-router.get('/banner',adminAuth,bannerController.getBannerPage)
+router.get('/addproduct', productController.loadaddproduct)
+router.post('/product/inactive/:id',validateObjectId, productController.blockProduct)
+router.post('/product/active/:id',validateObjectId, productController.unblockProduct)
+
+router.route('/editproduct/:id')
+  .get(validateObjectId,productController.getEditProduct)
+  .patch(upload.any(),validateObjectId, productController.editProduct)
+
+// ----------------------------------------------
+// Banner management routes
+// ----------------------------------------------
+router.get('/banner', bannerController.getBannerPage)
 router.post('/banners/upload', upload.single('bannerImage'), bannerController.uploadBanner)
 
+// ----------------------------------------------
+// Order management routes
+// ----------------------------------------------
+router.get('/order', orderController.getOrder)
+router.get('/orders/search', orderController.orderSearch)
+router.get('/orderDetails/:id',validateObjectId, orderController.getorderDetails)
+router.put('/updateOrder/:id',validateObjectId, orderController.updateOrder)
+router.put('/handleReturn/:orderId/:itemId',validateObjectId, orderController.returnRequest)
 
-module.exports=router
+module.exports = router

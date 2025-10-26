@@ -53,7 +53,7 @@
                         <% if (isBlocked) { %>
                             <button onclick="confirmStatusChange('<%= category._id %>', true)" class="btn-unblock">active</button>
                         <% } else { %>
-                            <button onclick="confirmStatusChange('<%= category._id %>', false)" class="btn-block">Delete</button>
+                            <button onclick="confirmStatusChange('<%= category._id %>', false)" class="btn-block">inactive</button>
                         <% } %>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
 <script>
  
     function confirmStatusChange(categoryId, isCurrentlyBlocked) {
-        const action = isCurrentlyBlocked ? 'unblock' : 'block';
+        const action = isCurrentlyBlocked ? 'active' : 'inactive';
         const url = `/admin/categories/${action}/${categoryId}`; 
 
         Swal.fire({

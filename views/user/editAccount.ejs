@@ -1,0 +1,334 @@
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/user/account.css">
+
+
+<div class="account-page-container">
+  <!-- Sidebar -->
+  <aside class="account-sidebar">
+    <div class="account-sidebar-card">
+      <h2 class="sidebar-title">My Account</h2>
+      <nav class="sidebar-nav">
+        <a href="/account" class="nav-link">
+          <span class="material-symbols-outlined">person</span>
+          <span>Personal Information</span>
+        </a>
+        <a href="/account/address" class="nav-link">
+          <span class="material-symbols-outlined">home</span>
+          <span>Address</span>
+        </a>
+        <a href="/account/orders" class="nav-link">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Order</span>
+        </a>
+        <a href="/account/wallet" class="nav-link">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+          <span>Wallet</span>
+        </a>
+        <a href="/account/coupon" class="nav-link">
+          <span class="material-symbols-outlined">local_offer</span>
+          <span>Coupon</span>
+        </a>
+        <a href="/account/changePassword" class="nav-link">
+          <span class="material-symbols-outlined">lock</span>
+          <span>Password Change</span>
+        </a>
+        <form action="/logout" method="POST" style="margin:0; padding:0;">
+          <button class="nav-link">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Logout</span>
+          </button>
+        </form>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Right Section -->
+  <section class="account-content">
+    <div class="content-card">
+      <h2 class="content-title">Edit Personal Information</h2>
+      <hr class="divider">
+
+      <!-- Profile Picture -->
+      <div class="profile-picture-container">
+        <label for="profile-picture-upload" class="profile-picture-label">
+          <img src="<%=user.profile_photo%>" alt="<%=user.username%>" class="profile-picture-img" id="currentProfile">
+          <div class="profile-picture-overlay">
+            <span class="material-symbols-outlined">photo_camera</span>
+          </div>
+          <input type="file" id="profile-picture-upload" class="hidden-file-input" accept="image/*">
+        </label>
+      </div>
+
+      <!-- Edit Form -->
+      <form id="editForm" class="profile-form mt-6">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" class="form-input" value="<%= user.username %>">
+          <div id="error1" class="error-message"></div>
+        </div>
+        <div class="form-group">
+          <label for="phone" class="form-label">Phone number</label>
+          <input type="number" id="phone" class="form-input" value="<%= user.phone %>">
+          <div id="error2" class="error-message"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstname" class="form-label">Firstname</label>
+            <input type="text" id="firstname" class="form-input" value="<%= user.first_name %>">
+            <div id="error3" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label for="lastname" class="form-label">Lastname</label>
+            <input type="text" id="lastname" class="form-input" value="<%= user.last_name %>">
+            <div id="error4" class="error-message"></div>
+          </div>
+        </div>
+        <div class="form-actions flex gap-4 mt-5">
+          <button type="submit" class="btn bg-green-500 hover:bg-green-600 text-white">Update</button>
+          <a href="/account" class="btn bg-gray-400 hover:bg-gray-500 text-white">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<div id="cropperModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+  <div class="bg-white p-5 rounded-xl w-[90%] max-w-md shadow-lg">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-lg font-semibold">Crop Profile Picture</h2>
+      <button id="closeCropper" class="text-gray-600 hover:text-black">&times;</button>
+    </div>
+    <div class="cropper-container">
+      <img id="cropperImage" class="max-w-full rounded-lg" />
+    </div>
+    <div class="flex justify-center gap-4 mt-4">
+      <button id="cancelCrop" class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancel</button>
+      <button id="saveCrop" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+const fileInput = document.getElementById('profile-picture-upload')
+const cropperModal = document.getElementById('cropperModal')
+const cropperImage = document.getElementById('cropperImage')
+const closeCropper = document.getElementById('closeCropper')
+const cancelCrop = document.getElementById('cancelCrop')
+const saveCrop = document.getElementById('saveCrop')
+const profileImg = document.getElementById('currentProfile')
+
+
+const username = document.getElementById('username')
+const phone = document.getElementById('phone')
+const firstname = document.getElementById('firstname')
+const lastname = document.getElementById('lastname')  
+
+
+ function usernameVaildateChecking() {
+    const nameval = username.value
+    const namepattern = /^[A-Za-z\s]+$/
+    if (nameval.trim() === '') {
+      error1.style.display = "block"
+      error1.innerHTML = "Please enter a valid username"
+    } else if (!namepattern.test(nameval)) {
+      error1.style.display = "block"
+      error1.innerHTML = "username can only contain alphabets and spaces"
+    } else {
+      error1.style.display = "none"
+      error1.innerHTML = ""
+    }
+  }
+
+  function firstnameVaildateChecking() {
+    const nameval = firstname.value
+    const namepattern = /^[A-Za-z\s]+$/
+    if (nameval.trim() === '') {
+      error3.style.display = "block"
+      error3.innerHTML = "Please enter a valid firstname"
+    } else if (!namepattern.test(nameval)) {
+      error3.style.display = "block"
+      error3.innerHTML = "firstname can only contain alphabets and spaces"
+    } else {
+      error3.style.display = "none"
+      error3.innerHTML = ""
+    }
+  }
+
+    function lastnameVaildateChecking() {
+    const nameval = lastname.value
+    const namepattern = /^[A-Za-z\s]+$/
+    if (nameval.trim() === '') {
+      error4.style.display = "block"
+      error4.innerHTML = "Please enter a valid lastname"
+    } else if (!namepattern.test(nameval)) {
+      error4.style.display = "block"
+      error4.innerHTML = "lastname can only contain alphabets and spaces"
+    } else {
+      error4.style.display = "none"
+      error4.innerHTML = ""
+    }
+  }
+
+
+  function phoneValidateChecking() {
+    const phoneVal = phone.value
+    const phonePattern = /^[6-9]\d{9}$/;
+    if (phoneVal.trim() === '') {
+        error2.style.display = "block"
+        error2.innerHTML = "Please enter a phone number"
+    } else if (!phonePattern.test(phoneVal)) {
+        error2.style.display = "block"
+        error2.innerHTML = "Phone number must be 10 digits and start with 6-9"
+    } else {
+        error2.style.display = "none"
+        error2.innerHTML = ""
+    }
+}
+
+
+
+let cropper = null
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    cropperImage.src = reader.result
+
+    cropperImage.onload = () => {
+      cropperModal.classList.remove('hidden')
+      cropperModal.classList.add('flex')
+
+      if (cropper) cropper.destroy()
+
+      cropper = new Cropper(cropperImage, {
+        aspectRatio: 1,
+        viewMode: 1,
+        background: false,
+        autoCropArea: 1
+      })
+    }
+  }
+  reader.readAsDataURL(file)
+})
+
+function closeCropperModal() {
+  cropperModal.classList.add('hidden')
+  cropperModal.classList.remove('flex')
+  if (cropper) {
+    cropper.destroy()
+    cropper = null
+  }
+  fileInput.value = '' 
+}
+
+closeCropper.addEventListener('click', closeCropperModal)
+cancelCrop.addEventListener('click', closeCropperModal)
+
+// Save cropped image
+saveCrop.addEventListener('click', async () => {
+  if (!cropper) return
+
+  const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 })
+  if (!canvas) return
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg'))
+  const formData = new FormData()
+  formData.append('profile_photo', blob)
+
+  try {
+    const res = await fetch('/account/uploadProfile', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      profileImg.src = data.url + '?t=' + new Date().getTime()
+      closeCropperModal()
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile Updated!',
+        showConfirmButton: false,
+        timer: 1000
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'Something went wrong while uploading.'
+      })
+    }
+  } catch (err) {
+    console.error('Upload error:', err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An error occurred while uploading the profile photo.'
+    })
+  }
+})
+
+// Update user info
+document.getElementById('editForm').addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const username = document.getElementById('username').value.trim()
+  const phone = document.getElementById('phone').value.trim()
+  const firstname = document.getElementById('firstname').value.trim()
+  const lastname = document.getElementById('lastname').value.trim()
+
+  usernameVaildateChecking()
+  lastnameVaildateChecking()
+  firstnameVaildateChecking()
+  phoneValidateChecking()
+
+  
+
+  if (
+        error1.innerHTML ||
+        error2.innerHTML ||
+        error3.innerHTML ||
+        error4.innerHTML
+      ) {
+        return
+      }
+
+  try {
+    const response = await fetch('/account/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, phone, firstname, lastname })
+    })
+
+    if (response.ok) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Profile Updated',
+        showConfirmButton: false,
+        timer: 1000
+      }).then(() => {
+        window.location.href = '/account'
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error updating details'
+      })
+    }
+  } catch (err) {
+    console.error(err)
+  }
+})
+</script>
+
+

@@ -1,0 +1,209 @@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/user/account.css">
+
+    <style>
+    .breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0; 
+    font-size: 0.875rem;
+    }
+    
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: '>';
+        margin: 0 0.75rem;
+        color: #9ca3af; 
+    }
+    
+    .breadcrumbs a {
+        color: #4b5563; 
+        text-decoration: none;
+        transition: color 0.2s ease-in-out;
+    }
+    
+    .breadcrumbs a:hover {
+        color: #111827; 
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item span {
+        color: #1f2937; 
+        font-weight: 500;
+    }
+    </style>
+    
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumbs">
+        <% breadcrumbs.forEach(function(crumb) { %>
+          <li class="breadcrumb-item">
+            <% if (crumb.active) { %>
+                               <span aria-current="page"><%= crumb.name %></span>
+                           <% } else { %>
+                               <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                               <% } %>
+                              </li>
+                              <% }); %>
+                            </ol>
+                          </nav>
+                          
+  <div class="account-page-container">
+    <aside class="account-sidebar">
+        <div class="account-sidebar-card">
+            <h2 class="sidebar-title">My Account</h2>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>Personal Information</span>
+                </a>
+                <a href="/account/address" class="nav-link">
+                    <span class="material-symbols-outlined">home</span>
+                    <span>Address</span>
+                </a>
+                <a href="/account/orders" class="nav-link">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span>Order</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <span>Wallet</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="material-symbols-outlined">local_offer</span>
+                    <span>Coupon</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="material-symbols-outlined">lock</span>
+                    <span>Password Change</span>
+                </a>
+                <form action="/logout" method="POST" style="margin:0; padding:0;">
+                <button class="nav-link">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </nav>
+    </div>
+</aside>
+
+<!-- Right Section: Personal Information -->
+<section class="account-content">
+    <div class="content-card">
+        <h2 class="content-title">Personal Information</h2>
+        <hr class="divider">
+        
+            <div class="profile-picture-container">
+                <label for="profile-picture-upload" class="profile-picture-label">
+                        <img src="<%= user.profile_photo %>" alt="<%= user.username %>" class="profile-picture-img">
+                    <div class="profile-name-tag"><%=user.username%></div>
+                </label>
+            </div>
+
+            <form action="#" class="profile-form">
+  <div class="form-group">
+    <label for="username" class="form-label">Username</label>
+    <input type="text" id="username" class="form-input" value="<%=user.username%>" readonly>
+  </div>
+  <div class="form-group">
+    <label for="phone" class="form-label">Phone number</label>
+    <input type="number" id="phone" class="form-input" value="<%=user.phone%>" readonly>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="firstname" class="form-label">Firstname</label>
+      <input type="text" id="firstname" class="form-input" value="<%=user.first_name%>" readonly>
+    </div>
+    <div class="form-group">
+      <label for="lastname" class="form-label">Lastname</label>
+      <input type="text" id="lastname" class="form-input" value="<%=user.last_name%>" readonly>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button type="button" class="btn" id="editPageBtn">Edit</button>
+  </div>
+</form>
+
+
+            <%if(!user.googleId){%>
+            <hr class="divider">
+
+            <div class="account-actions">
+                <div class="action-item">
+                    <div>
+                        <p class="action-label">Email</p>
+                        <p><%=user.email%></p>
+                    </div>
+                    <button class="btn" id="emailChange">Change</button>
+                </div>
+                <div class="action-item">
+                     <div>
+                        <p class="action-label">Password</p>
+                        <p>**********</p>
+                    </div>
+                    <button class="btn" id="passChange">Change</button>
+                </div>
+                <%}%>
+            </div>
+        </div>
+    </section>
+</div>
+
+  <div class="custom-alert" id="customAlert">
+    <div class="alert-box">
+      <p id="alertMessage"></p>
+    </div>
+  </div>
+
+
+<script>
+const tagName = document.querySelector('.profile-name-tag')
+const form = document.querySelector('.profile-form')
+const usernameinput = document.getElementById('username')
+const phoneinput = document.getElementById('phone')
+const firstnameinput = document.getElementById('firstname')
+const lastnameinput = document.getElementById('lastname')
+const editPageBtn = document.getElementById('editPageBtn')
+const passChangebtn = document.getElementById('passChange')
+const emailChangebtn = document.getElementById('emailChange')
+
+   function customAlert(message, duration = 5000) {
+      document.getElementById('alertMessage').textContent = message
+      document.getElementById('customAlert').style.display = 'flex'
+      setTimeout(() => {
+        closeAlert()
+      },duration)
+    }
+
+     function closeAlert() {
+      document.getElementById('customAlert').style.display = 'none'
+    }
+
+  editPageBtn.addEventListener('click', () => {
+  window.location.href = '/account/edit'
+  })
+
+  passChangebtn.addEventListener('click',async ()=>{
+   window.location.href = "/account/changePassword"
+  })
+
+
+  emailChangebtn.addEventListener('click',(e)=>{
+   window.location.href = "/account/changeEmailotp"
+  })
+
+
+  
+
+</script>
+

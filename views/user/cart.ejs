@@ -1,0 +1,242 @@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+
+   
+            
+            <%if(cart.length==0){%>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   
+    <div class="w-full max-w-lg mx-auto p-4 md:p-8">
+        <div class="bg-white rounded-2xl shadow-xl text-center p-8 md:p-12">
+            <!-- More illustrative shopping bag icon -->
+            <div class="mb-6">
+                <svg class="w-24 h-24 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
+            
+            <!-- Main Heading -->
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Your Cart is Empty</h1>
+            
+            <!-- Informational Text -->
+            <p class="text-gray-600 mb-8 text-lg">Looks like you haven't added anything yet. Let's find something for you!</p>
+            
+            <!-- Call to Action Button -->
+            <a href="/shop" class="inline-block bg-black text-white font-bold py-4 px-10 rounded-xl shadow-lg hover:bg-gray-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+                Continue Shopping
+            </a>
+            
+            <!-- Divider -->
+            <div class="my-8 border-t border-gray-200"></div>
+
+        </div>
+    </div>
+
+                <%}else{%>
+             <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">My Cart</h1>
+
+        <div class="flex flex-col lg:flex-row gap-12">
+            <div class="flex-grow">
+                <div class="bg-white rounded-lg shadow-md">
+                    <!-- Cart Header -->
+                    <div class="hidden md:grid grid-cols-6 gap-4 font-semibold text-gray-600 bg-gray-100 p-4 rounded-t-lg">
+                        <div class="col-span-3">Product</div>
+                        <div class="text-center">Price</div>
+                        <div class="text-center">Quantity</div>
+                        <div class="text-right">Total</div>
+                    </div>
+                    <%cart.forEach(cart=>{%>
+                    <!-- Cart Product 1 -->
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center p-4 border-b product-item" id="<%=cart.cart_id%>">
+                        <div class="col-span-1 md:col-span-3 flex items-center gap-4">
+                            <img src="<%=cart.image%>" alt="Chronograph Men's Watch" class="rounded-md w-20 h-20 object-cover">
+                            <div>
+                                <p class="font-semibold text-gray-800"><%=cart.name%></p>
+                                <button class="text-red-500 text-sm font-medium hover:underline" id="removebtn" data-id="<%=cart.cart_id%>">Remove</button>
+                                <%if(cart.stock<1){%>
+                                    <p class="text-sm text-red-600">Out of Stock</p>
+                                    <%}else{%>
+                                    <p class="text-sm text-green-600">In Stock</p>
+                                    <%}%>
+                                    <p><%=cart.stock%></p>
+                            </div>
+                        </div>
+                        <div class="text-center font-medium price" data-price="<%=cart.price%>">₹<%=cart.price%></div>
+                        <div class="flex justify-center items-center">
+                            <%if(cart.stock>0){%>
+                            <div class="flex items-center border border-gray-300 rounded-md">
+                                <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 minus-btn" data-stock=<%=cart.stock%>  data-id="<%=cart.cart_id%>">-</button>
+                                <input type="text" class="w-12 text-center border-0 focus:ring-0 quantity" value="<%=cart.quantity%>" readonly>
+                                <button class="px-3 py-1 text-gray-600 hover:bg-gray-100 plus-btn" data-stock=<%=cart.stock%>  data-id="<%=cart.cart_id%>">+</button>
+                            </div>
+                            <%}%>
+                        </div>
+                        <div class="text-right font-bold text-lg total-price">₹<%=cart.price*cart.quantity%></div>
+                    </div>
+                    <%})%>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Item Sub Total</span>
+                            <span id="subtotal">₹22,499</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Shipping</span>
+                            <span>Free</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <div class="flex justify-between font-bold text-xl text-gray-800">
+                                <span>Total</span>
+                                <span id="grand-total">₹22,499</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                         <div class="group">
+                             <button class="w-full flex justify-between items-center text-left text-gray-600 font-medium py-2">
+                                 <span>Coupon code</span>
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform group-focus-within:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div class="overflow-hidden max-h-0 group-focus-within:max-h-40 transition-all duration-500 ease-in-out">
+                                <div class="bg-gray-100 p-3 rounded-md mt-2">
+                                    <p class="text-sm text-green-600 font-medium">Grab 20% off use the code</p>
+                                    <button class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md mt-2 hover:bg-gray-300">
+                                        GET20-KOFF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-gray-800 transition-colors" id="checkoutBtn">
+                        CHECKOUT
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <%}%>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        
+            const productItems = document.querySelectorAll('.product-item')
+            const formatCurrency = (amount) =>{
+                return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount).replace('₹', '₹')
+            }
+            const updateItemTotal = (item)=>{
+                const priceElement = item.querySelector('.price')
+                const quantityInput = item.querySelector('.quantity')
+                const totalPriceElement = item.querySelector('.total-price')
+                const price = parseFloat(priceElement.dataset.price)
+                const quantity = parseInt(quantityInput.value)
+                const total = price * quantity
+                totalPriceElement.textContent = formatCurrency(total)
+                updateOrderSummary()
+            }
+            const updateOrderSummary=()=>{
+                let subtotal = 0
+                document.querySelectorAll('.product-item').forEach(item => {
+                    const price = parseFloat(item.querySelector('.price').dataset.price)
+                    const quantity = parseInt(item.querySelector('.quantity').value)
+                    subtotal += price * quantity
+                })
+                document.getElementById('subtotal').textContent = formatCurrency(subtotal)
+                document.getElementById('grand-total').textContent = formatCurrency(subtotal)
+            }
+            productItems.forEach(item => {
+                const minusBtn = item.querySelector('.minus-btn')
+                const plusBtn = item.querySelector('.plus-btn')
+                const quantityInput = item.querySelector('.quantity')
+                minusBtn.addEventListener('click', async(e) => {
+                    let quantity = parseInt(quantityInput.value)
+                    const cartId = e.currentTarget.dataset.id
+                    if (quantity > 1) {
+                        const response = await fetch(`/cart/dequabtity/${cartId}`,{method:"PATCH"})
+                        if(response.ok){
+                            quantityInput.value = quantity - 1
+                            updateItemTotal(item)
+                        }
+                    }
+                })
+                plusBtn.addEventListener('click', async(e) => {
+                    let quantity = parseInt(quantityInput.value)
+                    const cartId = e.currentTarget.dataset.id
+                    const stock = e.currentTarget.dataset.stock
+                    if (quantity < stock && quantity < 5) {
+                    const response = await fetch(`/cart/inquabtity/${cartId}`,{method:"PATCH"})
+                    if(response.ok){
+                        quantityInput.value = quantity + 1
+                        updateItemTotal(item)
+                    }
+                }
+                })
+            })
+            updateOrderSummary()
+        
+
+        document.querySelectorAll('#removebtn').forEach((btn)=>{
+            btn.addEventListener('click',async(e)=>{
+                e.preventDefault()
+                const cartId = e.currentTarget.dataset.id
+                try {
+                    const response= await fetch(`/cart/delete/${cartId}`, { method: "DELETE" })
+                    if (response.ok){
+              Swal.fire({
+                title: 'Removed!',
+                text: 'cart has been removed.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+              })
+              document.getElementById(cartId)?.remove()
+               setTimeout(() => {
+                let subtotal = 0
+                document.querySelectorAll('.product-item').forEach(item => {
+                const price = parseFloat(item.querySelector('.price').dataset.price)
+                const quantity = parseInt(item.querySelector('.quantity').value)
+                subtotal += price * quantity
+                })
+                document.getElementById('subtotal').textContent = `₹${subtotal}`
+                document.getElementById('grand-total').textContent = `₹${subtotal}`
+                },300)
+            } else {
+              Swal.fire({ title: 'Error!', text: 'Failed to remove cart.', icon: 'error' })
+            }
+                } catch (error) {
+                    console.log(error)
+                    Swal.fire('Error', 'Something went wrong', 'error')
+                }
+
+            })
+        })
+
+        document.getElementById('checkoutBtn').addEventListener('click',async(e)=>{
+            e.preventDefault()
+            window.location.href = '/checkout'
+        })
+
+    </script>
+
+

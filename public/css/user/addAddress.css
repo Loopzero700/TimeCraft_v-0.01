@@ -1,0 +1,29 @@
+.form-checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.form-checkbox {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #000;
+}
+
+.form-checkbox-label {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.btn.btn-secondary {
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    display: inline-flex; 
+    align-items: center;
+}
+
+.btn.btn-secondary:hover {
+    background-color: #e0e0e0;
+}

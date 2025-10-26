@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
 
+
   <link rel="stylesheet" href="/css/user/main.css">
 </head>
 <body>
@@ -46,30 +47,25 @@
 
 
     <div class="header-icons">
-      <a href="#"><span class="material-symbols-outlined">favorite</span></a>
-      <a href="#"><span class="material-symbols-outlined">shopping_cart</span></a>
+      <a href="/Wishlist"><span class="material-symbols-outlined">favorite</span></a>
+      <a href="/cart"><span class="material-symbols-outlined">shopping_cart</span></a>
 
      
       <% if (typeof user !== 'undefined' && user) { %>
-      <div class="user-dropdown">
   <button id="user-menu-button" class="icon-button">
+    <a href="/account">
     <span class="material-symbols-outlined">person</span>
+    </a>
   </button>
-  <div id="user-menu" class="dropdown-menu">
-    <a href="/profile">My Account</a>
-    <a href="/orders">My Orders</a>
-    <div class="dropdown-divider"></div>
-
-    <!-- Logout form -->
-    <form action="/logout" method="POST" style="margin:0; padding:0;">
-      <button type="submit" class="dropdown-link">Logout</button>
-    </form>
-  </div>
-</div>
+  
 
       <% } else { %>
         
-        <a href="/login"><span class="material-symbols-outlined">person</span></a>
+        <a href="/login">
+  <button class="login-btn">
+    Login
+  </button>
+</a>
       <% } %>
 
     </div>
@@ -121,25 +117,25 @@
 
 <script>
     
-    const userMenuButton = document.getElementById('user-menu-button');
+    const userMenuButton = document.getElementById('user-menu-button')
 
    
-        const userMenu = document.getElementById('user-menu');
+        const userMenu = document.getElementById('user-menu')
 
         
         userMenuButton.addEventListener('click', function(event) {
             event.stopPropagation(); 
-            userMenu.classList.toggle('show');
-        });
+            userMenu.classList.toggle('show')
+        })
 
        
         window.addEventListener('click', function(event) {
-            if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
-                if (userMenu.classList.contains('show')) {
-                    userMenu.classList.remove('show');
-                }
-            }
-        });
+           if (userMenu && !userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+              if (userMenu.classList.contains('show')) {
+                      userMenu.classList.remove('show')
+              }
+          }
+        })
     
 </script>
 

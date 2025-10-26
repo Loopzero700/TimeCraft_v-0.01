@@ -43,6 +43,10 @@ ul {
   z-index: 9999;    
 }
 
+.site-header a{
+  display: flex;
+}
+
 .header-container {
   display: flex;
   align-items: center;
@@ -347,4 +351,17 @@ ul {
     grid-template-columns: 1fr 1fr;
     text-align: center;
   }
+}
+.login-btn{
+  background-color: #000;
+  color: #e9ecef;
+  border-radius: .2rem;
+  padding: 4px;
+  margin-bottom: 3px;
+  cursor: pointer;
+}
+.login-btn:hover{
+  background-color: #ffffff;
+  color: #000;
+  transition: 300ms;
 }

@@ -22,6 +22,10 @@ const productSchema = new Schema({
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  isListed:{
+    type:Boolean,
+    default: true
+  },
   variants: [
     {
       color: String,

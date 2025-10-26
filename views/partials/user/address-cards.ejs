@@ -1,0 +1,27 @@
+<div class="address-cards-container" id="address-list">
+  <% if(address){ %>
+    <% address.forEach(add => { %>
+      <div class="address-card-wrapper" id="a-<%= add._id %>">
+        <div class="address-card">
+          <% if(add.is_default){ %>
+            <div class="default-badge">Default</div>
+          <% } %>
+          <h3 class="address-name"><%= add.name %></h3>
+          <p class="address-details">
+            <%= add.house_name %>, <%= add.locality %><br>
+            <%= add.city %>, <%= add.state %><br>
+            - <%= add.pincode %>
+          </p>
+          <p class="address-mobile">Mobile : <%= add.phone_number %></p>
+          <div class="address-actions">
+            <button class="btn btn-edit" data-id="<%= add._id %>">Edit</button>
+            <% if(address.length > 1){ %>
+              <button class="btn btn-delete" data-id="<%= add._id %>">Delete</button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
