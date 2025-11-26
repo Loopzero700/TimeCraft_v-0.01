@@ -2,6 +2,7 @@ const passport = require('passport');
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require('../models/userSchema');
 const env = require('dotenv').config();
+const Wallet = require('../models/walletSchema')
 
 passport.use(
   new GoogleStrategy(
@@ -45,10 +46,17 @@ passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
 
+    const userWallet = new Wallet({
+                    user_id: User._id,
+                    balance: 0
+        })
+  await userWallet.save();
+
     
     if (user && user.isBlocked) {
       return done(null, false, { message: "Your account is blocked." });
     }
+
 
     done(null, user);
   } catch (err) {
