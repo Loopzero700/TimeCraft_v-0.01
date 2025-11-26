@@ -3,14 +3,31 @@ const Cart = require('../../models/cartSchema')
 const Address = require('../../models/addressSchema')
 const Product = require('../../models/productSchema')
 const Order = require('../../models/orderSchema')
+const Coupon = require('../../models/couponSchema')
+const Wallet = require('../../models/walletSchema')
+const {applyOffersToProduct,getActiveOffers} = require('../../helpers/offerHelper')
+const {createRazorpayOrder,verifyRazorpaySignature} = require('../../helpers/Razorpay')
+const {debitFromWallet}= require('../../helpers/walletHelpers')
+const {calculateCartDetails} = require('../../helpers/calculateTotal')
+const {createOrderDocument} = require('../../helpers/createOrder')
+const internalFinalizeOrder = require('../../helpers/FinalizeOrder')
 
 
 const getCheckout = asynchandler(async(req,res)=>{
     const userId = req.session.user||req.user
     const cartData = await Cart.find({user_id:userId})
+    const activeOffers = await getActiveOffers()
+
+    let coupon = null
+    if(req.session.appliedCouponId){
+        coupon = await Coupon.findById(req.session.appliedCouponId)
+    }
+
     const productList = await Promise.all(
-          cartData.map(async (item) => {
-            const productData = await Product.findById(item.product_id)
+      cartData.map(async (item) => {
+        const product = await Product.findById(item.product_id)
+        const productData = applyOffersToProduct(product, activeOffers)
+            
             if (!productData) return null
             const variantIndex = item.variant
             const variantData = productData.variants[variantIndex]
@@ -41,97 +58,143 @@ const getCheckout = asynchandler(async(req,res)=>{
             return sum+(item.nonDisPrice*item.quantity)
         },0)
 
-        const savedAmount = distotal-total
+        let couponDiscount = 0
+        if (coupon) {
+            
+            if (total < coupon.minPurchase) {
+            
+                coupon = null 
+            } else {
+            
+                if (coupon.discountType === "percentage") {
+                    couponDiscount = Math.round((total * coupon.discountAmount) / 100)
+                    if (coupon.maxDiscount && couponDiscount > coupon.maxDiscount) {
+                        couponDiscount = coupon.maxDiscount
+                    }
+                } else if (coupon.discountType === "fixed") {
+                    couponDiscount = coupon.discountAmount
+                }
+                if (couponDiscount > total) couponDiscount = total
+            }
+        }
+        
+    const finalAmount = total - couponDiscount
+    
+    const savedAmount = (distotal - total) + couponDiscount
 
     const addressData = await Address.find({user_id:userId})
     const sortedaddress = addressData.sort((a,b)=>{return b.is_default-a.is_default})
-    res.render('user/checkout',{user:userId, save:savedAmount, cart:cartData, address:sortedaddress, products:productList, totalAmt:total})
+    res.render('user/checkout',{user:userId, save:savedAmount, cart:cartData, address:sortedaddress, products:productList, totalAmt:finalAmount,couponDiscount:couponDiscount})
+})
+
+const addAddress = asynchandler(async(req,res)=>{
+  res.render('user/checkoutAddaddress')
 })
 
 
+const addOrder = asynchandler(async(req,res)=>{
+  const userId = req.user || req.session.user
+    const { addressId, paymentMethod} = req.body
+    const discountAmount = req.session.couponDiscount || 0
+   
+    const paymentStatus = "Pending"
+    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount)
+    await internalFinalizeOrder(userId,order.items)
+  res.status(200).json({ message: "Order created successfully", order:order})
+})
 
-const addOrder = asynchandler(async (req, res) => {
-  const userId = req.session.user || req.user
-  
-  const { addressId, paymentMethod } = req.body
 
-  const address = await Address.findById(addressId)
+const orderWallet = asynchandler(async (req, res) => {
+    const { addressId, paymentMethod } = req.body
+    const userId = req.user || req.session.user
+    const discountAmount = req.session.couponDiscount || 0
+    const paymentStatus = "Paid"
+    const reason = "product purchase"
+    const WalletData = await Wallet.findOne({ user_id: userId });
+    const { totalAmount, orderItems } = await calculateCartDetails(userId)
 
-  const cartData = await Cart.find({ user_id: userId })
-  const items = []
-
-  let subtotal = 0  
-
-  for (const item of cartData) {
-    const productData = await Product.findById(item.product_id)
-
-    if (!productData) {
-      console.log(`Product not found for ID: ${item.product_id}`)
-      continue
+    if (!WalletData) {
+        return res.status(404).json({ success: false, message: "Wallet not found." })
+    }
+    let finalPrice = totalAmount-discountAmount
+    console.log(WalletData.balance < finalPrice)
+    if (WalletData.balance < finalPrice) {
+        return res.status(400).json({ success: false, message: "Insufficient wallet balance." })
+    }
+    if (totalAmount === 0) {
+        return res.status(400).json({ success: false, message: "Cart is empty." })
     }
 
-    const variantData = productData.variants[item.variant]
-    subtotal+=(variantData.discounted_price*item.quantity)
+    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount)
+    try {
+        await debitFromWallet(userId, reason, finalPrice, order._id)
+        await internalFinalizeOrder(userId, order.items)
+        res.status(200).json({ 
+            success: true, 
+            message: "Order created successfully", 
+            orderId: order._id 
+        })
 
-    items.push({
-      product_id: item.product_id,
-      variant: item.variant,
-      quantity: item.quantity,
-      price: variantData.price,
-      discounted_price: variantData.discounted_price
-    })
+    } catch (paymentError) {
+        console.error("Wallet order failed AFTER creation:", paymentError);
+        
+        await Order.findByIdAndUpdate(order._id, { 
+            $set: { 
+                payment_status: 'Failed',
+                status: 'Cancelled'
+            } 
+        })
+        res.status(500).json({ 
+            success: false, 
+            message: paymentError.message || "Payment failed after order creation." 
+        })
+    }
+})
+
+const razorpayOrder = asynchandler(async(req,res)=>{
+  const userId = req.user || req.session.user
+  const discountAmount = req.session.couponDiscount || 0
+  const {totalAmount} = await calculateCartDetails(userId)
+  const order = await createRazorpayOrder(totalAmount-discountAmount)
+  res.status(200).json(order)
+})
+
+const verifyRazorpay = asynchandler(async(req,res)=>{
+  const userId = req.user || req.session.user
+  const discountAmount = req.session.couponDiscount
+  const {response,addressId,paymentMethod} = req.body
+  const paymentStatus = "Paid"
+  const result = await verifyRazorpaySignature(response)
+  
+  if(result){
+    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount)
+    await internalFinalizeOrder(userId,order.items)
+    res.status(200).json({ success:true, message: "Order created successfully", orderId:order._id})
+  }else{
+    res.status(400).json({message:"payment verifycation is failed. !!"})
   }
 
+})
 
-  const total = subtotal 
-  console.log(total)
+const paymentFailed = asynchandler(async(req,res)=>{
+  const userId = req.user || req.session.user
+  const {addressId,paymentMethod} = req.body
+  const paymentStatus = "Failed"
 
-  const order = new Order({
-    order_id: `ORD-${Date.now()}`,
-    user_id: userId,
-    payment_method: paymentMethod,
-    subtotal,
-    total,
-    address_name: address.name,
-    address_house_name: address.house,
-    address_locality: address.locality,
-    address_city: address.city,
-    address_state: address.state,
-    address_country: address.country,
-    address_pincode: address.pincode,
-    address_phone_number: address.phone_number,
-    items
-  })
+  const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus)
+    await internalFinalizeOrder(userId)
 
-  await order.save()
-  let pId 
-  let variant 
-  let qut
+    res.status(400).json({ message: "Order incomplete, please try again.", orderId:order._id })
 
-  for (let cart of cartData) {
-  const pId = cart.product_id
-  const variantIndex = cart.variant  
-  const quantity = cart.quantity
-
-  await Product.updateOne(
-    { _id: pId },
-    { $inc: { [`variants.${variantIndex}.stock`]: -quantity } }
-  )
-}
-  
-  for(let cart of cartData){
-    let cartId = cart._id
-    await Cart.findByIdAndDelete(cartId)
-  }
-
-console.log(order)
-
-  res.status(200).json({ message: "Order created successfully", order })
-  
 })
 
 
 module.exports = {
     getCheckout,
-    addOrder
+    addAddress,
+    addOrder,
+    orderWallet,
+    razorpayOrder,
+    verifyRazorpay,
+    paymentFailed
 }
