@@ -2,6 +2,8 @@ const asynchandler = require('express-async-handler')
 const Cart = require('../../models/cartSchema')
 const Product = require('../../models/productSchema')
 const Wishlist = require('../../models/wishlistSchema')
+const Coupon = require('../../models/couponSchema')
+const {getActiveOffers,applyOffersToProduct} = require('../../helpers/offerHelper')
 
 
 const getCart = asynchandler(async (req, res) => {
@@ -12,8 +14,12 @@ const getCart = asynchandler(async (req, res) => {
       cartItems.map(async (item) => {
         const productData = await Product.findById(item.product_id)
         if (!productData) return null
+
+        const activeOffers = await getActiveOffers()
+        const offerapplyedProduct = applyOffersToProduct(productData, activeOffers)
+
         const variantIndex = item.variant
-        const variantData = productData.variants[variantIndex]
+        const variantData = offerapplyedProduct.variants[variantIndex]
         const caId = item._id
         if(variantData.stock == 0){
           await Cart.findByIdAndDelete(caId)
@@ -21,8 +27,8 @@ const getCart = asynchandler(async (req, res) => {
 
         return {
           cart_id: item._id,
-          product_id: productData._id,
-          name: productData.name,
+          product_id: offerapplyedProduct._id,
+          name: offerapplyedProduct.name,
           image: variantData.image_url[0],
           price: variantData.discounted_price,
           quantity: item.quantity,
@@ -126,12 +132,114 @@ const inquabtity = asynchandler(async(req,res)=>{
   res.status(200).json({message:"quabtity incrase by one"})
 })
 
+
+const applyCoupon = asynchandler(async (req, res) => {
+    const { code } = req.body
+    const userId = req.user || req.session.user
+
+    if (!code) {
+        return res.status(400).json({ success: false, message: "Coupon code required" })
+    }
+
+    const coupon = await Coupon.findOne({ code: code })
+
+    if (!coupon) {
+        return res.status(404).json({ success: false, message: "Invalid coupon code" })
+    }
+
+    if (coupon.status !== "active") {
+        return res.status(400).json({ success: false, message: "Coupon is not active" })
+    }
+
+    const now = new Date()
+    if (coupon.expiryDate < now) {
+        return res.status(400).json({ success: false, message: "Coupon has expired" })
+    }
+
+    if (coupon.usersUsed.length >= coupon.maxUsers) {
+        return res.status(400).json({ success: false, message: "Coupon usage limit reached" })
+    }
+
+    if (coupon.usersUsed.includes(userId)) {
+        return res.status(400).json({ success: false, message: "You have already used this coupon" })
+    }
+
+    const cartItems = await Cart.find({ user_id: userId }).populate("product_id")
+    
+    if (!cartItems || cartItems.length === 0) {
+        return res.status(400).json({ success: false, message: "Cart is empty" })
+    }
+
+    const activeOffers = await getActiveOffers()
+    
+    let subtotal = 0
+
+    for (const item of cartItems) {
+
+        const productWithOffers = applyOffersToProduct(item.product_id, activeOffers)
+        
+        const variantData = productWithOffers.variants[item.variant]
+      
+        const price = variantData.discounted_price || variantData.price
+        
+        subtotal += price * item.quantity
+    }
+
+    if (subtotal < coupon.minPurchase) {
+        return res.status(400).json({
+            success: false,
+            message: `Minimum purchase ₹${coupon.minPurchase} required`
+        })
+    }
+  
+    let discount = 0
+
+    if (coupon.discountType === "percentage") {
+        discount = Math.round((subtotal * coupon.discountAmount) / 100)
+        if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+            discount = coupon.maxDiscount
+        }
+    } else if (coupon.discountType === "fixed") {
+        discount = coupon.discountAmount
+    }
+
+    
+    if (discount > subtotal) discount = subtotal
+    
+    req.session.appliedCouponId = coupon._id
+    req.session.couponDiscount = discount
+
+    return res.status(200).json({
+        success: true,
+        message: "Coupon applied successfully",
+        coupon: {
+            code: coupon.code,
+            discountType: coupon.discountType,
+            discountAmount: coupon.discountAmount
+        },
+        subtotal,
+        discount,
+        grandTotal: subtotal - discount
+    })
+})
+
+const removeCoupon = asynchandler(async (req, res) => {
+    req.session.appliedCouponId = null
+    return res.status(200).json({ 
+        success: true, 
+        message: "Coupon removed successfully" 
+    })
+})
+
+
 module.exports = {
     getCart,
     addCart,
     deleteCart,
     dequabtity,
-    inquabtity
+    inquabtity,
+    applyCoupon,
+    removeCoupon
 }
     
 
