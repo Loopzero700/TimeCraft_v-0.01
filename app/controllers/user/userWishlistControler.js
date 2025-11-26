@@ -3,6 +3,7 @@ const User = require('../../models/userSchema')
 const Product = require('../../models/productSchema')
 const Wishlist = require('../../models/wishlistSchema')
 const Cart = require('../../models/cartSchema')
+const {applyOffersToProduct,getActiveOffers} = require('../../helpers/offerHelper')
 
 const getWishlist = asynchandler(async (req, res) => {
   try {
@@ -10,16 +11,20 @@ const getWishlist = asynchandler(async (req, res) => {
     const wishlistItems = await Wishlist.find({ user_id: userId })
     const productlist = []
     for (const item of wishlistItems) {
-      const product = await Product.findById(item.product_id)
+      const product = await Product.findById(item.product_id).lean()
+
+      const activeOffers = await getActiveOffers()
+      const offerapplyedProduct = applyOffersToProduct(product, activeOffers)
      
       if (product) {
         productlist.push({
-          ...product.toObject(),
+          ...offerapplyedProduct,
           variant: item.variant,
           wishlist_id: item._id,
         })
       }
     }
+    console.log(productlist)
     res.render('user/wishlist', {
       user: userId,
       wishlist: productlist,
