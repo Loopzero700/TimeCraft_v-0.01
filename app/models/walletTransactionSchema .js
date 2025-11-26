@@ -13,7 +13,7 @@ const walletTransactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["refund", "debit", "referral"],
+    enum: ["refund", "debit", "referral","credit"],
     required: true,
   },
   description: {
