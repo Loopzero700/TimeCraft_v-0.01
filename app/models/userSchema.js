@@ -1,5 +1,15 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const Coupon = require("./couponSchema");
 const {Schema} = mongoose
+
+function generateReferralCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'REF-';
+    for (let i = 0; i < 6; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
+    return result
+}
 
 const userSchema = new Schema({
     username : {
@@ -53,6 +63,12 @@ const userSchema = new Schema({
     isAdmin : {
         type : Boolean,
         default : false
+    },
+    referralCode:{
+        type:String,
+        unique: true,
+        sparse: true,
+        default: generateReferralCode
     },
     created_at: {
          type: Date,
