@@ -1,6 +1,9 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const multer = require('multer');
+const _storageLib = require('multer-storage-cloudinary');
 require('dotenv').config();
+
+const CloudinaryStorage = _storageLib.CloudinaryStorage || _storageLib
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,12 +14,11 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'TimeCraft_Brands', 
-        allowed_formats: ['jpeg', 'png', 'jpg', 'gif'], 
-        transformation: [{ width: 500, height: 500, crop: 'limit' }] 
+        folder: 'TimeCraft_Brands',
+        allowed_formats: ['jpeg', 'png', 'jpg', 'gif', 'webp'],
     }
 })
 
-const upload = require('multer')({ storage: storage });
+const upload = multer({ storage: storage })
 
-module.exports = {cloudinary,upload}
+module.exports = { cloudinary, upload }
