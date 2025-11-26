@@ -2,10 +2,11 @@ const asynchandler =require('express-async-handler')
 const User = require('../../models/userSchema')
 const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
-const env = require('dotenv').config()
 const category = require('../../models/categorySchema')
 const product = require('../../models/productSchema')
 const banner = require('../../models/bannerSchema')
+const Wallet = require('../../models/walletSchema')
+const {addToWallet} = require('../../helpers/walletHelpers')
 
 
 
@@ -175,11 +176,16 @@ const verifyOtp = asynchandler(async(req,res)=>{
       profile_photo: 'https://placehold.co/100x100/dfdcd9/31343C?text=' + user.username.charAt(0).toUpperCase()
     })
     await saveUserData.save()
-    req.session.user = saveUserData._id;
+
+    const userWallet = new Wallet({
+      user_id:saveUserData._id,
+    })
+
+    await userWallet.save()
 
     delete req.session.otpContext
   
-    res.json({success:true,redirectUrl:"/login"})
+    res.json({success:true,redirectUrl:"/referral"})
   }else{
     res.json({success:false,message:"Invalid OTP Please try angain"})
   }
@@ -241,7 +247,7 @@ const loadOtp = asynchandler((req, res) => {
 const login =asynchandler(async(req,res)=>{
   const {email,password}=req.body
   const finduser = await User.findOne({isAdmin:0,email:email})
- 
+
   if(!finduser){
     return res.render('user/login',{message:"User not found"})
   }
@@ -256,6 +262,27 @@ const login =asynchandler(async(req,res)=>{
   if(!passwordMatch){
     return res.render('user/login',{message:"incorrect password"})
   }
+
+  const isReferral = req.session.referalBy
+  console.log('😒',isReferral)
+    
+    if (isReferral) {
+        
+        if (isReferral !== finduser._id.toString()) {
+             const reason = "Referral Offer"
+             const type = "credit"
+             const amount = 500
+
+             try {
+                 await addToWallet(isReferral, reason, type, amount)
+                 await addToWallet(finduser._id, reason, type, amount)
+             } catch (err) {
+                 console.error("Wallet update failed", err)
+             }
+        }
+        req.session.referalBy = null
+    }
+
   req.session.user = finduser._id
   res.redirect('/')
 })
@@ -379,6 +406,24 @@ const resetpass = asynchandler(async(req,res)=>{
 
 })
 
+const getReferral = asynchandler(async(req,res)=>{
+  res.render('user/referral')
+})
+
+const validateReferral = asynchandler(async(req,res)=>{
+  const {referralCode} = req.body
+  
+  const userReferred = await User.find({referralCode:referralCode})
+
+  console.log(userReferred[0]._id)
+  if(userReferred.length<1){
+    return res.status(400).json({message:"Invalid referral code."})
+  }
+  req.session.referalBy = userReferred[0]._id
+  res.status(200).json({success:true})
+  
+})
+
 
 
 module.exports = {
@@ -396,5 +441,7 @@ module.exports = {
     forgotverifyOtp,
     getforgotOtp,
     getRestPass,
-    resetpass
+    resetpass,
+    getReferral,
+    validateReferral
 }
