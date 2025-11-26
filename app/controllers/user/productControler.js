@@ -4,11 +4,16 @@ const User = require('../../models/userSchema')
 const paginatehelper = require('../../helpers/paginate')
 const Category = require('../../models/categorySchema')
 const {NotFoundError} = require('../../helpers/errorClasses')
+const {applyOffersToProduct,getActiveOffers} = require('../../helpers/offerHelper')
 
 const getproductPage = asynchandler(async(req,res)=>{
 
     const productId = req.params.id
-    const product = await Product.findById(productId)
+    const products = await Product.findById(productId)
+    
+    const activeOffers = await getActiveOffers()
+    const product = applyOffersToProduct(products, activeOffers)
+
     //product not founded error handelin
     if(!product) throw new NotFoundError('Product not found with that ID')
     
@@ -46,11 +51,9 @@ const getproductPage = asynchandler(async(req,res)=>{
     }
 
     const result = await paginatehelper(Product, options)
-    console.log(result.results)
     if(product.status=="active"){
         res.render('user/productDetailed',{productData:product,cat:result.results,breadcrumbs: breadcrumbs,user:userData})
-    }
-    
+    }  
 
 }) 
 
