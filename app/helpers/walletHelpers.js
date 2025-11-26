@@ -1,7 +1,6 @@
 const Wallet = require('../../app/models/walletSchema')
 const WalletTransaction = require('../../app/models/walletTransactionSchema ')
 const User = require('../../app/models/userSchema')
-const { model } = require('mongoose')
 
 const addToWallet = async function(userId,reason,type,amount,orderId=null){
     try {
@@ -37,13 +36,13 @@ const debitFromWallet = async function(userId, reason, amount, orderId = null) {
     try {
         if (amount <= 0) throw new Error('Amount should need to be more then zero')
 
-        
         const user = await User.findById(userId)
         if (!user) throw new Error('there is no user founded in the DB')
 
         const wallet = await Wallet.findOne({ user_id: userId })
         if (!wallet) throw new Error('There is not wallet founded for this user')
 
+            console.log(wallet.balance , amount)
         
         if (wallet.balance < amount) throw new Error('Insufficient wallet balance.')
         
@@ -52,7 +51,7 @@ const debitFromWallet = async function(userId, reason, amount, orderId = null) {
 
         const transactionUpdate = new WalletTransaction({ 
             wallet_id: wallet._id,
-            amount: -amount,
+            amount: amount,
             type: "debit",
             description: reason,
             order_id: orderId
