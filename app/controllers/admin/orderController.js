@@ -3,6 +3,8 @@ const Order = require('../../models/orderSchema')
 const Product = require('../../models/productSchema')
 const paginatehelper = require("../../helpers/paginate")
 const { options } = require("../../routes/userRouter")
+const {addToWallet} = require('../../helpers/walletHelpers')
+const { addWalletAmount } = require("../user/userWalletController")
 
 const getOrder = asynchandler(async(req,res)=>{
 
@@ -156,6 +158,7 @@ const returnRequest = asynchandler(async (req, res) => {
   const { orderId, itemId } = req.params
   const { action } = req.body
 
+  const orderData = await Order.findById(orderId)
   
   const order = await Order.findOne(
     { _id: orderId, "items._id": itemId },
@@ -165,15 +168,20 @@ const returnRequest = asynchandler(async (req, res) => {
   if (!order || order.items.length === 0) {
     return res.status(404).json({ success: false, message: "Order or item not found." })
   }
-
+  const userId = orderData.user_id
   const item = order.items[0]
   const variant = item.variant
   const productId = item.product_id
   const quantity = item.quantity
+  const discounted_price = item.discounted_price
+  const amount = quantity*discounted_price
+  const reason = "product return"
+  const type = "credit"
 
   let newStatus
-
+  
   if (action === "Return-Approved") {
+      addToWallet(userId,reason,type,amount,orderId)
     newStatus = "Return-Approved"
 
     await Product.findByIdAndUpdate(
@@ -204,12 +212,21 @@ const returnRequest = asynchandler(async (req, res) => {
   })
 })
 
+const returnOrder = asynchandler(async(req,res)=>{
+    const orderId = req.params.id
+    const result = await Order.findByIdAndUpdate(orderId,{status:'Return'})
+    if(!result){
+        res.status(400).json({message:'can/\'t find the order with this id'})
+    }
+    res.status(200).json({message:"order Return requiset successful"})
+})
 
 module.exports={
     getOrder,
     getorderDetails,
     updateOrder,
     orderSearch,
-    returnRequest
+    returnRequest,
+    returnOrder
     
 }
