@@ -3,6 +3,7 @@ const Category = require("../../models/categorySchema")
 const Brand = require("../../models/brandSchema")
 const User = require('../../models/userSchema')
 const paginatehelper = require("../../helpers/paginate")
+const {getActiveOffers,applyOffersToProduct} = require('../../helpers/offerHelper')
 
 
 async function getShopPage(req, res) {
@@ -21,8 +22,7 @@ async function getShopPage(req, res) {
     if(userId){
       userData = await User.findById(userId)
     }
-    console.log(userId)
-    console.log(userData)
+   
     if (req.query.category) {
       const userSelectedCategories = (req.query.category || '').split(',').filter(id => id.trim())
       filters.category = {
@@ -88,6 +88,11 @@ async function getShopPage(req, res) {
 
     const result = await paginatehelper(Product, options)
     
+    const activeOffers = await getActiveOffers()
+    
+    const productsWithOffers = result.results.map(product => {
+        return applyOffersToProduct(product, activeOffers)
+    })
 
       const breadcrumbs = [
         { name: 'Home', link: '/' },
@@ -99,7 +104,7 @@ async function getShopPage(req, res) {
         success: true,
         user:userData,
         message: "Products fetched successfully",
-        results: result.results,
+        results: productsWithOffers,
         page: result.pagination.currentPage,
         totalPages: result.pagination.totalPages,
         limit: result.pagination.limit,
@@ -112,7 +117,7 @@ async function getShopPage(req, res) {
       user:userData,
       category: activeCategories,
       brand: activeBrands,
-      products: result.results || [], 
+      products: productsWithOffers || [], 
       breadcrumbs: breadcrumbs,
       pagination: {
         page: result.pagination.currentPage,
