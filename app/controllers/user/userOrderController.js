@@ -5,9 +5,8 @@ const paginatehelper = require("../../helpers/paginate")
 const mongoose = require('mongoose')
 const {checkAndUpdateOrderStatus}=require('../../helpers/isOrderStatus')
 const PDFDocument = require('pdfkit')
-
-
-
+const {createRazorpayOrder,verifyRazorpaySignature} = require('../../helpers/Razorpay')
+const {addToWallet} = require('../../helpers/walletHelpers')
 const getOrder = asynchandler(async (req, res) => {
     const userId = req.session.user || req.user
     const options = {
@@ -42,7 +41,6 @@ const getOrderDetails = asynchandler(async (req, res) => {
     .populate("items.product_id")
     .lean()
   const Data = await Order.findById(orderId)
-  console.log(orderData)
   if(!orderData) throw new NotFoundError
   res.render("user/orderDetailes", { user: userId, data: orderData, orders:Data })
 })
@@ -115,6 +113,7 @@ const searchOrders = asynchandler(async (req, res) => {
 })
 
 const cancelOrderItem = asynchandler(async (req, res) => {
+  const userId = req.user || req.session.user
   const { orderId, itemId } = req.body;
 
   if (!orderId || !itemId) {
@@ -152,15 +151,20 @@ const cancelOrderItem = asynchandler(async (req, res) => {
   
   const singleItemPrice = item.discounted_price || item.price
   const priceToDeduct = singleItemPrice * quantity
+  
 
   const fieldPath = `variants.${variant}.stock`
   await Product.findByIdAndUpdate(product_id, { $inc: { [fieldPath]: quantity } })
 
   item.item_status = "Cancelled"
   order.total -= priceToDeduct
-  order.subtotal -= priceToDeduct
   await order.save()
   await checkAndUpdateOrderStatus(orderId)
+  const type = "credit"
+  const reason = "Produect cancelled"
+  if(order.payment_method!=="COD"){
+    await addToWallet(userId,reason,type,priceToDeduct,orderId)
+  }
 
   res.status(200).json({ message: "Item has been cancelled successfully" })
 })
@@ -190,10 +194,11 @@ const ReturnOrderItem = asynchandler(async(req,res)=>{
     {
       $set: {
         "items.$.item_status": "Returned",
-        "items.$.cancel_reason": reason
+        "items.$.return_reason": reason
       }
     }
   )
+
 
     if (result.modifiedCount === 0) {
     if (result.matchedCount === 0) {
@@ -313,7 +318,77 @@ const getOrderSuccess = asynchandler(async(req,res)=>{
   const userId = req.session || req.user
   const orderId = req.params.id
   const orderData = await Order.findById(orderId)
-        res.render('user/orderSuccessfull',{user:userId,orderData:orderData})
+    res.render('user/orderSuccessfull',{user:userId,orderData:orderData})
+})
+
+const getIncompleteOrder = asynchandler(async(req,res)=>{
+  const userId = req.user || req.session.user
+  const orderId  = req.params.id
+  const orderData = await Order.findById(orderId)
+    res.render('user/incompleteOrder',{user:userId,orderData:orderData})
+})
+
+const retryPayment = asynchandler(async(req,res)=>{
+  const { orderId } = req.body
+  const orderData = await Order.findById(orderId)
+  const total = orderData.total
+  const order = await createRazorpayOrder(total)
+  if(order){
+    return res.status(200).json({message: "order created successful", orderData:order})
+  }
+})
+
+const retryVerify = asynchandler(async(req,res)=>{
+  const {orderId,response} = req.body
+  const result = await verifyRazorpaySignature(response)
+  if(result){
+    await Order.findByIdAndUpdate(orderId,{payment_status:"Paid"})
+  }
+  res.status(200).json({success:true,message:"payment is sucessful",orderId:orderId})
+
+})
+
+const cancelOrder = asynchandler(async (req, res) => {
+  const userId = req.user || req.session.user
+  const { orderId} = req.body
+  const type = "credit"
+  const reason = "product cancelled"
+  
+  if (!orderId) {
+    return res.status(400).json({ success: false, message: "Order ID is required." })
+  }
+  const orderData = await Order.findById(orderId)
+  const amount = orderData.total
+
+  const update = {
+    $set: {
+      status: "Cancelled",
+      cancelled_at: new Date(),"items.$[].item_status": "Cancelled","items.$[].cancelled_at": new Date()}}
+
+  const updatedOrder = await Order.findByIdAndUpdate(orderId, update, { new: true })
+
+  if (!updatedOrder) {
+    return res.status(404).json({ success: false, message: "Order not found." })
+  }
+
+for (const data of orderData.items) {
+  await Product.findByIdAndUpdate(
+    data.product_id,
+    {
+      $inc: { [`variants.${data.variant}.stock`]: data.quantity }
+    }
+  )
+}
+
+if(orderData.payment_method!=="COD"){
+  await addToWallet(userId,reason,type,amount,orderId)
+}
+
+  res.status(200).json({ 
+    success: true, 
+    message: "Order successfully cancelled.",
+    order: updatedOrder 
+  })
 })
 
 
@@ -324,5 +399,9 @@ module.exports = {
     cancelOrderItem,
     ReturnOrderItem,
     generateInvoice,
-    getOrderSuccess
+    getOrderSuccess,
+    getIncompleteOrder,
+    retryPayment,
+    retryVerify,
+    cancelOrder
 }
