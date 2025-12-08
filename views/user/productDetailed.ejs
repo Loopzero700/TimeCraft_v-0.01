@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="/css/user/productDetailed.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+ <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -90,7 +91,6 @@
                     </div>
                 </div>
                <div class="actions-container" style="<%= productData.variants[0].stock == 0 ? 'display:none;' : '' %>">
-                <button class="btn">Buy Now</button>
                 <button class="btn" id="addCart" data-id="<%=productData._id%>">Add To Cart</button>
             </div> 
 
@@ -101,11 +101,24 @@
         </div>
 
     </section>
+    <div class="flex justify-center">
+        <div class="description">
+            <h3 class="text-lg font-bold mb-2">Description</h3>
+            
+            <p id="desc-<%= productData._id %>" class="text-gray-700 line-clamp-3 transition-all duration-300">
+                <%= productData.description %>
+            </p>
+            
+            <button 
+            id="btn-<%= productData._id %>"
+            onclick="toggleReadMore('<%= productData._id %>')"
+            class="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium focus:outline-none"
+            >
+            Read More
+        </button>
+    </div>
+</div>
     
-    <div class="description">
-            <h3>Description</h3>
-            <p><%=productData.description%></p>
-        </div>
 
 
 
@@ -374,5 +387,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
     }
 
-   }) 
+   })
+   
+   function toggleReadMore(productId) {
+        const description = document.getElementById(`desc-${productId}`)
+        const button = document.getElementById(`btn-${productId}`)
+
+        description.classList.toggle('line-clamp-3');
+        if (description.classList.contains('line-clamp-3')) {
+            button.innerText = 'Read More'
+        } else {
+            button.innerText = 'Read Less'
+        }
+    }
 </script>

@@ -114,14 +114,19 @@
                                     <i class="fa-regular fa-heart"></i>
                                     </a>
                                 </div>
-                                <p class="product-price">
-                                    <% if (product.variants[0]?.discounted_price) { %>
-                                        <span class="old-price">₹<%= product.variants[0].price %></span>
-                                        <span class="new-price">₹<%= product.variants[0].discounted_price %></span>
-                                        <% } else { %>
-                                            <span class="new-price">₹<%= product.variants[0]?.price || "N/A" %></span>
-                                            <% }%>
-                                </p>
+                       <p class="product-price">
+                            <% const variant = product.variants[0] %>
+                            <% if (variant) { %>
+                                <% if (variant.discounted_price) { %>
+                                    <span class="old-price">₹<%= variant.price.toLocaleString('en-IN') %></span>
+                                    <span class="new-price">₹<%= variant.discounted_price.toLocaleString('en-IN') %></span>
+                                <% } else { %>
+                                    <span class="new-price">₹<%= variant.price.toLocaleString('en-IN') %></span>
+                                <% } %>
+                            <% } else { %>
+                                <span class="new-price">N/A</span>
+                            <% } %>
+                        </p>
                             </div>
                         </a>
                          <button class="add-to-cart-btn" data-id="<%= product._id %>">
@@ -144,7 +149,7 @@
 </main>
 <div class="overlay"></div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -233,8 +238,6 @@
                             title: "Error!",
                             text: data.message || "Failed to add item to cart.",
                             icon: "error"
-                        }).then(()=>{
-                            window.location.href='/login'
                         })
                     }
                 } catch (error) {
@@ -393,7 +396,7 @@
 
         sortSelect.addEventListener('change', handleFilterChange);
 
-        // --- Pagination Listeners (Cleaned up) ---
+        
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--

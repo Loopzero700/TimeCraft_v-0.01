@@ -5,6 +5,7 @@ const paginatehelper = require("../../helpers/paginate")
 const { options } = require("../../routes/userRouter")
 const {addToWallet} = require('../../helpers/walletHelpers')
 const { addWalletAmount } = require("../user/userWalletController")
+const httpStatus = require('../../constants/httpStatus')
 
 const getOrder = asynchandler(async(req,res)=>{
 
@@ -55,12 +56,12 @@ const updateOrder = asynchandler(async (req, res) => {
 
     const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled", "Returned", "Out for Delivery"]
     if (!validStatuses.includes(status)) {
-        return res.status(400).json({ success: false, message: "Invalid status" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid status" })
     }
 
     const order = await Order.findById(orderId)
     if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" })
+        return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order not found" })
     }
     const needsRestocking = (status === "Cancelled" && order.status !== "Cancelled") ||
                             (status === "Returned" && order.status !== "Returned")
@@ -104,7 +105,7 @@ const updateOrder = asynchandler(async (req, res) => {
         })
     }
     await order.save()
-    res.status(200).json({ success: true, status: order.status, message: "Order status updated" })
+    res.status(httpStatus.OK).json({ success: true, status: order.status, message: "Order status updated" })
 })
 
 
@@ -145,7 +146,7 @@ const orderSearch = asynchandler(async (req, res) => {
         sort: sortOption 
     })
 
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
         data: result.results,
         currentPage: result.pagination.currentPage,
         totalPages: result.pagination.totalPages,
@@ -166,7 +167,7 @@ const returnRequest = asynchandler(async (req, res) => {
   )
 
   if (!order || order.items.length === 0) {
-    return res.status(404).json({ success: false, message: "Order or item not found." })
+    return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order or item not found." })
   }
   const userId = orderData.user_id
   const item = order.items[0]
@@ -193,7 +194,7 @@ const returnRequest = asynchandler(async (req, res) => {
     newStatus = "Return-Rejected"
 
   } else {
-    return res.status(400).json({ success: false, message: "Invalid action." })
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid action." })
   }
 
   const updateResult = await Order.updateOne(
@@ -202,7 +203,7 @@ const returnRequest = asynchandler(async (req, res) => {
   )
 
   if (updateResult.modifiedCount === 0) {
-    return res.status(404).json({ success: false, message: "Order or item not updated." })
+    return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order or item not updated." })
   }
 
   res.json({
@@ -216,9 +217,9 @@ const returnOrder = asynchandler(async(req,res)=>{
     const orderId = req.params.id
     const result = await Order.findByIdAndUpdate(orderId,{status:'Return'})
     if(!result){
-        res.status(400).json({message:'can/\'t find the order with this id'})
+        res.status(httpStatus.BAD_REQUEST).json({message:'can/\'t find the order with this id'})
     }
-    res.status(200).json({message:"order Return requiset successful"})
+    res.status(httpStatus.OK).json({message:"order Return requiset successful"})
 })
 
 module.exports={

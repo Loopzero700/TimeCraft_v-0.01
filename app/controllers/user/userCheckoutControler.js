@@ -11,7 +11,7 @@ const {debitFromWallet}= require('../../helpers/walletHelpers')
 const {calculateCartDetails} = require('../../helpers/calculateTotal')
 const {createOrderDocument} = require('../../helpers/createOrder')
 const internalFinalizeOrder = require('../../helpers/FinalizeOrder')
-
+const httpStatus = require('../../constants/httpStatus')
 
 const getCheckout = asynchandler(async(req,res)=>{
     const userId = req.session.user||req.user
@@ -93,18 +93,32 @@ const addAddress = asynchandler(async(req,res)=>{
 
 
 const addOrder = asynchandler(async(req,res)=>{
+  const couponId = req.session.couponId
   const userId = req.user || req.session.user
     const { addressId, paymentMethod} = req.body
     const discountAmount = req.session.couponDiscount || 0
+    const { totalAmount } = await calculateCartDetails(userId)
+    let finalPrice = totalAmount-discountAmount
+    if(finalPrice<1000){
+     return res.status(httpStatus.BAD_REQUEST).json({
+      message: "Cash on Delivery (COD) is available for orders ₹1000 and above."
+     })
+    }
    
     const paymentStatus = "Pending"
-    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount)
+    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount, couponId)
+  
+      delete req.session.couponId
+      delete req.session.couponDiscount
+      delete req.session.appliedCouponId
+    
     await internalFinalizeOrder(userId,order.items)
-  res.status(200).json({ message: "Order created successfully", order:order})
+  res.status(httpStatus.OK).json({ message: "Order created successfully", order:order})
 })
 
 
 const orderWallet = asynchandler(async (req, res) => {
+    const couponId = req.session.couponId
     const { addressId, paymentMethod } = req.body
     const userId = req.user || req.session.user
     const discountAmount = req.session.couponDiscount || 0
@@ -114,22 +128,22 @@ const orderWallet = asynchandler(async (req, res) => {
     const { totalAmount, orderItems } = await calculateCartDetails(userId)
 
     if (!WalletData) {
-        return res.status(404).json({ success: false, message: "Wallet not found." })
+        return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Wallet not found." })
     }
     let finalPrice = totalAmount-discountAmount
     console.log(WalletData.balance < finalPrice)
     if (WalletData.balance < finalPrice) {
-        return res.status(400).json({ success: false, message: "Insufficient wallet balance." })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Insufficient wallet balance." })
     }
     if (totalAmount === 0) {
-        return res.status(400).json({ success: false, message: "Cart is empty." })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Cart is empty." })
     }
 
-    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount)
+    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount,couponId)
     try {
         await debitFromWallet(userId, reason, finalPrice, order._id)
         await internalFinalizeOrder(userId, order.items)
-        res.status(200).json({ 
+        res.status(httpStatus.OK).json({ 
             success: true, 
             message: "Order created successfully", 
             orderId: order._id 
@@ -144,7 +158,7 @@ const orderWallet = asynchandler(async (req, res) => {
                 status: 'Cancelled'
             } 
         })
-        res.status(500).json({ 
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ 
             success: false, 
             message: paymentError.message || "Payment failed after order creation." 
         })
@@ -156,10 +170,11 @@ const razorpayOrder = asynchandler(async(req,res)=>{
   const discountAmount = req.session.couponDiscount || 0
   const {totalAmount} = await calculateCartDetails(userId)
   const order = await createRazorpayOrder(totalAmount-discountAmount)
-  res.status(200).json(order)
+  res.status(httpStatus.OK).json(order)
 })
 
 const verifyRazorpay = asynchandler(async(req,res)=>{
+  const couponId = req.session.couponId
   const userId = req.user || req.session.user
   const discountAmount = req.session.couponDiscount
   const {response,addressId,paymentMethod} = req.body
@@ -167,11 +182,11 @@ const verifyRazorpay = asynchandler(async(req,res)=>{
   const result = await verifyRazorpaySignature(response)
   
   if(result){
-    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount)
+    const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount, couponId)
     await internalFinalizeOrder(userId,order.items)
-    res.status(200).json({ success:true, message: "Order created successfully", orderId:order._id})
+    res.status(httpStatus.OK).json({ success:true, message: "Order created successfully", orderId:order._id})
   }else{
-    res.status(400).json({message:"payment verifycation is failed. !!"})
+    res.status(httpStatus.BAD_REQUEST).json({message:"payment verifycation is failed. !!"})
   }
 
 })
@@ -179,12 +194,14 @@ const verifyRazorpay = asynchandler(async(req,res)=>{
 const paymentFailed = asynchandler(async(req,res)=>{
   const userId = req.user || req.session.user
   const {addressId,paymentMethod} = req.body
+  const couponId = req.session.couponId || null
+  const discountAmount = req.session.couponDiscount || 0
   const paymentStatus = "Failed"
 
-  const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus)
+  const order = await createOrderDocument(userId, addressId, paymentMethod, paymentStatus, discountAmount, couponId)
     await internalFinalizeOrder(userId)
 
-    res.status(400).json({ message: "Order incomplete, please try again.", orderId:order._id })
+    res.status(httpStatus.BAD_REQUEST).json({ message: "Order incomplete, please try again.", orderId:order._id })
 
 })
 

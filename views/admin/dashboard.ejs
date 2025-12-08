@@ -1,96 +1,312 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="/css/admin/dashboard.css">
+<style>
 
-<div class="sales-header">
-  <h2>Sales Summary</h2>
-  <div>
-    <select>
-      <option></option>
-      <option></option>
-    </select>
-    <button>Download</button>
-  </div>
+</style>
+
+<div class="dashboard-content">
+
+    <div class="chart-section">
+        <div class="chart-header">
+            <h3>Sales Statistics</h3>
+            <div class="select-wrapper">
+                <select id="chartFilter" onchange="updateChart(this.value)">
+                    <option value="weekly">Last 7 Days</option>
+                    <option value="monthly" selected>This Month</option>
+                    <option value="yearly">This Year</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="ordersChart"></canvas>
+        </div>
+    </div>
+
+    <div class="charts-grid-3">
+    
+    <div class="chart-box">
+        <h3>Top Products</h3>
+        <div class="canvas-wrapper">
+            <canvas id="productsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-box">
+        <h3>Category Distribution</h3>
+        <div class="canvas-wrapper">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-box">
+        <h3>Brand Performance</h3>
+        <div class="canvas-wrapper">
+            <canvas id="brandsChart"></canvas>
+        </div>
+    </div>
+
 </div>
 
-<div class="metrics-grid">
-  <div class="metric-card">
-    <p class="metric-title">Revenue</p>
-    <p class="metric-value"></p>
-    <p class="metric-change positive"></p>
-  </div>
-  <div class="metric-card">
-    <p class="metric-title">Orders</p>
-    <p class="metric-value"></p>
-    <p class="metric-change negative"></p>
-  </div>
-  <div class="metric-card">
-    <p class="metric-title">Products Sold</p>
-    <p class="metric-value"></p>
-    <p class="metric-change positive"></p>
-  </div>
-  <div class="metric-card">
-    <p class="metric-title">Total Customers</p>
-    <p class="metric-value"></p>
-    <p class="metric-change positive"></p>
-  </div>
+    <div class="top-performers-grid">
+        
+        <div class="performer-card">
+            <h3>Best Selling Products <span class="badge">Month</span></h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th class="text-right">Units Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(topProducts && topProducts.length > 0) { %>
+                            <% topProducts.forEach(product => { %>
+                                <tr>
+                                    <td class="product-name" title="<%= product.name %>">
+                                        <%= product.name %>
+                                    </td>
+                                    <td class="text-right count"><%= product.totalSold %></td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="2" class="no-data">No sales this month</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="performer-card">
+            <h3>Best Categories <span class="badge">Month</span></h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th class="text-right">Units Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(topCategories && topCategories.length > 0) { %>
+                            <% topCategories.forEach(cat => { %>
+                                <tr>
+                                    <td><%= cat.name %></td>
+                                    <td class="text-right count"><%= cat.totalSold %></td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="2" class="no-data">No sales this month</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="performer-card">
+            <h3>Best Brands <span class="badge">Month</span></h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Brand Name</th>
+                            <th class="text-right">Units Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if(topBrands && topBrands.length > 0) { %>
+                            <% topBrands.forEach(brand => { %>
+                                <tr>
+                                    <td><%= brand.brand.brandName %></td>
+                                    <td class="text-right count"><%= brand.totalSold %></td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="2" class="no-data">No sales this month</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
 </div>
 
-<div class="chart-section">
-  <div class="chart-header">
-    <h3>Orders Update</h3>
-    <button>View Details →</button>
-  </div>
-  <canvas id="ordersChart" height="120"></canvas>
-</div>
+<script>
+    let salesChart
 
-<!-- <script>
-  // Chart.js initialization
-  const ctx = document.getElementById('ordersChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ["16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36", "38", "40"],
-      datasets: [{
-        label: 'Orders',
-        data: [500, 1000, 2000, 1500, 1800, 1200, 2500, 2000, 2200, 1500, 1700, 2300, 2800],
-        borderColor: 'rgba(255, 126, 95, 1)',
-        backgroundColor: 'rgba(255, 126, 95, 0.2)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: 'rgba(255, 126, 95, 1)'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: '#eaeaea'
-          }
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false
+    async function fetchChartData(filterType) {
+        try {
+            const response = await fetch(`/admin/dashboard-chart?filter=${filterType}`)
+            const data = await response.json()
+            return data
+        } catch (error) {
+            console.error("Error fetching chart data:", error)
+            return { labels: [], salesData: [] }
         }
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: '#a5a5a5'
-          },
-          grid: {
-            color: '#333'
-          }
-        },
-        y: {
-          ticks: {
-            color: '#a5a5a5'
-          },
-          grid: {
-            color: '#333'
-          }
-        }
-      }
     }
-  });
-</script> -->
+
+    async function initChart() {
+        const ctx = document.getElementById('ordersChart').getContext('2d')
+        
+    
+        const initialData = await fetchChartData('monthly')
+
+        salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: initialData.labels,
+                datasets: [{
+                    label: 'Orders',
+                    data: initialData.salesData,
+                    borderColor: '#ff7e5f',
+                    backgroundColor: 'rgba(255, 126, 95, 0.15)', 
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1c1c1c', 
+                    pointBorderColor: '#ff7e5f',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#333',
+                        titleColor: '#fff',
+                        bodyColor: '#ccc',
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#888' },
+                        grid: { color: '#333', drawBorder: false }
+                    },
+                    y: {
+                        ticks: { color: '#888', stepSize: 1 },
+                        grid: { color: '#333', borderDash: [5, 5] },
+                        beginAtZero: true
+                    }
+                }
+            }
+        })
+    }
+
+    async function updateChart(filterType) {
+        const newData = await fetchChartData(filterType)
+        
+        salesChart.data.labels = newData.labels
+        salesChart.data.datasets[0].data = newData.salesData
+        
+        salesChart.update()
+    }
+
+    document.addEventListener('DOMContentLoaded', initChart)
+
+    const topProductsData = <%- JSON.stringify(topProducts || []) %>
+    const topCategoriesData = <%- JSON.stringify(topCategories || []) %>
+    const topBrandsData = <%- JSON.stringify(topBrands || []) %>
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#ccc',
+                padding: 10,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#eee' } },
+            x: { grid: { display: false } }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        if(topProductsData.length > 0) {
+            const ctxProd = document.getElementById('productsChart').getContext('2d');
+            new Chart(ctxProd, {
+                type: 'bar',
+                data: {
+                    labels: topProductsData.map(p => p.name.substring(0, 15) + '...'), 
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: topProductsData.map(p => p.totalSold),
+                        backgroundColor: '#ff7e5f',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    indexAxis: 'y', 
+                }
+            })
+        }
+
+        if(topCategoriesData.length > 0) {
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: topCategoriesData.map(c => c.name),
+                    datasets: [{
+                        data: topCategoriesData.map(c => c.totalSold),
+                        backgroundColor: [
+                            '#ff7e5f', '#feb47b', '#ff9f43', '#ee5253', '#10ac84'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: true, 
+                            position: 'right',
+                            labels: { boxWidth: 12 } 
+                        }
+                    }
+                }
+            })
+        }
+
+
+        if(topBrandsData.length > 0) {
+            const ctxBrand = document.getElementById('brandsChart').getContext('2d');
+            new Chart(ctxBrand, {
+                type: 'bar',
+                data: {
+                    labels: topBrandsData.map(b => b.brand.brandName),
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: topBrandsData.map(b => b.totalSold),
+                        backgroundColor: 'rgba(255, 126, 95, 0.6)',
+                        borderColor: '#ff7e5f',
+                        borderWidth: 1
+                    }]
+                },
+                options: commonOptions
+            })
+        }
+        initChart()
+    })
+</script>

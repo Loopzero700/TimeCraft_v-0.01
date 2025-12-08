@@ -45,35 +45,62 @@
 
                 </div>
 
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Select Payment Mode</h3>
-                    <div class="space-y-4">
-                        <label class="flex items-center p-4 border border-gray-200 rounded-lg has-[:checked]:border-black has-[:checked]:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="payment_mode" class="hidden peer" value="UPI">
-                            
-                            <span class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center mr-4 peer-checked:border-black">
-                               <span class="w-2.5 h-2.5 bg-black rounded-full transition-transform transform scale-0 custom-radio radio-dot"></span>
-                            </span>
-                            <span class="font-medium">UPI</span>
-                        </label>
-                        <label class="flex items-center p-4 border border-gray-200 rounded-lg has-[:checked]:border-black has-[:checked]:bg-gray-50 cursor-pointer">
-                            
-                            <input type="radio" name="payment_mode" class="hidden peer" value="Wallet">
-                            
-                            <span class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center mr-4 peer-checked:border-black">
-                               <span class="w-2.5 h-2.5 bg-black rounded-full transition-transform transform scale-0 custom-radio radio-dot"></span>
-                            </span>
-                            <span class="font-medium">Wallet</span>
-                        </label>
-                        <label class="flex items-center p-4 border-2 border-black bg-gray-50 rounded-lg cursor-pointer">
-                            <input type="radio" name="payment_mode" class="hidden peer" checked value="COD">
-                             <span class="w-5 h-5 border-2 border-black rounded-full flex items-center justify-center mr-4">
-                               <span class="w-2.5 h-2.5 bg-black rounded-full transition-transform transform scale-100"></span>
-                            </span>
-                            <span class="font-medium">Cash On Delivery</span>
-                        </label>
-                    </div>
-                </div>
+<div>
+    <h3 class="text-lg font-semibold mb-4">Select Payment Mode</h3>
+    
+    <div class="space-y-3">
+
+        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-400
+                    has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50
+                    has-[:checked]:[&_.radio-outer]:border-blue-600
+                    has-[:checked]:[&_.radio-dot]:scale-100">
+            
+            <input type="radio" name="payment_mode" class="hidden" value="Razorpay">
+            
+            <span class="radio-outer w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center mr-4 transition-all">
+                <span class="radio-dot w-2.5 h-2.5 bg-blue-600 rounded-full transition-transform transform scale-0"></span>
+            </span>
+            
+            <div>
+                <span class="font-medium text-gray-800">Razorpay</span>
+                <p class="text-sm text-gray-500">Pay with Card, UPI, Netbanking, etc.</p>
+            </div>
+        </label>
+
+        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-400
+                    has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50
+                    has-[:checked]:[&_.radio-outer]:border-blue-600
+                    has-[:checked]:[&_.radio-dot]:scale-100">
+            
+            <input type="radio" name="payment_mode" class="hidden" value="Wallet">
+            
+            <span class="radio-outer w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center mr-4 transition-all">
+                <span class="radio-dot w-2.5 h-2.5 bg-blue-600 rounded-full transition-transform transform scale-0"></span>
+            </span>
+            
+            <div>
+                <span class="font-medium text-gray-800">Wallet</span>
+                <p class="text-sm text-gray-500">Use your account wallet balance.</p>
+            </div>
+        </label>
+
+        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-400
+                    has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50
+                    has-[:checked]:[&_.radio-outer]:border-blue-600
+                    has-[:checked]:[&_.radio-dot]:scale-100">
+            
+            <input type="radio" name="payment_mode" class="hidden" value="COD" checked> <span class="radio-outer w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center mr-4 transition-all">
+                <span class="radio-dot w-2.5 h-2.5 bg-blue-600 rounded-full transition-transform transform scale-0"></span>
+            </span>
+            
+            <div>
+                <span class="font-medium text-gray-800">Cash On Delivery</span>
+                <p class="text-sm text-gray-500">Pay with cash upon delivery.</p>
+            </div>
+        </label>
+
+    </div>
+</div>
             </div>
 
             <!-- Right Side: Summary -->
@@ -111,23 +138,34 @@
                         <hr>
                         
                         <div class="space-y-3 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Item Sub Total</span>
-                                <span>₹ <%=totalAmt%></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Total Saved Amount</span>
-                                <span>₹ <%=save%></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Shipping</span>
-                                <span class="font-semibold text-green-600">Free</span>
-                            </div>
-                            <div class="border-t pt-3 mt-3 flex justify-between font-bold text-base">
-                                <span>Total</span>
-                                <span>₹ <%=totalAmt%></span>
-                            </div>
+    
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Item Sub Total</span>
+                            <span>₹ <%= totalAmt + couponDiscount %></span>
                         </div>
+
+                        <% if (couponDiscount > 0) { %>
+                            <div id="discountRow" class="flex justify-between text-green-600 text-lg font-medium">
+                                <span>Coupon Discount</span>
+                                <span id="discountAmount">- ₹ <%= couponDiscount %></span>
+                            </div>
+                        <% } %>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Total Saved Amount</span>
+                            <span class="text-green-600">₹ <%= save %></span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Shipping</span>
+                            <span class="font-semibold text-green-600">Free</span>
+                        </div>
+
+                        <div class="border-t pt-3 mt-3 flex justify-between font-bold text-base">
+                            <span>Total Payable</span>
+                            <span>₹ <%= totalAmt %></span>
+                        </div>
+                    </div>
                     </div>
                     <!-- Order Button -->
                     <button id="orderNowBtn" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">ORDER NOW</button>
@@ -136,32 +174,9 @@
         </div>
     </main>
 
-    <!-- Order Confirmation Modal -->
-    <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-            </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Order Placed Successfully!</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">
-                    Thank you for your purchase.
-                </p>
-            </div>
-          <div class="mt-4 space-y-2">
-            <button id="continueShoppingBtn" class="p-3 w-full bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors">
-                Continue Shopping
-            </button>
-            <button id="viewOrderBtn" class="w-full bg-black text-white font-bold py-2 rounded-lg hover:bg-gray-800 transition-colors">
-                View My Order 
-            </button>
-        </div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
         
@@ -254,19 +269,132 @@
             }
             const paymentMethod = selectedRadioBtnPayment.value
 
-            console.log(paymentMethod)
-            console.log(addressId)
+            if(paymentMethod === 'COD'){
+               
+                checkOutCod(addressId,paymentMethod)
+            }else if(paymentMethod === 'Razorpay'){
+                checkOutRzp(addressId,paymentMethod)
+            }else if(paymentMethod === 'Wallet'){
+                checkOutWallet(addressId,paymentMethod)
+            }
 
+            async function checkOutWallet(addressId,paymentMethod) {
+                try {
+                     const response = await fetch('/orderwallet', {
+                         method: "POST",
+                         headers: { "Content-Type": "application/json" }, 
+
+                         body: JSON.stringify({ addressId, paymentMethod }) 
+                     })
+                 
+                     const result = await response.json()
+                     console.log(result)
+                 
+                     if (response.ok) {
+                         window.location.href = `/orderSuccess/${result.orderId}`
+                     } else {
+                         Swal.fire({
+                             title: 'Order Failed!',
+                             text: result.message || 'Something went wrong. Please try again.',
+                             icon: 'error'
+                         })
+                     }
+                 } catch (error) {
+                     console.error('Error in checkOutWallet:', error)
+                     Swal.fire({
+                         title: 'Error!',
+                         text: 'Could not connect to the server. Please try again.',
+                         icon: 'error'
+                     })
+                 }
+
+            }
+
+            async function checkOutRzp(addressId, paymentMethod) {
+                try {
+                    const response = await fetch('/orderRzp', {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ paymentMethod, addressId })
+                    })
+                
+                    const order = await response.json()
+                    console.log(order)
+                    const options = {
+                        key: 'rzp_test_RcMfChaQ2P0zv3', 
+                        amount: order.amount,
+                        currency: order.currency,
+                        name: "TimeCraft",
+                        description: "Test Transaction",
+                        order_id: order.id,
+                        handler: async function (response) {
+                            const verifyRes = await fetch("/verify", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    response: response,  
+                                    orderData: order,
+                                    addressId:addressId, 
+                                    paymentMethod:paymentMethod
+                                })
+                            })
+                        
+                            const result = await verifyRes.json()
+                            if(result.success){
+                            window.location.href=`/orderSuccess/${result.orderId}`
+                            }else{
+
+                                Swal.fire({
+                                    title: result.success ? 'Success!' : 'Failed!',
+                                    text: result.message,
+                                    icon: result.success ? 'success' : 'error'
+                                })
+                            }
+                        },
+                        theme: {
+                            color: "#3399cc"
+                        }
+                    }
+                
+                    const rzp = new Razorpay(options)
+                    rzp.on('payment.failed', async function(response){
+                        console.log("payment failed",response.error)
+
+                        const result = await fetch('/paymet_failed',
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                orderData: order,
+                                addressId:addressId, 
+                                paymentMethod:paymentMethod
+                            })
+                        })
+                        const resultId = await result.json() 
+                        window.location.href= `/incompleteOrder/${resultId.orderId}`
+                    })
+                    rzp.open()
+                
+                } catch (error) {
+                    console.error('Error placing order:', error)
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Could not connect to the server. Please check your connection.',
+                        icon: 'error'
+                    })
+                }
+            }
+
+            async function checkOutCod(addressId,paymentMethod) {   
             try {
                 const response = await fetch('/addOrder', {
                     method: "POST",
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentMethod: paymentMethod, addressId: addressId })
-                });
+                })
 
-                
                 const data = await response.json()
-                console.log(data.order._id)
+                
                 if (response.ok) {
                         window.location.href = `/orderSuccess/${data.order._id}`
                 } else {
@@ -285,25 +413,26 @@
                     icon: 'error'
                 })
             }
+        }
         })
 
-            closeModalBtn.addEventListener('click', () => {
-                orderModal.classList.add('hidden')
-                orderModal.classList.remove('flex')
-            })
+            // closeModalBtn.addEventListener('click', () => {
+            //     orderModal.classList.add('hidden')
+            //     orderModal.classList.remove('flex')
+            // })
 
             
-            orderModal.addEventListener('click', (e) => {
-                if (e.target === orderModal) {
-                    orderModal.classList.add('hidden')
-                    orderModal.classList.remove('flex')
-                }
-            })
+            // orderModal.addEventListener('click', (e) => {
+            //     if (e.target === orderModal) {
+            //         orderModal.classList.add('hidden')
+            //         orderModal.classList.remove('flex')
+            //     }
+            // })
         })
 
             document.getElementById('address').addEventListener('click',(e)=>{
                 e.preventDefault()
-                window.location.href='/account/addAddress'
+                window.location.href='/checkoutAddaddress'
             })
 
 </script>

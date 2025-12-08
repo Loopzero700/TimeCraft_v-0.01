@@ -12,6 +12,24 @@
 </head>
 <body>
 
+    <style>
+
+    .swal2-popup {
+        background: #1c1c1c !important;
+        color: #e0e0e0 !important;
+    }
+    .swal2-title {
+        color: #ffffff !important;
+    }
+    .swal2-confirm, .swal2-cancel {
+        border-radius: 6px !important;
+    }
+    .fade-out {
+        opacity: 0;
+        transition: opacity 0.5s ease-out;
+    }
+    </style>
+
     <div class="page-header">
         <h2>Customers</h2>
         <div class="search-bar">
@@ -47,7 +65,15 @@
                         <div class="column-name"><%= cust.username %></div>
                         <div class="column-email"><%= cust.email %></div>
                         <div class="column-mobile"><%= cust.phone || "-" %></div>
-                        <div class="column-address"><%= cust.Address || "-" %></div>
+                        <div class="column-address">
+                            <% if (cust.address) { %>
+                                <%= cust.address.house_name %>, <%= cust.address.city %> 
+                                <span class="text-xs text-gray-500"><%= cust.address.pincode %></span>
+                                <span class="text-xs text-gray-500"><%= cust.address.state %></span>
+                            <% } else { %>
+                                <span class="text-gray-400">No Address</span>
+                            <% } %>
+                            </div>
                         <div class="column-action">
                             <% if (cust.isBlocked) { %>
                                 <a href="#" onclick="confirmUnblock('<%= cust._id %>')" class="btn-unblock">Unblock</a>
@@ -81,6 +107,8 @@
     </div>
 
 <script>
+
+    
     
     function confirmBlock(customerId) {
         Swal.fire({

@@ -7,6 +7,7 @@ const product = require('../../models/productSchema')
 const banner = require('../../models/bannerSchema')
 const Wallet = require('../../models/walletSchema')
 const {addToWallet} = require('../../helpers/walletHelpers')
+const httpStatus = require('../../constants/httpStatus')
 
 
 
@@ -117,19 +118,19 @@ async function SendVerificationEmail(email, otp) {
 const signup = asynchandler(async(req, res) => {
     const { username, password, Confirm_password, email } = req.body;
     if (password !== Confirm_password) {
-        return res.status(400).json({ success: false, message: "Passwords do not match" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Passwords do not match" })
     }
 
     const finduser = await User.findOne({ email })
     if (finduser) {
-        return res.status(400).json({ success: false, message: "User with this email already exists" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "User with this email already exists" })
     }
 
     const otp = generateOtp()
     console.log(`<==${otp}>>signup otp`)
     const emailSent = await SendVerificationEmail(email, otp)
     if (!emailSent) {
-        return res.status(500).json({ success: false, message: 'Failed to send OTP email.' })
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to send OTP email.' })
     }
     
     req.session.otpContext={
@@ -140,7 +141,7 @@ const signup = asynchandler(async(req, res) => {
       userData:{username,password}
     }
     
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
         success: true,
         redirectUrl: '/otp'
     })
@@ -156,14 +157,14 @@ const verifyOtp = asynchandler(async(req,res)=>{
   console.log(otp)
 
   if(!req.session.otpContext||req.session.otpContext.purpose!=='signup'){
-     return res.status(400).json({success:false, message:"Invalid session. Please sign up again."})
+     return res.status(httpStatus.BAD_REQUEST).json({success:false, message:"Invalid session. Please sign up again."})
   }
 
   const timeElapsed = (Date.now()-req.session.otpContext.timestamp)/1000
 
   if (timeElapsed > 60) {
     // delete req.session.otpContext
-    return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." })
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "OTP has expired. Please request a new one." })
   }
 
   if(otp===req.session.otpContext.otp){
@@ -194,7 +195,7 @@ const verifyOtp = asynchandler(async(req,res)=>{
 const resendOtp = asynchandler(async (req, res) => {
 
   if(!req.session.otpContext||!req.session.otpContext.email){
-    return res.status(400).json({
+    return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
       message: "Email not found",
     })
@@ -206,7 +207,7 @@ const resendOtp = asynchandler(async (req, res) => {
     const diffInSeconds = (now - timestamp) / 1000;
     const cooldown = 30
   if (diffInSeconds < cooldown) {
-    return res.status(400).json({
+    return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
       message: "OTP still valid. Please wait before requesting a new one.",
     })
@@ -218,12 +219,12 @@ const resendOtp = asynchandler(async (req, res) => {
     req.session.otpContext.otp = otp
     req.session.otpContext.timestamp = Date.now()
     console.log(`resend otp ${otp}`)
-    return res.status(200).json({
+    return res.status(httpStatus.OK).json({
       success: true,
       message: "OTP has been resent to your email",
     })
   } else {
-    return res.status(500).json({
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to resend OTP",
     })
@@ -307,7 +308,7 @@ const loadforgotPassword = (req, res) => {
       }
     } catch (error) {
         console.log("Error loading forgot password:", error)
-        res.status(500).send("Server Error")
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Server Error")
     }
 }
 
@@ -317,7 +318,7 @@ const sendForgotPasswordOTP = asynchandler(async (req, res) => {
 
     const finduser = await User.findOne({ email:email });
     if (!finduser) {
-        return res.status(404).json({
+        return res.status(httpStatus.NOT_FOUND).json({
             success: false,
             message: "No account with that email address exists."
         });
@@ -326,7 +327,7 @@ const sendForgotPasswordOTP = asynchandler(async (req, res) => {
     const otp = generateOtp();
     const emailSent = await SendVerificationEmail(email, otp)
     if (!emailSent) {
-        return res.status(500).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "There was an error sending the email. Please try again."
         });
@@ -340,7 +341,7 @@ const sendForgotPasswordOTP = asynchandler(async (req, res) => {
     userId: finduser._id
    }
 
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
         success: true,
         redirectUrl: '/forgotOtp'
     })
@@ -356,14 +357,14 @@ const forgotverifyOtp = asynchandler(async(req, res) => {
    const { otp } = req.body;
 
     if (!req.session.otpContext || req.session.otpContext.purpose !== 'forgot-password') {
-        return res.status(400).json({ success: false,message: "Invalid session. Please try again." });
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false,message: "Invalid session. Please try again." });
     }
 
     
     const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000; 
     if (timeElapsed > 60) {
         // delete req.session.otpContext
-        return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "OTP has expired. Please request a new one." })
     }
 
     if (otp === req.session.otpContext.otp) {
@@ -376,7 +377,7 @@ const forgotverifyOtp = asynchandler(async(req, res) => {
 
         res.json({ success: true, redirectUrl: "/resetPassword" })
     } else {
-        res.status(400).json({ success: false, message: "Invalid OTP. Please try again." })
+        res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid OTP. Please try again." })
     }
 })
 
@@ -391,7 +392,7 @@ const getRestPass =(req,res)=>{
 const resetpass = asynchandler(async(req,res)=>{
 
   if(!req.session.resetPassword||!req.session.resetPassword.allowed){
-    return res.status(400).json({success:false,message:"Permission denied."})
+    return res.status(httpStatus.BAD_REQUEST).json({success:false,message:"Permission denied."})
   }
     const userId = req.session.resetPassword.userId
     const password = req.body.password
@@ -402,7 +403,7 @@ const resetpass = asynchandler(async(req,res)=>{
 
     delete req.session.resetPassword;
 
-    res.status(200).json({ success:true, message: "Password is changed" })
+    res.status(httpStatus.OK).json({ success:true, message: "Password is changed" })
 
 })
 
@@ -417,10 +418,10 @@ const validateReferral = asynchandler(async(req,res)=>{
 
   console.log(userReferred[0]._id)
   if(userReferred.length<1){
-    return res.status(400).json({message:"Invalid referral code."})
+    return res.status(httpStatus.BAD_REQUEST).json({message:"Invalid referral code."})
   }
   req.session.referalBy = userReferred[0]._id
-  res.status(200).json({success:true})
+  res.status(httpStatus.OK).json({success:true})
   
 })
 

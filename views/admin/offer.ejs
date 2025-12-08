@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'custom-orange': '#ff7e5f',
+                        'custom-dark-1': '#161616', 
+                        'custom-dark-2': '#333',    
+                        'custom-dark-3': '#1C1C1C', 
+                        'custom-gray': '#a5a5a5',
+                        'custom-light': '#eaeaea',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+         .swal2-popup {
+      background: #1c1c1c !important;
+      color: #e0e0e0 !important;
+    }
+    .swal2-title {
+      color: #ffffff !important;
+    }
+    .swal2-confirm, .swal2-cancel {
+      border-radius: 6px !important;
+    }
+    .fade-out {
+      opacity: 0;
+      transition: opacity 0.5s ease-out;
+    }
+    </style>
+</head>
+<body class="bg-custom-dark-1 p-4 md:p-8">
+
+  
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <h1 class="text-2xl font-semibold text-custom-light max-w-7xl  mb-2">Offers</h1>
+        <div class="flex items-center gap-4 w-full md:w-auto justify-between">
+            <div class="relative w-full md:w-64">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-custom-gray">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                </span>
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="Search by offer name..."
+                    class="w-full bg-custom-dark-2 text-custom-light placeholder-custom-gray rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-custom-orange"
+                >
+            </div>
+        </div>
+    </div>
+    <div class="bg-custom-dark-3 text-custom-light rounded-lg shadow-xl p-6 md:p-8 max-w-7xl mx-auto">
+
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class=" uppercase text-xs text-custom-gray font-semibold">
+                    <tr>
+                        <th class="p-3">Offer Name</th>
+                        <th class="p-3">Offer Type</th>
+                        <th class="p-3">Offer For</th>
+                        <th class="p-3">Discount</th>
+                        <th class="p-3">Expiry Date</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3">Action</th>
+                    </tr>
+                </thead>
+                
+              <tbody class="divide-y divide-custom-dark-2" id="tableBody">
+                    <% offers.forEach((offer) => { %>
+                        <tr class="hover:bg-custom-dark-2">
+                            <td class="p-3 font-medium"><%= offer.offer_name %></td>
+                            <td class="p-3"><%= offer.offer_for_type %></td>
+                            <td class="p-3"><%= offer.offer_for_id.name %></td>
+                            <td class="p-3"><%= offer.discount_percentage %>%</td>
+                            <td class="p-3"><%= offer.expiry_date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) %></td>
+                            
+                            <% if(offer.status === 'active') { %>
+                                <td class="p-3">
+                                    <span class="bg-green-500 text-green-900 text-xs text-white font-bold px-2.5 py-0.5 rounded-full">Active</span>
+                                </td>
+                            <% } else { %>
+                                <td class="p-3">
+                                    <span class="bg-red-500 text-red-900 text-xs text-white font-bold px-2.5 py-0.5 rounded-full">Inactive</span>
+                                </td>
+                            <% } %>
+                            
+                            <td class="p-3 flex gap-2">
+                                <button 
+                                    data-id="<%= offer._id %>"
+                                    class="edit-btn bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1 px-3 rounded-md">
+                                    Edit
+                                </button>
+                                
+                                <% if(offer.status === 'active') { %>
+                                    <button 
+                                        data-id="<%= offer._id %>"
+                                        data-status="active"
+                                        class="toggle-status-btn bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-1 px-3 rounded-md status_Btn">
+                                        Deactivate
+                                    </button>
+                                <% } else { %>
+                                    <button 
+                                        data-id="<%= offer._id %>"
+                                        data-status="inactive"
+                                        class="toggle-status-btn bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1 px-3 rounded-md status_Btn">
+                                        Activate
+                                    </button>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        
+        
+        
+      </div>
+      <div class="p-3 mt-4">
+          <button class="inline-block bg-transparent border border-white text-white font-medium py-2 px-5 rounded-lg transition-colors hover:bg-white hover:text-custom-dark-1">
+              <a href="/admin/addOffer">Add Offer</a>
+
+          </button>
+      </div>
+        <div class="pagination flex gap-2 mt-6 justify-center" id="pagination">
+          <% if (totalPages > 1) { %>
+            
+            <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
+            <% const limitParam = typeof limit !== 'undefined' ? `&limit=${limit}` : '' %>
+        
+            <% if (currentPage > 1) { %>
+              <a href="/admin/offer?page=<%= currentPage - 1 %><%= searchParam %><%= limitParam %>" 
+                 data-page="<%= currentPage - 1 %>" class="no-underline text-custom-gray px-[14px] py-[8px] rounded-md bg-custom-dark-1 border border-custom-dark-2 text-[0.9rem] transition-all duration-300 hover:bg-custom-dark-2 hover:text-custom-light">
+                 Previous
+              </a>
+            <% } %>
+            
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <a href="/admin/offer?page=<%= i %><%= searchParam %><%= limitParam %>" 
+                 data-page="<%= i %>" class="no-underline px-[14px] py-[8px] rounded-md border text-[0.9rem] transition-all duration-300
+                        <%= i === currentPage 
+                            ? 'bg-custom-orange text-white border-custom-orange' 
+                            : 'text-custom-gray bg-custom-dark-1 border-custom-dark-2 hover:bg-custom-dark-2 hover:text-custom-light' 
+                        %>">
+                <%= i %>
+              </a>
+            <% } %>
+            
+            <% if (currentPage < totalPages) { %>
+              <a href="/admin/offer?page=<%= currentPage + 1 %><%= searchParam %><%= limitParam %>" 
+                 data-page="<%= currentPage + 1 %>" class="no-underline text-custom-gray px-[14px] py-[8px] rounded-md bg-custom-dark-1 border border-custom-dark-2 text-[0.9rem] transition-all duration-300 hover:bg-custom-dark-2 hover:text-custom-light">
+                 Next
+              </a>
+            <% } %>
+            
+          <% } %>
+        </div>
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const searchInput = document.getElementById('searchInput')
+    const tableBody = document.getElementById('tableBody')
+    const paginationContainer = document.getElementById('pagination')
+    
+    let currentPageLimit = 10
+
+    function debounce(func, delay) {
+      let timer
+      return function(...args) {
+        clearTimeout(timer)
+        timer = setTimeout(() => func(...args), delay)
+      }
+    }
+
+    async function fetchOffers(page = 1) {
+      const query = searchInput.value.trim()
+      const url = `/admin/offer?page=${page}&search=${encodeURIComponent(query)}&json=true&limit=${currentPageLimit}`
+      
+      try {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Network response was not ok')
+        const result = await response.json() 
+        
+        
+        if (result.limit) {
+          currentPageLimit = result.limit
+        }
+        
+        updateTable(result.data) 
+        updatePagination(result) 
+      } catch (err) {
+        console.error('Error fetching offers:', err)
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-custom-gray">Error loading data.</td></tr>`;
+      }
+    }
+
+    const handleSearch = debounce(() => {
+      fetchOffers(1) 
+    }, 500)
+
+    
+    function updateTable(offers) {
+      tableBody.innerHTML = ''
+      
+      if (!offers.length) {
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-custom-gray">No offers found.</td></tr>`
+        return
+      }
+
+      offers.forEach((offer) => {
+        const expiryDate = new Date(offer.expiry_date).toLocaleDateString('en-IN', {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        })
+        
+        const statusBadge = offer.status === 'active' 
+            ? '<span class="bg-green-500 text-green-900 text-xs font-bold px-2-5 py-0-5 rounded-full ">Active</span>'
+            : '<span class="bg-red-500 text-red-900 text-xs font-bold px-2-5 py-0-5 rounded-full ">Inactive</span>'
+            
+        const toggleBtnText = offer.status === 'active' ? 'Deactivate' : 'Activate'
+        const toggleBtnClass = offer.status === 'active' 
+            ? 'bg-red-500 hover:bg-red-600' 
+            : 'bg-green-500 hover:bg-green-600'
+
+    
+        const row = `
+          <tr class="hover:bg-custom-dark-2">
+            <td class="p-3 font-medium">${offer.offer_name}</td>
+            <td class="p-3">${offer.offer_for_type}</td>
+            <td class="p-3">${offer.offer_for_id.name}</td>
+            <td class="p-3">${offer.discount_percentage}%</td>
+            <td class="p-3">${expiryDate}</td>
+            <td class="p-3">
+              ${statusBadge}
+            </td>
+            <td class="p-3 flex gap-2">
+              <button 
+                data-id="${offer._id}" 
+                class="edit-btn bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1 px-3 rounded-md">
+                Edit
+              </button>
+              <button 
+                data-id="${offer._id}" 
+                data-status="${offer.status}"
+                class="toggle-status-btn text-white text-sm font-medium py-1 px-3 rounded-md ${toggleBtnClass} status_Btn">
+                ${toggleBtnText}
+              </button>
+            </td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML('beforeend', row)
+      })
+    }
+
+    
+    function updatePagination({ totalPages, currentPage, search }) {
+        paginationContainer.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+        const createPageLink = (page, text, additionalClasses = '') => {
+            const link = document.createElement('a');
+            link.href = `/admin/offer?page=${page}${searchParam}`
+            link.innerHTML = text
+            link.dataset.page = page            
+            let classes = 'no-underline px-[14px] py-[8px] rounded-md border text-[0.9rem] transition-all duration-300 '
+            
+            if (additionalClasses) {
+                classes += additionalClasses
+            } else {
+            
+                classes += (page === currentPage)
+                    ? 'bg-custom-orange text-white border-custom-orange'
+                    : 'text-custom-gray bg-custom-dark-1 border-custom-dark-2 hover:bg-custom-dark-2 hover:text-custom-light';
+            }
+            
+            link.className = classes
+            return link
+        }
+        
+        const prevNextClass = 'text-custom-gray bg-custom-dark-1 border-custom-dark-2 hover:bg-custom-dark-2 hover:text-custom-light'
+
+        if (currentPage > 1) {
+            paginationContainer.appendChild(
+                createPageLink(currentPage - 1, 'Previous', prevNextClass)
+            )
+        }
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationContainer.appendChild(
+                createPageLink(i, i)
+            )
+        }
+
+        if (currentPage < totalPages) {
+            paginationContainer.appendChild(
+                createPageLink(currentPage + 1, 'Next', prevNextClass)
+            )
+        }
+    }
+
+    searchInput.addEventListener('input', handleSearch)
+    tableBody.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.edit-btn')
+        const toggleBtn = e.target.closest('.toggle-status-btn')
+
+        if (editBtn) {
+            const id = editBtn.dataset.id
+            console.log(`Edit button clicked for ID: ${id}`)
+            window.location.href = `/admin/editOffer/${id}`
+        }
+
+        if (toggleBtn) {
+            const id = toggleBtn.dataset.id
+            const currentStatus = toggleBtn.dataset.status
+            console.log(`Toggle status clicked for ID: ${id}, Current Status: ${currentStatus}`)
+      
+        }
+    })
+    
+    paginationContainer.addEventListener('click', (e) => {
+        const link = e.target.closest('a[data-page]')
+        if (link) {
+            e.preventDefault()
+            const page = parseInt(link.dataset.page, 10)
+            if (!isNaN(page)) {
+                fetchOffers(page)
+            }
+        }
+    })
+
+tableBody.addEventListener('click', async (e) => {
+        const editBtn = e.target.closest('.edit-btn')
+        const toggleBtn = e.target.closest('.toggle-status-btn')
+
+        if (editBtn) {
+            const id = editBtn.dataset.id
+            window.location.href = `/admin/editOffer/${id}`
+        }
+
+        if (toggleBtn) {
+            toggleBtn.disabled = true; 
+
+            const offerId = toggleBtn.dataset.id
+            const currentStatus = toggleBtn.dataset.status
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+            const actionText = currentStatus === 'active' ? 'deactivate' : 'activate'
+
+            try {
+                const result = await Swal.fire({
+                    title: 'Are you sure?',
+                    text: `This will ${actionText} the offer.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: currentStatus === 'active' ? '#d33' : '#28a745',
+                    cancelButtonColor: '#555',
+                    confirmButtonText: `Yes, ${actionText} it!`,
+                    customClass: {
+                        popup: 'bg-custom-dark-2 text-custom-light',
+                        confirmButton: `bg-${currentStatus === 'active' ? 'red' : 'green'}-500`,
+                    }
+                })
+
+                if (result.isConfirmed) {
+                    const url = `/admin/offer/${newStatus}/${offerId}`
+                    const response = await fetch(url, { method: 'PATCH' })
+
+                    if (!response.ok) {
+                        throw new Error('Server responded with an error.')
+                    }
+
+                    const responseData = await response.json()
+
+                    toggleBtn.dataset.status = newStatus
+                    toggleBtn.textContent = newStatus === 'active' ? 'Deactivate' : 'Activate'
+
+                    if (newStatus === 'active') {
+                        toggleBtn.classList.remove('bg-green-500', 'hover:bg-green-600')
+                        toggleBtn.classList.add('bg-red-500', 'hover:bg-red-600')
+                    } else {
+                        toggleBtn.classList.remove('bg-red-500', 'hover:bg-red-600')
+                        toggleBtn.classList.add('bg-green-500', 'hover:bg-green-600')
+                    }
+
+                    const row = toggleBtn.closest('tr')
+                    const statusBadgeCell = row.querySelector('td:nth-child(6)')
+
+                    if (newStatus === 'active') {
+                        statusBadgeCell.innerHTML = '<span class="bg-green-500 text-green-900 text-xs text-white font-bold px-2.5 py-0.5 rounded-full">Active</span>'
+                    } else {
+                        statusBadgeCell.innerHTML = '<span class="bg-red-500 text-red-900 text-xs text-white font-bold px-2.5 py-0.5 rounded-full">Inactive</span>'
+                    }
+
+                    Swal.fire(
+                        'Success!',
+                        `Offer has been ${actionText}d.`,
+                        'success'
+                    );
+                }
+
+            } catch (error) {
+                console.error('Error toggling status:', error);
+                Swal.fire(
+                    'Error!',
+                    'Could not update the offer status. Please try again.',
+                    'error'
+                );
+            } finally {
+                toggleBtn.disabled = false
+            }
+        }
+    })
+
+
+</script>

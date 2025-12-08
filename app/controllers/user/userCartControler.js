@@ -4,10 +4,13 @@ const Product = require('../../models/productSchema')
 const Wishlist = require('../../models/wishlistSchema')
 const Coupon = require('../../models/couponSchema')
 const {getActiveOffers,applyOffersToProduct} = require('../../helpers/offerHelper')
+const httpStatus = require('../../constants/httpStatus')
 
 
 const getCart = asynchandler(async (req, res) => {
   try {
+    const couponOffer = req.session.couponDiscount || 0
+    
     const userId = req.session.user || req.user
     const cartItems = await Cart.find({ user_id: userId })
     const productList = await Promise.all(
@@ -47,11 +50,12 @@ const getCart = asynchandler(async (req, res) => {
     console.log(validProducts)
     res.render('user/cart', {
       user: userId,
-      cart: sortedProduct
+      cart: sortedProduct,
+      couponAmount:couponOffer
     })
   } catch (error) {
     console.error('Error fetching cart:', error)
-    res.status(500).send('Something went wrong while loading the cart')
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Something went wrong while loading the cart')
   }
 })
 
@@ -59,13 +63,13 @@ const addCart = asynchandler(async (req, res) => {
   try {
     const userId = req.session.user || req.user
     if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' })
+    return res.status(httpStatus.UNAUTHORIZED).json({ message: 'Unauthorized' })
     }
 
     const { productId, variant, quantity} = req.body
     const product = await Product.findById(productId)
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" })
+      return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Product not found" })
     }
     let existingCart = await Cart.findOne({
       user_id: userId,
@@ -75,8 +79,11 @@ const addCart = asynchandler(async (req, res) => {
 
     if (existingCart) {
       existingCart.quantity += Number(quantity) || 1
+      if(existingCart.quantity==6){
+      return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "You can only add up to 5 items.", cart: existingCart })  
+      }
       await existingCart.save()
-      return res.status(200).json({ success: true, message: "Cart updated", cart: existingCart })
+      return res.status(httpStatus.OK).json({ success: true, message: "Cart updated", cart: existingCart })
     }
 
     const newCart = await Cart.create({
@@ -97,10 +104,11 @@ if (wishlistData.length>0){
 } else {
   console.log("No wishlist item found")
 }
-    res.status(201).json({ success: true, message: "Item added to cart", cart: newCart })
+
+    res.status(httpStatus.CREATED).json({ success: true, message: "Item added to cart", cart: newCart })
   } catch (error) {
     console.error("Add to cart error:", error)
-    res.status(500).json({ success: false, message: "Server error" })
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Server error" })
   }
 })
 
@@ -108,10 +116,10 @@ const deleteCart = asynchandler(async(req,res)=>{
   const cartId = req.params.id
   const userId = req.session.user
   if(!cartId){
-    return res.status(401).json({message:"cart not founded"})
+    return res.status(httpStatus.UNAUTHORIZED).json({message:"cart not founded"})
   }
   await Cart.findByIdAndDelete(cartId)
-  res.status(200).json({message:"item remove form the cart"})
+  res.status(httpStatus.OK).json({message:"item remove form the cart"})
 })
 
 const dequabtity = asynchandler(async(req,res)=>{
@@ -120,7 +128,7 @@ const dequabtity = asynchandler(async(req,res)=>{
     return
   }
   await Cart.findByIdAndUpdate(cartId, { $inc: { quantity: -1 } })
-  res.status(200).json({message:"quabtity decrase by one"})
+  res.status(httpStatus.OK).json({message:"quabtity decrase by one"})
 })
 
 const inquabtity = asynchandler(async(req,res)=>{
@@ -129,7 +137,7 @@ const inquabtity = asynchandler(async(req,res)=>{
     return
   }
   await Cart.findByIdAndUpdate(cartId, { $inc: { quantity: 1 } })
-  res.status(200).json({message:"quabtity incrase by one"})
+  res.status(httpStatus.OK).json({message:"quabtity incrase by one"})
 })
 
 
@@ -138,36 +146,37 @@ const applyCoupon = asynchandler(async (req, res) => {
     const userId = req.user || req.session.user
 
     if (!code) {
-        return res.status(400).json({ success: false, message: "Coupon code required" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon code required" })
     }
 
     const coupon = await Coupon.findOne({ code: code })
-
+    req.session.couponId = coupon._id
+    console.log('🧟‍♂️',req.session.couponId)
     if (!coupon) {
         return res.status(404).json({ success: false, message: "Invalid coupon code" })
     }
 
     if (coupon.status !== "active") {
-        return res.status(400).json({ success: false, message: "Coupon is not active" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon is not active" })
     }
 
     const now = new Date()
     if (coupon.expiryDate < now) {
-        return res.status(400).json({ success: false, message: "Coupon has expired" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon has expired" })
     }
 
     if (coupon.usersUsed.length >= coupon.maxUsers) {
-        return res.status(400).json({ success: false, message: "Coupon usage limit reached" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon usage limit reached" })
     }
 
     if (coupon.usersUsed.includes(userId)) {
-        return res.status(400).json({ success: false, message: "You have already used this coupon" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "You have already used this coupon" })
     }
 
     const cartItems = await Cart.find({ user_id: userId }).populate("product_id")
     
     if (!cartItems || cartItems.length === 0) {
-        return res.status(400).json({ success: false, message: "Cart is empty" })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Cart is empty" })
     }
 
     const activeOffers = await getActiveOffers()
@@ -186,7 +195,7 @@ const applyCoupon = asynchandler(async (req, res) => {
     }
 
     if (subtotal < coupon.minPurchase) {
-        return res.status(400).json({
+        return res.status(httpStatus.BAD_REQUEST).json({
             success: false,
             message: `Minimum purchase ₹${coupon.minPurchase} required`
         })
@@ -209,7 +218,7 @@ const applyCoupon = asynchandler(async (req, res) => {
     req.session.appliedCouponId = coupon._id
     req.session.couponDiscount = discount
 
-    return res.status(200).json({
+    return res.status(httpStatus.OK).json({
         success: true,
         message: "Coupon applied successfully",
         coupon: {
@@ -225,7 +234,7 @@ const applyCoupon = asynchandler(async (req, res) => {
 
 const removeCoupon = asynchandler(async (req, res) => {
     req.session.appliedCouponId = null
-    return res.status(200).json({ 
+    return res.status(httpStatus.OK).json({ 
         success: true, 
         message: "Coupon removed successfully" 
     })

@@ -7,6 +7,8 @@ const cloudinary = require('../../config/cloudinaryConfig')
 const sharp = require('sharp')
 const {productUpdateShop,homeUpdata,} = require('../../helpers/websocket')
 const { NotFoundError } = require('../../helpers/errorClasses')
+const httpStatus = require('../../constants/httpStatus')
+const ErrorMessage = require('../../constants/errorMessages')
 
 
 const getBrandPage = asynchandler(async (req, res) => {
@@ -34,7 +36,7 @@ const getBrandPage = asynchandler(async (req, res) => {
 
     } catch (error) {
         console.error("Error loading brand page:", error)
-        res.status(500).send("Error loading data.")
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send(ErrorMessage.SERVER_ERROR)
     }
 })
 
@@ -45,14 +47,14 @@ const loadAddBrand = (req,res)=>{
 const addBrand = asynchandler(async (req, res) => {
     const brand = req.body.brandName
     if (!brand || !req.file) {
-        return res.status(400).send("Brand name and image are required.")
+        return res.status(httpStatus.BAD_REQUEST).send(ErrorMessage.BAD_REQUEST)
     }
     const findBrand = await Brand.findOne({ 
         brandName: { $regex: new RegExp('^' + brand + '$', 'i') } 
     })
 
     if (findBrand) {
-        return res.status(400).send("A brand with this name already exists")
+        return res.status(httpStatus.BAD_REQUEST).send("A brand with this name already exists")
     }
 
     const processedImageBuffer = await sharp(req.file.buffer)
@@ -93,11 +95,11 @@ const blockBrand = asynchandler (async(req,res)=>{
         Brandid,{status: 'blocked' },{ new: true }) 
 
           if (!updatedBrand) {
-            return res.status(404).json({ error: 'Brand not found.' })
+            return res.status(httpStatus.BAD_REQUEST).json({ error: 'Brand not found.' })
         }
         productUpdateShop()
         homeUpdata()
-        res.status(200).json({ message: 'Brand has been blocked successfully.' })
+        res.status(httpStatus.OK).json({ message: 'Brand has been blocked successfully.' })
 })
 
 const unblockBrand = asynchandler (async(req,res)=>{
@@ -116,11 +118,11 @@ const unblockBrand = asynchandler (async(req,res)=>{
         Brandid,{status: 'active' },{ new: true }) 
 
           if (!updatedBrand) {
-            return res.status(404).json({ error: 'Brand not found.' })
+            return res.status(httpStatus.NOT_FOUND).json({ error: 'Brand not found.' })
         }
         productUpdateShop()
         homeUpdata()
-        res.status(200).json({ message: 'Brand has been unblocked successfully.' })
+        res.status(httpStatus.OK).json({ message: 'Brand has been unblocked successfully.' })
 })
 
 const loadeditBrand = asynchandler(async(req,res)=>{
@@ -138,7 +140,7 @@ const editBrand = asynchandler(async (req, res) => {
     const { brandName } = req.body
 
     if (!brandName) {
-        return res.status(400).send("Brand name is required.")
+        return res.status(httpStatus.BAD_REQUEST).send("Brand name is required.")
     }
     const existingBrand = await Brand.findOne({ 
         brandName: { $regex: new RegExp('^' + brandName + '$', 'i') },
@@ -146,12 +148,12 @@ const editBrand = asynchandler(async (req, res) => {
     });
 
     if (existingBrand) {
-        return res.status(400).send("Another brand with this name already exists.")
+        return res.status(httpStatus.BAD_REQUEST).send("Another brand with this name already exists.")
     }
 
     const brand = await Brand.findById(brandId)
     if (!brand) {
-        return res.status(404).send("Brand not found")
+        return res.status(httpStatus.NOT_FOUND).send("Brand not found")
     }
     brand.brandName = brandName
 
@@ -176,7 +178,7 @@ const editBrand = asynchandler(async (req, res) => {
 
     await brand.save()
 
-    res.status(200).json({ message: "Brand updated successfully" })
+    res.status(httpStatus.OK).json({ message: "Brand updated successfully" })
 })
 
 module.exports = {

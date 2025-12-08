@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
 const Address = require('../../models/addressSchema')
 const {NotFoundError} = require('../../helpers/errorClasses')
+const httpStatus = require('../../constants/httpStatus')
 
 const securePassword = asynchandler(async(password)=>{
     const passwordHash = await bcrypt.hash(password,10)
@@ -38,7 +39,7 @@ const updateAccount = asynchandler(async (req, res) => {
         phone:formData.phone
     })
 
-    res.status(200).json({message:'Account updated successfully'})
+    res.status(httpStatus.OK).json({message:'Account updated successfully'})
 })
 
 const changePassword = asynchandler(async(req,res)=>{
@@ -52,9 +53,9 @@ const changePassVerify = asynchandler(async(req,res)=>{
   const passwordMatch = await bcrypt.compare(userpass,finduser.password)
 
   if(passwordMatch){
-    res.status(200).json({success: true})
+    res.status(httpStatus.OK).json({success: true})
   }else{
-    return res.status(400).json({ message: 'Password does not match' })
+    return res.status(httpStatus.BAD_REQUEST).json({ message: 'Password does not match' })
   }
 })
 
@@ -68,7 +69,7 @@ const setNewPassword = asynchandler(async(req,res)=>{
   const hashedPass = await securePassword(newPassword)
   await User.findByIdAndUpdate(userId,{password:hashedPass})
   console.log("password save")
-  res.status(200).json({ success:true, message: "Password is changed" })
+  res.status(httpStatus.OK).json({ success:true, message: "Password is changed" })
 })
 
 async function SendVerificationEmail(email, otp) {
@@ -122,7 +123,7 @@ const changeEmailotp = asynchandler(async(req,res)=>{
   console.log(`change email otp${otp}`)
   const emailSent = await SendVerificationEmail(email, otp)
   if (!emailSent) {
-        return res.status(500).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "There was an error sending the email. Please try again."
         })
@@ -142,14 +143,14 @@ const verifyEmailotp = asynchandler(async(req, res) => {
    const { otp } = req.body
 
     if (!req.session.otpContext || req.session.otpContext.purpose !== 'change_email') {
-        return res.status(400).json({ success: false,message: "Invalid session. Please try again." });
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false,message: "Invalid session. Please try again." });
     }
 
     
     const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000; 
     if (timeElapsed > 60) {
         delete req.session.otpContext;
-        return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "OTP has expired. Please request a new one." })
     }
 
     if (otp === req.session.otpContext.otp) {
@@ -162,7 +163,7 @@ const verifyEmailotp = asynchandler(async(req, res) => {
 
         res.json({ success: true, redirectUrl: "/account/changeEmail" })
     } else {
-        res.status(400).json({ success: false, message: "Invalid OTP. Please try again." })
+        res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid OTP. Please try again." })
     }
 })
 
@@ -181,13 +182,13 @@ const newchangeEmailotp = asynchandler(async(req,res)=>{
   const { email } = req.body
   console.log(email)
   if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required' })
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: 'Email is required' })
   }
   const otp = generateOtp()
   console.log(`New change email OTP: ${otp}`)
   const emailSent = await SendVerificationEmail(email, otp)
   if (!emailSent) {
-    return res.status(500).json({
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'There was an error sending the email. Please try again.'
     })
@@ -199,7 +200,7 @@ const newchangeEmailotp = asynchandler(async(req,res)=>{
     userId,
     newEmail: email
   }
-  res.status(200).json({
+  res.status(httpStatus.OK).json({
     success: true,
     message: 'OTP sent successfully!',
     redirectUrl: '/account/verify-newemail'
@@ -218,13 +219,13 @@ const newchangeEmail = asynchandler(async(req,res)=>{
   console.log(`new mail:${newemail}`)
 
     if (!req.session.otpContext || req.session.otpContext.purpose !== 'new change_email') {
-        return res.status(400).json({ success: false,message: "Invalid session. Please try again." });
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false,message: "Invalid session. Please try again." });
     }
  
     const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000; 
     if (timeElapsed > 60) {
         delete req.session.otpContext;
-        return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "OTP has expired. Please request a new one." })
     }
 
     if (otp === req.session.otpContext.otp) {
@@ -239,7 +240,7 @@ const newchangeEmail = asynchandler(async(req,res)=>{
 
         res.json({ success: true, redirectUrl: "/account" })
     } else {
-        res.status(400).json({ success: false, message: "Invalid OTP. Please try again." })
+        res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid OTP. Please try again." })
     }
 })
 
@@ -247,7 +248,7 @@ const uploadProfile = asynchandler(async (req, res) => {
   console.log(req.file)
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' })
+      return res.status(httpStatus.BAD_REQUEST).json({ message: 'No file uploaded' })
     }
 
     const optimizedImage = await sharp(req.file.buffer)
@@ -275,7 +276,7 @@ const uploadProfile = asynchandler(async (req, res) => {
     res.json({ success: true, url: uploaded.secure_url })
   } catch (error) {
     console.error('Error uploading profile:', error)
-    res.status(500).json({ message: 'Error uploading profile image' })
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error uploading profile image' })
   }
 })
 
@@ -332,10 +333,10 @@ const addAddress = asynchandler(async (req,res) => {
 
   try {
     await address.save()
-    res.status(200).json({ message: "Address added" })
+    res.status(httpStatus.OK).json({ message: "Address added" })
   } catch (error) {
     console.log(`An error occurred while saving address: ${error}`)
-    res.status(500).json({ message: "Failed to add address" })
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Failed to add address" })
   }
 })
 
@@ -344,7 +345,7 @@ const deleteAddress = asynchandler(async (req, res) => {
   const addressId = req.params.id
   const address = await Address.findById(addressId)
   if (!address) {
-    return res.status(404).json({ message: "Address not found" });
+    return res.status(httpStatus.NOT_FOUND).json({ message: "Address not found" });
   }
   if (address.is_default) {
     const newDefault = await Address.findOne({user_id: address.user_id, _id: { $ne: addressId}})
@@ -354,7 +355,7 @@ const deleteAddress = asynchandler(async (req, res) => {
     }
   }
   await Address.findByIdAndDelete(addressId)
-  res.status(200).json({ message: "Address deleted"})
+  res.status(httpStatus.OK).json({ message: "Address deleted"})
 })
 
 const addressCardUpdate = asynchandler(async(req,res)=>{
@@ -383,7 +384,7 @@ const geteditAddress = asynchandler(async(req,res)=>{
     const address = await Address.findById(addressId)
 
     if (!address) {
-      return res.status(400).json({ message: "Address not found" })
+      return res.status(httpStatus.BAD_REQUEST).json({ message: "Address not found" })
     }
 
     let isDefault = false
@@ -418,11 +419,11 @@ const geteditAddress = asynchandler(async(req,res)=>{
       is_default: isDefault
     })
 
-    res.status(200).json({ message: "Address updated successfully" })
+    res.status(httpStatus.OK).json({ message: "Address updated successfully" })
 
   } catch (error) {
     console.error("Edit address error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" })
   }
 })
 

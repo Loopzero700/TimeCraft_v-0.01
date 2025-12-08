@@ -352,18 +352,20 @@ body {
     color: #1f2937; 
     font-weight: 500;
 }
+
 .description {
   background: #fff;              
   border: 1px solid #e5e7eb;     
   border-radius: 12px;            
-  padding: 20px 24px;             
+  padding: 40px 44px;             
   margin-top: 20px;               
   box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-  line-height: 1.6;               
+  line-height: 1.6; 
+  width: 70%;              
 }
 
 .description h3 {
-  font-size: 1.25rem;             
+  font-size: 1.5rem;             
   font-weight: 600;              
   margin-bottom: 12px;          
   color: #111827;              

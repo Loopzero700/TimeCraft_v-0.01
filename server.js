@@ -10,6 +10,7 @@ const db = require('./app/config/db')
 const passport = require('./app/config/passport')
 const morgan = require('morgan')
 const http = require('http')
+const logger = require('./app/helpers/logger')
 const websocketHelper = require('./app/helpers/websocket')
 
 
@@ -41,6 +42,18 @@ const adminSession = session({
 })
 
 // app.use(morgan("dev"))
+
+// function connectToDatabase() {
+//   try {
+//     logger.info('Database connected successfully!')
+//   } catch (err) {
+//     logger.error('Failed to connect to database:', err.message)
+//   }
+// }
+
+// connectToDatabase()
+// logger.warn('This is a warning message.')
+// logger.debug('This is a debug message (only shows in development).')
 
 app.use((req,res,next)=>{
     res.set('cache-control','no-store')
@@ -96,7 +109,7 @@ app.use((err, req, res, next) => {
     }
   }
 
-  res.status(err.statusCode).render('user/error-page', { 
+  res.status(err.statusCode).render('user/400', { 
     title: 'Error!',
     errorMessage: err.message
   })

@@ -5,6 +5,7 @@ const paginatehelper = require('../../helpers/paginate')
 const Category = require('../../models/categorySchema')
 const {NotFoundError} = require('../../helpers/errorClasses')
 const {applyOffersToProduct,getActiveOffers} = require('../../helpers/offerHelper')
+const httpStatus = require('../../constants/httpStatus')
 
 const getproductPage = asynchandler(async(req,res)=>{
 
@@ -26,11 +27,11 @@ const getproductPage = asynchandler(async(req,res)=>{
         }
     
     if(!product){
-      return res.status(404).render('user/pageNotFound',{message:"Product not found"})
+      return res.status(httpStatus.NOT_FOUND).render('user/pageNotFound',{message:"Product not found"})
     }
     
     if(product.status!=="active"){
-      return res.status(404).render('user/pageNotFound',{message:"This Product is currently unavailable"})
+      return res.status(httpStatus.NOT_FOUND).render('user/pageNotFound',{message:"This Product is currently unavailable"})
     }
 
      const breadcrumbs = [

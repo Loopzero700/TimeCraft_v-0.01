@@ -1,0 +1,241 @@
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/user/account.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+     <style>
+    .breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0; 
+    font-size: 0.875rem;
+    }
+    
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: '>';
+        margin: 0 0.75rem;
+        color: #9ca3af; 
+    }
+    
+    .breadcrumbs a {
+        color: #4b5563; 
+        text-decoration: none;
+        transition: color 0.2s ease-in-out;
+    }
+    
+    .breadcrumbs a:hover {
+        color: #111827; 
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item span {
+        color: #1f2937; 
+        font-weight: 500;
+    }
+    </style>
+
+
+      <nav aria-label="Breadcrumb">
+      <ol class="breadcrumbs">
+        <% breadcrumbs.forEach(function(crumb) { %>
+          <li class="breadcrumb-item">
+            <% if (crumb.active) { %>
+                               <span aria-current="page"><%= crumb.name %></span>
+                           <% } else { %>
+                               <a href="<%= crumb.link %>"><%= crumb.name %></a>
+                               <% } %>
+                              </li>
+                              <% }); %>
+                            </ol>
+                          </nav>
+
+    <!-- Main Content -->
+
+
+    <main class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="flex flex-col md:flex-row gap-8 lg:gap-12">
+
+            <!-- Left Sidebar: My Account -->
+            <aside class="account-sidebar">
+        <div class="account-sidebar-card">
+            <h2 class="sidebar-title">My Account</h2>
+            <nav class="sidebar-nav">
+                <a href="/account" class="nav-link">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>Personal Information</span>
+                </a>
+                <a href="/account/address" class="nav-link">
+                    <span class="material-symbols-outlined">home</span>
+                    <span>Address</span>
+                </a>
+                <a href="/account/orders" class="nav-link">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span>Order</span>
+                </a>
+                <a href="/account/wallet" class="nav-link active">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <span>Wallet</span>
+                </a>
+                <form action="/logout" method="POST" style="margin:0; padding:0;">
+                <button class="nav-link">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </nav>
+    </div>
+</aside>
+
+            <!-- Right Content: My Wallet -->
+            <section class="w-full md:w-3/4 lg:w-4/5">
+                <div class="border border-gray-300 rounded-xl p-6 md:p-8">
+                    <h2 class="text-2xl font-semibold mb-6">My Wallet</h2>
+                    
+                    <!-- Total Balance Card -->
+                    <div class="border border-gray-300 rounded-xl p-6 mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-gray-700">Total balance</span>
+                            <span class="font-semibold text-lg amountArea">₹<%=walletData.balance%>.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Add Money Card -->
+                    <div class="max-w-md mx-auto bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+
+                        <h3 class="text-lg font-bold text-gray-800 mb-6">Add Money to Wallet</h3>
+                    
+                        <div class="relative mb-8">
+                            <label for="amount" class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 text-center">Enter Amount</label>
+                            <div class="flex items-center justify-center border border-gray-300 rounded-xl px-4 py-4 focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent transition-all">
+                                <span class="text-3xl font-semibold text-gray-400 mr-2">₹</span>
+                                <input 
+                                    type="number" 
+                                    id="amount" 
+                                    placeholder="0" 
+                                    class="w-full text-4xl font-bold text-gray-900 placeholder-gray-300 outline-none text-center bg-transparent appearance-none amountInput"
+                                >
+                            </div>
+                        </div>
+                    
+                        <div class="grid grid-cols-2 gap-4">
+
+                            <a href="/transaction" class="flex items-center justify-center w-full border border-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                                View Transactions
+                            </a>
+                        
+                            <button class="w-full bg-gray-900 text-white font-medium py-3 rounded-lg hover:bg-gray-800 focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all addAmount">
+                                Add Money
+                            </button>
+                        
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    const addAmountBtn = document.querySelector('.addAmount')
+    const amountInput = document.querySelector('.amountInput')
+    const amountDisplay = document.querySelector('.amountArea')
+
+    addAmountBtn.addEventListener('click', async () => {
+        const amountToAddStr = amountInput.value.trim()
+
+        const amount = parseFloat(amountToAddStr)
+        
+        console.log('Entered amount:', amount)
+
+        if (!amount || amount <= 0 || isNaN(amount)) {
+            Swal.fire({
+                title: 'Invalid Amount',
+                text: 'Please enter a valid amount to add to your wallet.',
+                icon: 'warning'
+            })
+            return
+        }
+
+        try {
+            const response = await fetch('/addWalletAmount', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: amount }) 
+            })
+
+            const order = await response.json()
+            console.log('Order created:', order)
+
+            const options = {
+                key: 'rzp_test_RcMfChaQ2P0zv3', 
+                amount: order.amount,
+                currency: order.currency,
+                name: "TimeCraft",
+                description: "Wallet Top-Up",
+                order_id: order.id,
+                handler: async function (response) {
+                    const verifyRes = await fetch("/verifyWallet", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            response,
+                            orderData: order
+                        })
+                    })
+                    
+                    const result = await verifyRes.json()
+                    console.log(result)
+                    if (result.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Amount added to your wallet successfully.',
+                            icon: 'success'
+                        }).then(() => {
+                            
+                            
+                            const currentBalanceStr = amountDisplay.textContent.trim()
+                            
+                            const currentBalance = parseFloat(currentBalanceStr.replace(/[^\d.-]/g, ''))
+                            
+                            const newTotal = currentBalance + amount
+                            
+                            amountDisplay.textContent = `₹${newTotal.toFixed(2)}`
+                            
+                            amountInput.value = ""
+                        })
+                    } else {
+                        Swal.fire({
+                            title: 'Failed!',
+                            text: result.message || 'Payment verification failed.',
+                            icon: 'error'
+                        })
+                    }
+                },
+                theme: { color: "#3399cc" }
+            }
+
+            const rzp = new Razorpay(options)
+            rzp.open()
+
+        } catch (error) {
+            console.error('Error:', error)
+            Swal.fire({
+                title: 'Error!',
+                text: 'Could not connect to the server. Please try again.',
+                icon: 'error'
+            })
+        }
+    })
+</script>

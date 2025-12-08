@@ -7,29 +7,46 @@ const {checkAndUpdateOrderStatus}=require('../../helpers/isOrderStatus')
 const PDFDocument = require('pdfkit')
 const {createRazorpayOrder,verifyRazorpaySignature} = require('../../helpers/Razorpay')
 const {addToWallet} = require('../../helpers/walletHelpers')
+const httpStatus = require('../../constants/httpStatus')
 const getOrder = asynchandler(async (req, res) => {
     const userId = req.session.user || req.user
+    const searchQuery = req.query.query || req.query.search || ""
+    let queryFilters = { user_id: userId }
+
+    if (req.query.filter && req.query.filter !== 'all') {
+        queryFilters.status = req.query.filter
+    }
     const options = {
         page: req.query.page,
-        limit: req.query.limit,
-        filters: { user_id: userId }, 
-        search: req.query.search,
-        searchFields: ["orderId"],
+        limit: req.query.limit || 5,
+        filters: queryFilters, 
+        search: searchQuery,
+        searchFields: ["order_id"],
         populate:"items.product_id"
     }
     const result = await paginatehelper(Order, options)
+    
         const breadcrumbs = [
         { name: 'Home', link: '/' },
         { name: 'Account', link: `/account` },
-        { name: 'Order', link: `/account/order` },
+        { name: 'Order', link: `/account/order`},
     ]
     
-    if (req.headers.accept && req.headers.accept.includes("application/json")) {
-        return res.status(200).json({ user: userId, orderData: result.results })
+     if (req.headers.accept && req.headers.accept.includes("application/json")) {
+      return res.status(httpStatus.OK).json({ 
+          user: userId,
+          orderData: result.results,
+          totalPages: result.pagination.totalPages,
+          currentPage: result.pagination.currentPage
+      })
     }
+
+    
     res.render('user/order', { 
         user: userId, 
         orderData: result.results,
+        totalPages: result.pagination.totalPages,
+        currentPage: result.pagination.currentPage,
         breadcrumbs:breadcrumbs
     })
 })
@@ -40,6 +57,8 @@ const getOrderDetails = asynchandler(async (req, res) => {
   const orderData = await Order.findById(orderId)
     .populate("items.product_id")
     .lean()
+
+    console.log('🫳🏿🫳🏻',orderData)
   const Data = await Order.findById(orderId)
   if(!orderData) throw new NotFoundError
   res.render("user/orderDetailes", { user: userId, data: orderData, orders:Data })
@@ -117,19 +136,19 @@ const cancelOrderItem = asynchandler(async (req, res) => {
   const { orderId, itemId } = req.body;
 
   if (!orderId || !itemId) {
-    return res.status(400).json({ message: "Order ID and Item ID are required" });
+    return res.status(httpStatus.BAD_REQUEST).json({ message: "Order ID and Item ID are required" });
   }
 
 
   const order = await Order.findById(orderId);
 
   if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+    return res.status(httpStatus.NOT_FOUND).json({ message: "Order not found" });
   }
 
   
   if (order.status !== "Pending") {
-    return res.status(400).json({
+    return res.status(httpStatus.BAD_REQUEST).json({
       message: "Order cannot be cancelled. It is already being processed or has shipped."
     })
   }
@@ -138,11 +157,11 @@ const cancelOrderItem = asynchandler(async (req, res) => {
   const item = order.items.find(i => i._id.toString() === itemId)
 
   if (!item) {
-    return res.status(404).json({ message: "Item not found in this order" })
+    return res.status(httpStatus.NOT_FOUND).json({ message: "Item not found in this order" })
   }
 
   if (item.item_status === "Cancelled") {
-    return res.status(400).json({ message: "Item is already cancelled" })
+    return res.status(httpStatus.BAD_REQUEST).json({ message: "Item is already cancelled" })
   }
 
 
@@ -166,7 +185,7 @@ const cancelOrderItem = asynchandler(async (req, res) => {
     await addToWallet(userId,reason,type,priceToDeduct,orderId)
   }
 
-  res.status(200).json({ message: "Item has been cancelled successfully" })
+  res.status(httpStatus.OK).json({ message: "Item has been cancelled successfully" })
 })
 
 
@@ -174,7 +193,7 @@ const ReturnOrderItem = asynchandler(async(req,res)=>{
   const {orderId, itemId ,reason } = req.body 
 
     if (!orderId || !itemId) {
-    return res.status(400).json({ message: "Order ID and Item ID are required" })
+    return res.status(httpStatus.BAD_REQUEST).json({ message: "Order ID and Item ID are required" })
   }
 
   const itemObjectId = new mongoose.Types.ObjectId(itemId)
@@ -202,26 +221,26 @@ const ReturnOrderItem = asynchandler(async(req,res)=>{
 
     if (result.modifiedCount === 0) {
     if (result.matchedCount === 0) {
-        return res.status(404).json({ message: "Item not found or is already cancelled" })
+        return res.status(httpStatus.NOT_FOUND).json({ message: "Item not found or is already cancelled" })
     }
-    return res.status(400).json({ message: "Item was already cancelled" })
+    return res.status(httpStatus.BAD_REQUEST).json({ message: "Item was already cancelled" })
     }
 
     const order = await Order.findById(orderObjectId)
 
     if (!order) {
-    return res.status(404).json({ message: "Order not found after update" })
+    return res.status(httpStatus.NOT_FOUND).json({ message: "Order not found after update" })
     }
 
     const item = order.items.find(i => i._id.equals(itemObjectId));
 
     if (!item) {
-    return res.status(404).json({ message: "Return item not found in order" })
+    return res.status(httpStatus.NOT_FOUND).json({ message: "Return item not found in order" })
     }
 
 
   await checkAndUpdateOrderStatus(orderId)
-  res.status(200).json({ message: "Item has been Return successfully" })
+  res.status(httpStatus.OK).json({ message: "Item has been Return successfully" })
 })
 
 
@@ -231,7 +250,7 @@ const generateInvoice = async (req, res) => {
     const order = await Order.findById(orderId)
       .populate('items.product_id')
       .lean()
-    if (!order) return res.status(404).send('Order not found')
+    if (!order) return res.status(httpStatus.NOT_FOUND).send('Order not found')
     const doc = new PDFDocument({ margin: 50 })
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader(
@@ -310,7 +329,7 @@ const generateInvoice = async (req, res) => {
     doc.end()
   } catch (error) {
     console.error(error)
-    res.status(500).send('Error generating invoice')
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Error generating invoice')
   }
 }
 
@@ -334,7 +353,7 @@ const retryPayment = asynchandler(async(req,res)=>{
   const total = orderData.total
   const order = await createRazorpayOrder(total)
   if(order){
-    return res.status(200).json({message: "order created successful", orderData:order})
+    return res.status(httpStatus.OK).json({message: "order created successful", orderData:order})
   }
 })
 
@@ -344,7 +363,7 @@ const retryVerify = asynchandler(async(req,res)=>{
   if(result){
     await Order.findByIdAndUpdate(orderId,{payment_status:"Paid"})
   }
-  res.status(200).json({success:true,message:"payment is sucessful",orderId:orderId})
+  res.status(httpStatus.OK).json({success:true,message:"payment is sucessful",orderId:orderId})
 
 })
 
@@ -355,10 +374,10 @@ const cancelOrder = asynchandler(async (req, res) => {
   const reason = "product cancelled"
   
   if (!orderId) {
-    return res.status(400).json({ success: false, message: "Order ID is required." })
+    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Order ID is required." })
   }
   const orderData = await Order.findById(orderId)
-  const amount = orderData.total
+  let amount = orderData.total
 
   const update = {
     $set: {
@@ -368,7 +387,7 @@ const cancelOrder = asynchandler(async (req, res) => {
   const updatedOrder = await Order.findByIdAndUpdate(orderId, update, { new: true })
 
   if (!updatedOrder) {
-    return res.status(404).json({ success: false, message: "Order not found." })
+    return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order not found." })
   }
 
 for (const data of orderData.items) {
@@ -384,7 +403,7 @@ if(orderData.payment_method!=="COD"){
   await addToWallet(userId,reason,type,amount,orderId)
 }
 
-  res.status(200).json({ 
+  res.status(httpStatus.OK).json({ 
     success: true, 
     message: "Order successfully cancelled.",
     order: updatedOrder 

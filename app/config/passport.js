@@ -23,7 +23,13 @@ passport.use(
             profile_photo: profile.photos?.[0]?.value ||`https://placehold.co/100x100/dfdcd9/31343C?text=${profile.displayName?.charAt(0)?.toUpperCase()}`,
             isBlocked: false, 
           })
+          const userWallet = new Wallet({
+            user_id: user._id,
+            balance: 0
+          });
+          await userWallet.save()
         }
+
 
         
         if (user.isBlocked) {
@@ -39,19 +45,12 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);
-
-    const userWallet = new Wallet({
-                    user_id: User._id,
-                    balance: 0
-        })
-  await userWallet.save();
-
+    const user = await User.findById(id)
     
     if (user && user.isBlocked) {
       return done(null, false, { message: "Your account is blocked." });

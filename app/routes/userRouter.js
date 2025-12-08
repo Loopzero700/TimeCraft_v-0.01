@@ -7,6 +7,7 @@ const userWishlistControler = require("../controllers/user/userWishlistControler
 const userCartController = require("../../app/controllers/user/userCartControler")
 const userCheckoutController = require('../../app/controllers/user/userCheckoutControler')
 const userOrderController = require('../../app/controllers/user/userOrderController')
+const userWalletController = require('../../app/controllers/user/userWalletController')
 const passport = require('passport')
 const productController = require('../controllers/user/productControler')
 const { userAuth } = require('../middleware/auth')
@@ -52,6 +53,8 @@ router.get('/forgotOtp', userController.getforgotOtp)
 router.post('/forgotOtp', userController.forgotverifyOtp)
 router.get('/resetPassword', userController.getRestPass)
 router.post('/resetpass', userController.resetpass)
+router.get('/referral',userController.getReferral)
+router.post('/validate-referral',userController.validateReferral)
 
 
 // Oauth
@@ -106,11 +109,18 @@ router.post('/addcart', userCartController.addCart)
 router.delete('/cart/delete/:id', userCartController.deleteCart)
 router.patch('/cart/dequabtity/:id', userCartController.dequabtity)
 router.patch('/cart/inquabtity/:id', userCartController.inquabtity)
+router.post('/apply_coupon',userAuth,userCartController.applyCoupon)
+router.delete('/remove_coupon',userCartController.removeCoupon)
 
 
 // =================== CHECKOUT ===================
 router.get('/Checkout', userAuth, noCache, userCheckoutController.getCheckout)
 router.post('/addOrder', userAuth,noCache, userCheckoutController.addOrder)
+router.get('/checkoutAddaddress',userAuth,noCache, userCheckoutController.addAddress)
+router.post('/orderRzp',userAuth,userCheckoutController.razorpayOrder)
+router.post('/verify',userAuth,userCheckoutController.verifyRazorpay)
+router.post('/paymet_failed',userAuth,userCheckoutController.paymentFailed)
+router.post('/orderwallet',userAuth,userCheckoutController.orderWallet)
 
 
 // =================== ORDER MANAGEMENT ===================
@@ -121,5 +131,16 @@ router.patch('/itemCancel', userAuth, userOrderController.cancelOrderItem)
 router.patch('/itemReturn', userAuth, userOrderController.ReturnOrderItem)
 router.get("/invoice/:id", userAuth, userOrderController.generateInvoice)
 router.get("/orderSuccess/:id",userAuth,userOrderController.getOrderSuccess)
+router.get("/incompleteOrder/:id",userAuth,userOrderController.getIncompleteOrder)
+router.post('/retryPayment',userAuth,userOrderController.retryPayment)
+router.post('/retryverify',userAuth,userOrderController.retryVerify)
+router.post('/cancel_order',userAuth, userOrderController.cancelOrder)
+
+// =================== WALLET MANAGEMENT ===================
+router.get('/account/wallet',userAuth,userWalletController.getWallet)
+router.post('/addWalletAmount',userAuth,userWalletController.addWalletAmount)
+router.post('/verifyWallet',userAuth,userWalletController.verifyPayment)
+router.get ('/transaction',userAuth, userWalletController.getTransaction)
+router.get('/transaction/data', userAuth, userWalletController.getTransactionData)
 
 module.exports = router

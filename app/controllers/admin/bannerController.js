@@ -1,6 +1,8 @@
 const asynchandler = require('express-async-handler')
 const Banner = require('../../models/bannerSchema')
 const cloudinary = require('../../config/cloudinaryConfig')
+const httpStatus = require('../../constants/httpStatus')
+const ErrorMessage = require('../../constants/errorMessages')
 
 const getBannerPage = asynchandler(async(req,res)=>{
     const handPicked1 = await Banner.find({type:"handpicked-1"})
@@ -31,11 +33,11 @@ const uploadBanner = async (req, res) => {
     const { slotId, description } = req.body; 
 
     if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No image file uploaded.' })
+      return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: ErrorMessage.BAD_REQUEST })
     }
     
     if (!slotId) {
-        return res.status(400).json({ success: false, message: 'Banner slot ID is missing.' })
+        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: ErrorMessage.BAD_REQUEST })
     }
 
     const result = await uploadToCloudinary(req.file.buffer)
@@ -50,7 +52,7 @@ const uploadBanner = async (req, res) => {
       { new: true, upsert: true }
     );
 
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
       success: true,
       message: 'Banner updated successfully!',
       banner: updatedBanner,
@@ -58,7 +60,7 @@ const uploadBanner = async (req, res) => {
 
   } catch (error) {
     console.error('Error uploading banner:', error);
-    res.status(500).json({ success: false, message: 'Server error during banner upload.' });
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: ErrorMessage.SERVER_ERROR });
   }
 };
 

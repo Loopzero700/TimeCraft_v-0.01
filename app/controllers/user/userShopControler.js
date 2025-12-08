@@ -4,6 +4,7 @@ const Brand = require("../../models/brandSchema")
 const User = require('../../models/userSchema')
 const paginatehelper = require("../../helpers/paginate")
 const {getActiveOffers,applyOffersToProduct} = require('../../helpers/offerHelper')
+const httpStatus = require("../../constants/httpStatus")
 
 
 async function getShopPage(req, res) {
@@ -41,12 +42,12 @@ async function getShopPage(req, res) {
     const minPrice = parseFloat(req.query.minPrice)
     const maxPrice = parseFloat(req.query.maxPrice)
     if (!isNaN(minPrice) || !isNaN(maxPrice)) {
-      variantFilters.price = {}
+      variantFilters.discounted_price = {}
       if (!isNaN(minPrice)) {
-        variantFilters.price.$gte = minPrice
+        variantFilters.discounted_price.$gte = minPrice
       }
       if (!isNaN(maxPrice)) {
-        variantFilters.price.$lte = maxPrice
+        variantFilters.discounted_price.$lte = maxPrice
       }
     }
     if (Object.keys(variantFilters).length > 0) {
@@ -58,10 +59,10 @@ async function getShopPage(req, res) {
 
     switch(sortOption){
       case 'price-asc':
-        sortquery = {'variants.price':1}
+        sortquery = {'variants.discounted_price':1}
         break;
       case 'price-desc':
-        sortquery = {'variants.price':-1}
+        sortquery = {'variants.discounted_price':-1}
         break;
       case 'az': 
         sortquery = { name: 1 }
@@ -94,13 +95,21 @@ async function getShopPage(req, res) {
         return applyOffersToProduct(product, activeOffers)
     })
 
+    for (const product of productsWithOffers) {
+    await Product.updateOne(
+      { _id: product._id },
+      { $set: { variants: product.variants } }
+    )
+    }
+
+
       const breadcrumbs = [
         { name: 'Home', link: '/' },
         { name: 'shop', link: `/shop` },
     ]
     
     if (req.headers.accept && req.headers.accept.includes("application/json")) {
-      return res.status(200).json({
+      return res.status(httpStatus.OK).json({
         success: true,
         user:userData,
         message: "Products fetched successfully",
@@ -130,13 +139,13 @@ async function getShopPage(req, res) {
   } catch (err) {
     console.error("Shop page error:", err)
     if (req.headers.accept && req.headers.accept.includes("application/json")) {
-      return res.status(500).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: "Failed to fetch products.",
         error: err.message,
       })
     }
-    return res.status(500).render('user/error', { message: "Failed to load shop page." })
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).render('user/error', { message: "Failed to load shop page." })
   }
 }
 module.exports = {

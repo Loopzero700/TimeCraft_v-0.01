@@ -8,6 +8,7 @@ const cloudinary = require("../../middleware/productCloudinary")
 const paginate = require('../../helpers/paginate')
 const {NotFoundError} = require('../../helpers/errorClasses')
 const {productStatusUpdate,productUpdateShop,homeUpdata,wishlistUpdata}=require('../../helpers/websocket')
+const httpStatus = require('../../constants/httpStatus')
 
 
 const loadaddproduct = asynchandler(async(req,res)=>{
@@ -28,7 +29,7 @@ const addproduct = asynchandler (async(req,res)=>{
 
     const product = await Product.findOne({name:name})
     if(product){
-       return res.status(400).send('a product with this already exists')
+       return res.status(httpStatus.BAD_REQUEST).send('a product with this already exists')
     }
     
     let variantData;
@@ -84,7 +85,7 @@ if (typeof req.body.variants === "string") {
 
     await newProduct.save()
 
-    res.status(200).json({message:"Product has been added successfully."})
+    res.status(httpStatus.OK).json({message:"Product has been added successfully."})
 })
 
 const getProductsPage = asynchandler(async (req, res) => {
@@ -119,14 +120,14 @@ const blockProduct = asynchandler (async(req,res)=>{
             productid,{status: "inactive" },{ new: true }) 
     
               if (!updatedProduct) {
-                return res.status(404).json({ success: false, error: 'Product not found.' });
+                return res.status(httpStatus.NOT_FOUND).json({ success: false, error: 'Product not found.' });
             }
 
             productStatusUpdate(productid)
             productUpdateShop()
             homeUpdata()
             wishlistUpdata()
-            res.status(200).json({ success: true , message: 'Product has been inactive successfully.' })
+            res.status(httpStatus.OK).json({ success: true , message: 'Product has been inactive successfully.' })
     
 })
 
@@ -137,12 +138,12 @@ const unblockProduct = asynchandler (async(req,res)=>{
             productid,{status: "active" },{ new: true }) 
     
               if (!updatedProduct) {
-                return res.status(404).json({ success: false, error: 'Product not found.' });
+                return res.status(httpStatus.NOT_FOUND).json({ success: false, error: 'Product not found.' });
             }
             productUpdateShop()
             homeUpdata()
             wishlistUpdata()
-            res.status(200).json({ success: true,message: 'Product has been active successfully.' })
+            res.status(httpStatus.OK).json({ success: true,message: 'Product has been active successfully.' })
 })
 
 const getEditProduct = asynchandler(async(req, res) => {
@@ -176,7 +177,7 @@ const editProduct = asynchandler(async(req,res)=>{
 
     const product = await Product.findById(productId)
     if(!product){
-        return res.status(404).send("product not found")
+        return res.status(httpStatus.NOT_FOUND).send("product not found")
     }
 
     const removeimg = JSON.parse(imagesToRemove||"[]")
@@ -260,11 +261,11 @@ const editProduct = asynchandler(async(req,res)=>{
 
    const existsProduct = await Product.findOne({ name: name, _id: { $ne: productId } })
     if (existsProduct) {
-    return res.status(400).send('A product with this name already exists')
+    return res.status(httpStatus.BAD_REQUEST).send('A product with this name already exists')
     }
 
     await product.save()
-    res.status(200).json({message:"product is updated.."})
+    res.status(httpStatus.OK).json({message:"product is updated.."})
 
 })
 

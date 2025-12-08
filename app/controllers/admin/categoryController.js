@@ -4,6 +4,9 @@ const Brand = require("../../models/brandSchema")
 const asynchandler = require("express-async-handler")
 const paginatehelper = require("../../helpers/paginate")
 const {productStatusUpdate,productUpdateShop,homeUpdata}=require('../../helpers/websocket')
+const {getActiveOffers,applyOffersToProduct} = require('../../helpers/offerHelper')
+const httpStatus = require('../../constants/httpStatus')
+const ErrorMessage = require('../../constants/errorMessages')
 
 
 const categoryInfo = asynchandler(async(req,res)=>{
@@ -40,7 +43,7 @@ const addCategory = asynchandler(async(req,res)=>{
     const  categoryExists = await Category.findOne({name})
 
     if(categoryExists){
-        return res.status(400).json({error:"Category already exists"})
+        return res.status(httpStatus.BAD_REQUEST).json({error:"Category already exists"})
     }
     const newCategory = new Category({
         name,
@@ -57,17 +60,19 @@ const blockCategory = asynchandler(async(req,res)=>{
       await Product.updateMany(
         {category:categoryId},
         {$set:{isListed:false}}
-      )
+      )      
+
 
       const updatedCategory = await Category.findByIdAndUpdate(
         categoryId,{status: 'inactive' },{ new: true }) 
 
           if (!updatedCategory) {
-            return res.status(404).json({ error: 'Category not found.' })
+            return res.status(httpStatus.NOT_FOUND).json({ error: 'Category not found.' })
         }
+
         productUpdateShop()
         homeUpdata()
-        res.status(200).json({ message: 'Category has been blocked successfully.' })
+        res.status(httpStatus.OK).json({ message: 'Category has been blocked successfully.' })
 })
 
 const unblockCategory = asynchandler(async(req,res)=>{
@@ -89,11 +94,11 @@ const unblockCategory = asynchandler(async(req,res)=>{
             )
 
           if (!updatedCategory) {
-            return res.status(404).json({ error: 'Category not found.' });
+            return res.status(httpStatus.NOT_FOUND).json({ error: 'Category not found.' });
         }
         productUpdateShop()
         homeUpdata()
-        res.status(200).json({ message: 'Category has been unblocked successfully.' })
+        res.status(httpStatus.OK).json({ message: 'Category has been unblocked successfully.' })
 })
 
 const loadeditCategory = asynchandler(async(req,res)=>{
@@ -112,11 +117,11 @@ const editCategory = asynchandler(async(req,res)=>{
   const existingCategory = await Category.findOne({name: name, _id: { $ne: categoryId }})
 
   if(existingCategory){
-    return res.status(400).json({message:'A category with this name already exists.'})
+    return res.status(httpStatus.BAD_REQUEST).json({message:'A category with this name already exists.'})
   }
 
   await Category.findByIdAndUpdate(categoryId,{name:name,description:description,slug:name})
-  res.status(200).json({ message: "Category updated successfully" })
+  res.status(httpStatus.OK).json({ message: "Category updated successfully" })
 
 })
 

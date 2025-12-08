@@ -3,6 +3,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
 
+    <style>
+
+    .swal2-popup {
+        background: #1c1c1c !important;
+        color: #e0e0e0 !important;
+    }
+    .swal2-title {
+        color: #ffffff !important;
+    }
+    .swal2-confirm, .swal2-cancel {
+        border-radius: 6px !important;
+    }
+    .fade-out {
+        opacity: 0;
+        transition: opacity 0.5s ease-out;
+    }
+    </style>
+
     <div class="flex min-h-screen">
 
         <!-- Main Content -->
@@ -32,7 +50,7 @@
                     <%= item.status %>
                 </p>
                 
-                <p>₹<%= item.variant.discounted_price*item.quantity || item.variant.price*item.quantity %></p>
+                <p>₹<%= item.discounted_price || item.variant.price*item.quantity %></p>
             </div>
 
             <% if (item.status === 'Returned') { %>
@@ -125,7 +143,7 @@
                              <div>
                                 <label for="order-status" class="block text-gray-400 mb-2">Order Status</label>
                                <select id="order-status" class="w-full bg-[#2D2D2D] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                  <% ['Pending', 'Shipped', 'Delivered', 'Cancelled', 'Out for Delivery', 'Returned'].forEach(status => { %>
+                                  <% ['Pending', 'Shipped', 'Out for Delivery','Delivered'].forEach(status => { %>
                                     <option value="<%= status %>" <%= data.status === status ? 'selected' : '' %>><%= status %></option>
                                   <% }) %>
                                 </select>
@@ -142,12 +160,35 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
+  const allowedStatusFlow = {
+  "Pending": ["Shipped", "Out for Delivery", "Delivered"],
+  "Shipped": ["Out for Delivery", "Delivered"],
+  "Out for Delivery": ["Delivered"],
+  "Delivered": [],
+  "Cancelled": [],
+  "Returned": []
+  }
+
+  let currentStatus = '<%= data.status %>'
   document.querySelector('#update').addEventListener('click', async () => {
     const newStatus = document.querySelector('#order-status').value
     const orderId = '<%= data._id %>'
-    const statusSpan = document.querySelector('#current-status') 
-    try {
-      const response = await fetch(`/admin/updateOrder/${orderId}`, {
+
+      if (!allowedStatusFlow[currentStatus].includes(newStatus)) {
+    return Swal.fire({
+      icon: "error",
+      title: "Invalid Status",
+      text: `You cannot change status from ${currentStatus} to ${newStatus}`,
+      confirmButtonColor: "#EF4444",
+    })
+  }
+  
+  
+
+  const statusSpan = document.querySelector('#current-status') 
+  try {
+    const response = await fetch(`/admin/updateOrder/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -159,6 +200,7 @@
         newStatus === 'Returned' ? 'text-yellow-400 font-semibold' :
         'text-blue-400 font-semibold'
 
+        currentStatus=newStatus
         Swal.fire({
           icon: 'success',
           title: 'Updated!',
