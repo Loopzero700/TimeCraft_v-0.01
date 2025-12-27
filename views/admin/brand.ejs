@@ -3,38 +3,26 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-
-    .swal2-popup {
-        background: #1c1c1c !important;
-        color: #e0e0e0 !important;
-    }
-    .swal2-title {
-        color: #ffffff !important;
-    }
-    .swal2-confirm, .swal2-cancel {
-        border-radius: 6px !important;
-    }
-    .fade-out {
-        opacity: 0;
-        transition: opacity 0.5s ease-out;
-    }
-    </style>
+    .swal2-popup { background: #1c1c1c !important; color: #e0e0e0 !important; }
+    .swal2-title { color: #ffffff !important; }
+    .swal2-confirm, .swal2-cancel { border-radius: 6px !important; }
+    .pagination a { cursor: pointer; }
+</style>
 
 <div class="page-header">
     <h2>Brands</h2>
     <div class="search-bar">
-        <form action="/admin/brand" method="GET">
-            <i class="fas fa-search"></i>
-            <input 
-                type="text" 
-                name="search"
-                placeholder="Search..." 
-                value="<%= typeof search !== 'undefined' ? search : '' %>"
-            />
-            <a id="clear-search-btn" href="/admin/brand">
-                <i class="fas fa-times"></i>
-            </a>
-        </form>
+        <i class="fas fa-search"></i>
+        <input 
+            id="searchInput"
+            type="text" 
+            placeholder="Search..." 
+            value="<%= typeof search !== 'undefined' ? search : '' %>"
+            onkeyup="fetchBrands()" 
+        >
+        <a id="clear-search-btn" href="#" onclick="clearSearch(event)">
+            <i class="fas fa-times"></i>
+        </a>
     </div>
 </div>
 
@@ -46,6 +34,7 @@
         <div class="column-status">Status</div>
         <div class="column-edit">Actions</div>
     </div>
+    
     <div id="brand-rows">
         <% if (brands && brands.length > 0) { %>
             <% brands.forEach((brand, index) => { %>
@@ -53,7 +42,7 @@
                 <div class="brand-row">
                     <div class="column-sl"><%= sequentialId %></div>
                     <div class="column-logo">
-                        <img src="<%= brand.brandImage || '/images/default-logo.png' %>" alt="<%= brand.brandName %> Logo">
+                        <img src="<%= brand.brandImage || '/images/default-logo.png' %>" alt="Logo">
                     </div>
                     <div class="column-name"><%= brand.brandName %></div>
                     <div class="column-status">
@@ -61,7 +50,6 @@
                     </div>
                     <div class="column-edit">
                         <a href="/admin/brand/edit/<%= brand._id %>" class="btn-edit">Edit</a>
-                        
                         <% if (brand.status === 'active') { %>
                             <a href="#" onclick="confirmAction('block', '<%= brand._id %>')" class="btn-Block">Block</a>
                         <% } else { %>
@@ -83,50 +71,22 @@
 <div class="page-footer">
     <div class="pagination" id="pagination">
         <% if (pagination && pagination.totalPages > 1) { %>
-            <% const searchParam = typeof search !== 'undefined' && search ? `&search=${search}` : '' %>
             <% if (pagination.currentPage > 1) { %>
-                <a href="/admin/brand?page=<%= pagination.currentPage - 1 %><%= searchParam %>">Previous</a>
+                <a href="#" onclick="changePage(<%= pagination.currentPage - 1 %>, event)">Previous</a>
             <% } %>
             <% for (let i = 1; i <= pagination.totalPages; i++) { %>
-                <a href="/admin/brand?page=<%= i %><%= searchParam %>" class="<%= i === pagination.currentPage ? 'active' : '' %>"><%= i %></a>
+                <a href="#" onclick="changePage(<%= i %>, event)" class="<%= i === pagination.currentPage ? 'active' : '' %>"><%= i %></a>
             <% } %>
             <% if (pagination.currentPage < pagination.totalPages) { %>
-                <a href="/admin/brand?page=<%= pagination.currentPage + 1 %><%= searchParam %>">Next</a>
+                <a href="#" onclick="changePage(<%= pagination.currentPage + 1 %>, event)">Next</a>
             <% } %>
         <% } %>
     </div>
 </div>
-
+<script src="/js/admin/brand.js"></script>
 <script>
-    function confirmAction(action, brandId) {
-        const isBlocking = action === 'block';
-        const url = `/admin/brand/${action}/${brandId}`
+    let currentPage = <%= pagination.currentPage %>
+    const limit = <%= pagination.limit || 5 %>
 
-        Swal.fire({
-            title: 'Are you sure?',
-            text: `You are about to ${action} this brand.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: isBlocking ? '#ff3d3d':'#00e676',
-            cancelButtonColor: '#a5a5a5',
-            confirmButtonText: `Yes, ${action} it!`
-        }).then((result) => {
-            if (result.isConfirmed) {   
-               fetch(url, { method: 'POST' })
-                    .then(response => {
-                        if (!response.ok) {
-                           return response.json().then(err => { throw new Error(err.error || 'Action failed') });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        Swal.fire('Success!', `The brand has been ${action}ed.`, 'success')
-                            .then(() => location.reload())
-                })
-                .catch(error => {
-                Swal.fire('Error!', error.message, 'error')
-                })
-            }
-        });
-    }
+
 </script>

@@ -1,46 +1,42 @@
-const User = require("../models/userSchema")
+import User from "../models/userSchema.js";
 
 const userAuth = async (req, res, next) => {
-    try {
-        const userId = req.session.user||req.user
-        if (userId) {
-            const user = await User.findById(userId)
-            if (user && !user.isBlocked) {
-                next()
-            } else {
-                req.session.user=null
-                res.redirect('/login')
-            }
-        } else {
-            res.redirect('/login')
-        }
-    } catch (error) {
-        console.error("Error in userAuth middleware:", error)
-        res.status(500).send("Internal Server Error")
+  try {
+    const userId = req.session.user || req.user;
+    if (userId) {
+      const user = await User.findById(userId);
+      if (user && !user.isBlocked) {
+        next();
+      } else {
+        req.session.user = null;
+        res.redirect("/login");
+      }
+    } else {
+      res.redirect("/login");
     }
-}
+  } catch (error) {
+    console.error("Error in userAuth middleware:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
 const adminAuth = async (req, res, next) => {
-    try {
-        if (req.session.admin) {
-            const admin = await User.findById(req.session.admin)
-            if (admin && admin.isAdmin && !admin.isBlocked) {
-                next()
-            } else {
-                req.session.admin=null
-                res.redirect('/admin/login')
-            }
-        } else {
-            res.redirect('/admin/login')
-        }
-    } catch (error) {
-        console.error("Error in adminAuth middleware:", error)
-        res.status(500).send("Internal Server Error")
+  try {
+    if (req.session.admin) {
+      const admin = await User.findById(req.session.admin);
+      if (admin && admin.isAdmin && !admin.isBlocked) {
+        next();
+      } else {
+        req.session.admin = null;
+        res.redirect("/admin/login");
+      }
+    } else {
+      res.redirect("/admin/login");
     }
-}
+  } catch (error) {
+    console.error("Error in adminAuth middleware:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
-
-module.exports = {
-    userAuth,
-    adminAuth
-}
+export { userAuth, adminAuth };

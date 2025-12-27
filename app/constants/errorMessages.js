@@ -8,6 +8,6 @@ const ERROR_MESSAGES = Object({
   SERVER_ERROR: "Internal server error",
   SERVICE_UNAVAILABLE: "Service unavailable",
   GATEWAY_TIMEOUT: "Gateway timeout",
-})
-  
-module.exports = ERROR_MESSAGES
+});
+
+export default ERROR_MESSAGES;

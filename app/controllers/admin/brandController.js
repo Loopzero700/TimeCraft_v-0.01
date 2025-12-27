@@ -1,192 +1,132 @@
-const Brand = require('../../models/brandSchema')
-const Product = require('../../models/productSchema')
-const Category = require('../../models/categorySchema')
-const paginate = require('../../helpers/paginate')
-const asynchandler = require('express-async-handler')
-const cloudinary = require('../../config/cloudinaryConfig')
-const sharp = require('sharp')
-const {productUpdateShop,homeUpdata,} = require('../../helpers/websocket')
-const { NotFoundError } = require('../../helpers/errorClasses')
-const httpStatus = require('../../constants/httpStatus')
-const ErrorMessage = require('../../constants/errorMessages')
-
+import asynchandler from "express-async-handler";
+import httpStatus from "../../constants/httpStatus.js";
+import ErrorMessage from "../../constants/errorMessages.js";
+import { NotFoundError } from "../../helpers/errorClasses.js";
+import * as brandService from "../../service/admin/brandControllerService.js";
 
 const getBrandPage = asynchandler(async (req, res) => {
-        
-    
+  try {
+    const data = await brandService.getBrands(req.query);
 
-    try {
-        const { page = 1, limit = 5, search = "" } = req.query
+    res.render("admin/brand", {
+      layout: "layouts/admin",
+      brands: data.results,
+      pagination: data.pagination,
+      search: req.query.search || "",
+    });
+  } catch (error) {
+    console.error("Error loading brand page:", error);
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .send(ErrorMessage.SERVER_ERROR);
+  }
+});
 
-        const data = await paginate(Brand, {
-            page,
-            limit,
-            filters: {}, 
-            search,
-            searchFields: ["brandName"],
-            sort: "-createdAt",
-        });
+const getBrandData = asynchandler(async (req, res) => {
+  try {
+    const data = await brandService.getBrands(req.query);
 
-        res.render("admin/brand", {
-            layout: "layouts/admin",
-            brands: data.results,        
-            pagination: data.pagination,    
-            search: search                  
-        })
+    res.status(httpStatus.OK).json({
+      brands: data.results,
+      pagination: data.pagination,
+      search: req.query.search || "",
+    });
+  } catch (error) {
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json(ErrorMessage.SERVER_ERROR);
+  }
+});
 
-    } catch (error) {
-        console.error("Error loading brand page:", error)
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).send(ErrorMessage.SERVER_ERROR)
-    }
-})
-
-const loadAddBrand = (req,res)=>{
-  res.render("admin/addbrand",{layout:"layouts/admin"})
-}
+const loadAddBrand = (req, res) => {
+  res.render("admin/addbrand", { layout: "layouts/admin" });
+};
 
 const addBrand = asynchandler(async (req, res) => {
-    const brand = req.body.brandName
-    if (!brand || !req.file) {
-        return res.status(httpStatus.BAD_REQUEST).send(ErrorMessage.BAD_REQUEST)
+  const { brandName } = req.body;
+
+  if (!brandName || !req.file) {
+    return res.status(httpStatus.BAD_REQUEST).send(ErrorMessage.BAD_REQUEST);
+  }
+
+  try {
+    await brandService.createNewBrand(brandName, req.file.buffer);
+    res.redirect("/admin/brand");
+  } catch (error) {
+    // Handle specific service errors (like duplicates)
+    return res.status(httpStatus.BAD_REQUEST).send(error.message);
+  }
+});
+
+const blockBrand = asynchandler(async (req, res) => {
+  try {
+    await brandService.blockBrandService(req.params.id);
+    res
+      .status(httpStatus.OK)
+      .json({ success: true, message: "Brand has been blocked successfully." });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(httpStatus.NOT_FOUND).json({ error: error.message });
     }
-    const findBrand = await Brand.findOne({ 
-        brandName: { $regex: new RegExp('^' + brand + '$', 'i') } 
-    })
+    res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
+  }
+});
 
-    if (findBrand) {
-        return res.status(httpStatus.BAD_REQUEST).send("A brand with this name already exists")
+const unblockBrand = asynchandler(async (req, res) => {
+  try {
+    await brandService.unblockBrandService(req.params.id);
+    res
+      .status(httpStatus.OK)
+      .json({
+        success: true,
+        message: "Brand has been unblocked successfully.",
+      });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(httpStatus.NOT_FOUND).json({ error: error.message });
     }
+    res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
+  }
+});
 
-    const processedImageBuffer = await sharp(req.file.buffer)
-        .resize({ width: 500, height: 500, fit: 'cover' })
-        .toFormat('webp')
-        .webp({ quality: 80 })
-        .toBuffer()
-
-        const uploadResult = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: 'TimeCraft_Brands', resource_type: 'image' },
-            (error, result) => {
-                if (error) return reject(error)
-                resolve(result)
-            }
-        )
-        uploadStream.end(processedImageBuffer)
-    })
-     const newBrand = new Brand({
-        brandName:brand,
-        brandImage: uploadResult.secure_url,
-    });
-    await newBrand.save()
-
-    res.redirect('/admin/brand')
-
-})
-
-const blockBrand = asynchandler (async(req,res)=>{
-    const Brandid = req.params.id
-
-          await Product.updateMany(
-            {brand:Brandid},
-            {$set:{isListed:false}}
-          )
-    
-    const updatedBrand = await Brand.findByIdAndUpdate(
-        Brandid,{status: 'blocked' },{ new: true }) 
-
-          if (!updatedBrand) {
-            return res.status(httpStatus.BAD_REQUEST).json({ error: 'Brand not found.' })
-        }
-        productUpdateShop()
-        homeUpdata()
-        res.status(httpStatus.OK).json({ message: 'Brand has been blocked successfully.' })
-})
-
-const unblockBrand = asynchandler (async(req,res)=>{
-    const Brandid = req.params.id
-
-    const activeCategories = await Category.find({ status: 'active' }).select('_id')
-    const activeCategoryIds = activeCategories.map(cat => cat._id)
-
-      if (activeCategoryIds.length > 0) {
-        await Product.updateMany(
-            {brand:Brandid,
-            category:{$in:activeCategoryIds}
-            },{$set:{isListed:true}})}
-
-    const updatedBrand = await Brand.findByIdAndUpdate(
-        Brandid,{status: 'active' },{ new: true }) 
-
-          if (!updatedBrand) {
-            return res.status(httpStatus.NOT_FOUND).json({ error: 'Brand not found.' })
-        }
-        productUpdateShop()
-        homeUpdata()
-        res.status(httpStatus.OK).json({ message: 'Brand has been unblocked successfully.' })
-})
-
-const loadeditBrand = asynchandler(async(req,res)=>{
-    const Brandid = req.params.id
-    const findBrand = await Brand.findById(Brandid)
-    if(!findBrand) throw new NotFoundError
- res.render('admin/editbrand',{layout: 'layouts/admin',
-        brand:findBrand })
-})
-
-
+const loadeditBrand = asynchandler(async (req, res) => {
+  try {
+    const brand = await brandService.getBrandById(req.params.id);
+    res.render("admin/editbrand", { layout: "layouts/admin", brand });
+  } catch (error) {
+    res.status(httpStatus.NOT_FOUND).send("Brand not found");
+  }
+});
 
 const editBrand = asynchandler(async (req, res) => {
-    const brandId = req.params.id
-    const { brandName } = req.body
+  const { brandName } = req.body;
+  const brandId = req.params.id;
 
-    if (!brandName) {
-        return res.status(httpStatus.BAD_REQUEST).send("Brand name is required.")
+  if (!brandName) {
+    return res.status(httpStatus.BAD_REQUEST).send("Brand name is required.");
+  }
+
+  try {
+    
+    const fileBuffer = req.file ? req.file.buffer : null;
+
+    await brandService.updateBrandService(brandId, brandName, fileBuffer);
+    res.status(httpStatus.OK).json({ message: "Brand updated successfully" });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(httpStatus.NOT_FOUND).send(error.message);
     }
-    const existingBrand = await Brand.findOne({ 
-        brandName: { $regex: new RegExp('^' + brandName + '$', 'i') },
-        _id: { $ne: brandId } 
-    });
+    return res.status(httpStatus.BAD_REQUEST).send(error.message);
+  }
+});
 
-    if (existingBrand) {
-        return res.status(httpStatus.BAD_REQUEST).send("Another brand with this name already exists.")
-    }
-
-    const brand = await Brand.findById(brandId)
-    if (!brand) {
-        return res.status(httpStatus.NOT_FOUND).send("Brand not found")
-    }
-    brand.brandName = brandName
-
-    if (req.file) {
-        const processedImageBuffer = await sharp(req.file.buffer)
-            .resize({ width: 500, height: 500, fit: 'cover' })
-            .toFormat('webp')
-            .webp({ quality: 80 })
-            .toBuffer()
-        const uploadResult = await new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                { folder: 'TimeCraft_Brands' },
-                (err, result) => {
-                    if (err) return reject(err)
-                    resolve(result)
-                }
-            )
-            uploadStream.end(processedImageBuffer)
-        });
-        brand.brandImage = uploadResult.secure_url
-    }
-
-    await brand.save()
-
-    res.status(httpStatus.OK).json({ message: "Brand updated successfully" })
-})
-
-module.exports = {
-    getBrandPage,
-    loadAddBrand,
-    addBrand,
-    blockBrand,
-    unblockBrand,
-    loadeditBrand,
-    editBrand
-}
+export {
+  getBrandPage,
+  getBrandData,
+  loadAddBrand,
+  addBrand,
+  blockBrand,
+  unblockBrand,
+  loadeditBrand,
+  editBrand,
+};

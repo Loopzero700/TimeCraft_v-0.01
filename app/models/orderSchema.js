@@ -1,59 +1,66 @@
-const mongoose = require("mongoose")
+import mongoose from "mongoose";
 
 const orderItemSchema = new mongoose.Schema({
   product_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
-    required: true
+    required: true,
   },
   variant: {
     type: Number,
-    required: true
+    required: true,
   },
   quantity: {
     type: Number,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
+    required: true,
   },
   discounted_price: {
     type: Number,
-    default: 0
+    default: 0,
   },
   item_status: {
     type: String,
-    enum: ["Ordered", "Cancelled", "Returned", "Delivered", "Return-Approved", "Return-Rejected"],
-    default: "Ordered"
+    enum: [
+      "Ordered",
+      "Cancelled",
+      "Returned",
+      "Delivered",
+      "Return-Approved",
+      "Return-Rejected",
+    ],
+    default: "Ordered",
   },
   cancel_reason: {
     type: String,
-    default: ""
+    default: "",
   },
   return_reason: {
     type: String,
-    default: ""
+    default: "",
   },
   cancelled_at: {
-    type: Date
+    type: Date,
   },
   returned_at: {
-    type: Date
-  }
-})
+    type: Date,
+  },
+});
 
 const orderSchema = new mongoose.Schema(
   {
     order_id: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
 
     address_name: String,
@@ -67,35 +74,42 @@ const orderSchema = new mongoose.Schema(
 
     order_date: {
       type: Date,
-      default: Date.now
+      default: Date.now,
     },
     status: {
       type: String,
-      enum: ["Pending", "Shipped", "Delivered", "Cancelled", "Returned", "Out for Delivery"],
-      default: "Pending"
+      enum: [
+        "Pending",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+        "Returned",
+        "Out for Delivery",
+      ],
+      default: "Pending",
     },
     payment_method: {
       type: String,
-      enum:["Razorpay", "Wallet", "COD"],
-      required: true
+      enum: ["Razorpay", "Wallet", "COD"],
+      required: true,
     },
     payment_status: {
       type: String,
       enum: ["Pending", "Paid", "Failed", "Refunded"],
-      default: "Pending"
+      default: "Pending",
     },
     payment_id: String,
-      subtotal: {
+    subtotal: {
       type: Number,
-      required: true
+      required: true,
     },
     total: {
       type: Number,
-      required: true
+      required: true,
     },
     coupon_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Coupon"
+      ref: "Coupon",
     },
 
     order_cancel_reason: String,
@@ -103,12 +117,12 @@ const orderSchema = new mongoose.Schema(
     cancelled_at: Date,
     returned_at: Date,
 
-    items: [orderItemSchema]
+    items: [orderItemSchema],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
-)
+);
 
-const Order = mongoose.model("Order", orderSchema)
-module.exports = Order
+const Order = mongoose.model("Order", orderSchema);
+export default Order;

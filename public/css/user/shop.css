@@ -482,14 +482,14 @@ hr {
     gap: 1.2rem;
 }
 
-/* For medium screens (tablets) */
+
 @media (max-width: 992px) {
     .product-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-/* For small screens (mobiles) */
+
 @media (max-width: 576px) {
     .product-grid {
         grid-template-columns: 1fr;
@@ -563,7 +563,7 @@ input[type="search"]::-webkit-search-cancel-button {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    width: 100%;           /* full width */
+    width: 100%;          
     padding: 0.6rem 0;
     font-weight: 500;
     color: #000000;

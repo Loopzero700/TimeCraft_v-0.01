@@ -1,101 +1,63 @@
-const asynchandler = require('express-async-handler')
-const User = require('../../models/userSchema')
-const Product = require('../../models/productSchema')
-const Wishlist = require('../../models/wishlistSchema')
-const Cart = require('../../models/cartSchema')
-const {applyOffersToProduct,getActiveOffers} = require('../../helpers/offerHelper')
-const httpStatus = require('../../constants/httpStatus')
+import asynchandler from "express-async-handler";
+import httpStatus from "../../constants/httpStatus.js";
+import { NotFoundError } from "../../helpers/errorClasses.js";
+import * as wishlistService from "../../service/user/userWishlistControlerService.js";
 
 const getWishlist = asynchandler(async (req, res) => {
   try {
-    const userId = req.session.user || req.user
-    const wishlistItems = await Wishlist.find({ user_id: userId })
-    const productlist = []
-    for (const item of wishlistItems) {
-      const product = await Product.findById(item.product_id).lean()
+    const userId = req.session.user || req.user;
+    const productList = await wishlistService.getUserWishlist(userId);
 
-      const activeOffers = await getActiveOffers()
-      const offerapplyedProduct = applyOffersToProduct(product, activeOffers)
-      if (product) {
-        productlist.push({
-          ...offerapplyedProduct,
-          variant: item.variant,
-          wishlist_id: item._id,
-        })
-      }
-    }
-    
-    console.log('😊',productlist[0].variants)
-    res.render('user/wishlist', {
+    res.render("user/wishlist", {
       user: userId,
-      wishlist: productlist,
-    })
+      wishlist: productList,
+    });
   } catch (error) {
-    console.error('Error fetching wishlist:', error)
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).render('user/error', { message: 'Failed to load wishlist' })
+    console.error("Error fetching wishlist:", error);
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .render("user/error", { message: "Failed to load wishlist" });
   }
-})
+});
 
+const addWishlist = asynchandler(async (req, res) => {
+  const userId = req.session.user || req.user;
+  const { productId, index } = req.body;
 
+  if (!userId) {
+    return res
+      .status(httpStatus.UNAUTHORIZED)
+      .json({ message: "User not found", Url: "/" });
+  }
 
-const addWishlist = asynchandler(async(req,res)=>{
   try {
-    const userId = req.session.user||req.user
-    const { productId,index}=req.body
-    if (!userId) {
-      return res.status(httpStatus.UNAUTHORIZED).json({ message: "User not found", Url: "/" })
-    }
-    if (!productId) {
-      return res.status(httpStatus.BAD_REQUEST).json({ message: "Product ID is required" })
-    }
+    const result = await wishlistService.toggleWishlistItem(
+      userId,
+      productId,
+      index
+    );
 
-    const variantIndex = index || 0
-    const existing = await Wishlist.findOne({
-      user_id: userId,
-      product_id: productId,
-      variant: variantIndex,
-    })
+    const statusCode =
+      result.status === "added" ? httpStatus.CREATED : httpStatus.OK;
 
-    const existingInCart = await Cart.findOne({product_id:productId,user_id:userId})
-
-    if(existingInCart){
-      return res.status(httpStatus.OK).json({message:"Item already in the cart❗"})
-    }
-
-    if (existing) {
-      const wishlistId = existing._id
-      await Wishlist.findByIdAndDelete(wishlistId)
-      return res.status(httpStatus.OK).json({ message: "Item removed in wishlist" })
-    }
-
-    const newWishlist = new Wishlist({
-      user_id: userId,
-      product_id: productId,
-      variant: variantIndex,
-      added_at: new Date(),
-    })
-
-    await newWishlist.save()
-    return res.status(httpStatus.CREATED).json({ message: "Added to wishlist successfully!" })
+    return res.status(statusCode).json({ message: result.message , action: result.status });
   } catch (error) {
-    console.error("Error adding to wishlist:", error)
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" })
+    return res.status(httpStatus.BAD_REQUEST).json({ message: error.message });
   }
-})
+});
 
-const removeWishlist = asynchandler(async(req,res)=>{
-  const wishlistId = req.params.id
-  if(!wishlistId){
-    return res.status(httpStatus.NOT_FOUND).json({ message: "Wishlist not found"})
+const removeWishlist = asynchandler(async (req, res) => {
+  try {
+    await wishlistService.removeWishlistItem(req.params.id);
+    res.status(httpStatus.OK).json({ message: "Wishlist is removed", action:"removed"});
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(httpStatus.NOT_FOUND).json({ message: error.message });
+    }
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error" });
   }
-  await Wishlist.findByIdAndDelete(wishlistId)
-    res.status(httpStatus.OK).json({ message: "Wishlist is removed"})
+});
 
-})
-
-
-module.exports = {
-    getWishlist,
-    addWishlist,
-    removeWishlist
-}
+export { getWishlist, addWishlist, removeWishlist };

@@ -1,98 +1,87 @@
-const asynchandler = require('express-async-handler')
-const { verifyRazorpaySignature, createRazorpayOrder } = require('../../helpers/Razorpay')
-const Wallet = require('../../models/walletSchema')
-const WalletTransaction = require('../../models/walletTransactionSchema ')
-const {addToWallet} = require('../../helpers/walletHelpers')
-const paginationHelper = require('../../helpers/paginate')
-const { options } = require('pdfkit')
-const httpStatus = require('../../constants/httpStatus')
-
+import asynchandler from "express-async-handler";
+import httpStatus from "../../constants/httpStatus.js";
+import { NotFoundError } from "../../helpers/errorClasses.js";
+import * as walletService from "../../service/user/userWalletControllerService.js";
 
 const getWallet = asynchandler(async (req, res) => {
-    const userId = req.user || req.session.user
-    const walletData = await Wallet.findOne({user_id:userId})
-            const breadcrumbs = [
-        { name: 'Home', link: '/' },
-        { name: 'Account', link: `/account` },
-        { name: 'Wallet', link: `/account/wallet` },
-    ]
-    res.render('user/wallet', { user: userId , walletData: walletData, breadcrumbs:breadcrumbs})
-})
+  const userId = req.user || req.session.user;
+
+  const walletData = await walletService.getUserWallet(userId);
+
+  const breadcrumbs = [
+    { name: "Home", link: "/" },
+    { name: "Account", link: `/account` },
+    { name: "Wallet", link: `/account/wallet` },
+  ];
+
+  res.render("user/wallet", {
+    user: userId,
+    walletData: walletData,
+    breadcrumbs: breadcrumbs,
+  });
+});
 
 const addWalletAmount = asynchandler(async (req, res) => {
-    const { amount } = req.body
-
-    if (!amount || amount <= 0) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid amount" })
-    }
-
-    const order = await createRazorpayOrder( amount )
-    res.status(httpStatus.OK).json(order)
-})
+  try {
+    const order = await walletService.initiateWalletRecharge(req.body.amount);
+    res.status(httpStatus.OK).json(order);
+  } catch (error) {
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
+  }
+});
 
 const verifyPayment = asynchandler(async (req, res) => {
-    const { response, orderData } = req.body
-    console.log(response, orderData)
-    const userId = req.user || req.session.user
+  const { response, orderData } = req.body;
+  const userId = req.user || req.session.user;
 
-    const isValid = verifyRazorpaySignature(response, orderData)
-    console.log(isValid)
-
-    if (isValid) {
-        const walletData = await Wallet.findOne({user_id:userId})
-        const walletId = walletData._id
-        const reason = 'add money to wallet'
-        const type = 'credit'
-        const amount = orderData.amount / 100
-
-        await addToWallet(userId,reason,type,amount)
-
-        res.json({ success: true, message: "Payment verified and wallet updated" })
-    } else {
-        res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid payment signature" })
-    }
-})
+  try {
+    await walletService.verifyAndRecharge(userId, response, orderData);
+    res.json({ success: true, message: "Payment verified and wallet updated" });
+  } catch (error) {
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
+  }
+});
 
 const getTransaction = asynchandler(async (req, res) => {
-    const userId = req.session.user || req.user
-    res.render("user/transaction", {
-        Data: [],
-        pagination: {},
-        user: userId
-    })
-})
+  const userId = req.session.user || req.user;
+  res.render("user/transaction", {
+    Data: [],
+    pagination: {},
+    user: userId,
+  });
+});
 
 const getTransactionData = asynchandler(async (req, res) => {
-    const userId = req.session.user || req.user
+  const userId = req.session.user || req.user;
 
-    const wallet = await Wallet.findOne({ user_id: userId })
-
-    if (!wallet) {
-        return res.status(httpStatus.NOT_FOUND).json({ message: "Wallet not found" })
-    }
-
-    const walletId = wallet._id
-
-    const options = {
-        page: parseInt(req.query.page) || 1,
-        limit: parseInt(req.query.limit) || 6,
-        sort: "-createdAt",
-        filters: { wallet_id: walletId },
-    }
-
-    const Data = await paginationHelper(WalletTransaction, options)
+  try {
+    const { results, pagination } = await walletService.getTransactionHistory(
+      userId,
+      req.query
+    );
 
     res.status(httpStatus.OK).json({
-        Data: Data.results,
-        pagination: Data.pagination,
-    })
-})
+      Data: results,
+      pagination: pagination,
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(httpStatus.NOT_FOUND).json({ message: error.message });
+    }
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error fetching transactions" });
+  }
+});
 
-
-module.exports = {
-    getWallet,
-    addWalletAmount,
-    verifyPayment,
-    getTransaction,
-    getTransactionData
-}
+export {
+  getWallet,
+  addWalletAmount,
+  verifyPayment,
+  getTransaction,
+  getTransactionData,
+};

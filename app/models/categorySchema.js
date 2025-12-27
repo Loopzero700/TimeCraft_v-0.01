@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const {Schema} = mongoose
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const categorySchema = new Schema(
   {
@@ -10,7 +10,7 @@ const categorySchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "inactive"], 
+      enum: ["active", "inactive"],
       default: "active",
     },
     description: {
@@ -34,6 +34,6 @@ const categorySchema = new Schema(
   }
 );
 
-const Category = mongoose.model("Category",categorySchema)
+const Category = mongoose.model("Category", categorySchema);
 
-module.exports = Category 
+export default Category;

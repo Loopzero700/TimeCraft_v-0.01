@@ -1,233 +1,113 @@
-const asynchandler = require("express-async-handler")
-const Order = require('../../models/orderSchema')
-const Product = require('../../models/productSchema')
-const paginatehelper = require("../../helpers/paginate")
-const { options } = require("../../routes/userRouter")
-const {addToWallet} = require('../../helpers/walletHelpers')
-const { addWalletAmount } = require("../user/userWalletController")
-const httpStatus = require('../../constants/httpStatus')
+import asynchandler from "express-async-handler";
+import httpStatus from "../../constants/httpStatus.js";
+import { NotFoundError } from "../../helpers/errorClasses.js";
+import * as orderService from "../../service/admin/orderControllerService.js";
 
-const getOrder = asynchandler(async(req,res)=>{
-
-    const { page = 1, limit = 5, search = "" } = req.query
-    const result = await paginatehelper(Order,{
-                page,
-                limit,
-                filters: { isAdmin: { $ne: true } }, 
-                search,
-                searchFields: ["order_id", "address_name", "address_phone_number"],
-                sort: "-createdAt"
-            })
-      
-    
-    console.log(result)
-    res.render('admin/order',{layout: "layouts/admin", data: result.results,
-        currentPage: result.pagination.currentPage,
-        totalPages: result.pagination.totalPages,
-        limit: result.pagination.limit,
-        totalDocuments: result.pagination.totalDocuments})
-})
+const getOrder = asynchandler(async (req, res) => {
+  try {
+    const result = await orderService.getAllOrders(req.query);
+    res.render("admin/order", { layout: "layouts/admin", ...result });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Failed to load orders");
+  }
+});
 
 const getorderDetails = asynchandler(async (req, res) => {
-    const orderId = req.params.id;
-    const orderData = await Order.findById(orderId)
-    
-    const productsWithDetails = await Promise.all(
-        orderData.items.map(async (item) => {
-            const product = await Product.findById(item.product_id)
-            return {
-                name: product.name,
-                variant: product.variants[item.variant],
-                quantity: item.quantity,
-                status: item.item_status,
-                Reason: item.return_reason,
-                orderId: orderData._id,
-                itemId: item._id
-            }
-        })
-    )
-
-    res.render('admin/orderDetails', {layout: "layouts/admin",data: orderData, products: productsWithDetails})
-})
+  try {
+    const { orderData, productsWithDetails } =
+      await orderService.getOrderDetailsById(req.params.id);
+    res.render("admin/orderDetails", {
+      layout: "layouts/admin",
+      data: orderData,
+      products: productsWithDetails,
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.redirect("/admin/orders"); // Redirect if not found
+    }
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error.message);
+  }
+});
 
 const updateOrder = asynchandler(async (req, res) => {
-    const orderId = req.params.id
-    const { status } = req.body
+  const orderId = req.params.id;
+  const { status } = req.body;
 
-    const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled", "Returned", "Out for Delivery"]
-    if (!validStatuses.includes(status)) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid status" })
+  try {
+    const updatedOrder = await orderService.updateOrderStatusService(
+      orderId,
+      status
+    );
+    res
+      .status(httpStatus.OK)
+      .json({
+        success: true,
+        status: updatedOrder.status,
+        message: "Order status updated",
+      });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .json({ success: false, message: error.message });
     }
-
-    const order = await Order.findById(orderId)
-    if (!order) {
-        return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order not found" })
-    }
-    const needsRestocking = (status === "Cancelled" && order.status !== "Cancelled") ||
-                            (status === "Returned" && order.status !== "Returned")
-
-    if (needsRestocking) {
-        for (const item of order.items) {
-            if (item.item_status !== "Cancelled" && item.item_status !== "Returned") {
-                const fieldPath = `variants.${item.variant}.stock`
-                await Product.findByIdAndUpdate(item.product_id, { $inc: { [fieldPath]: item.quantity } })
-                
-                item.item_status = status
-            }
-        }
-    }
-
-    order.status = status
-
-    if (status === "Cancelled") {
-        order.cancelled_at = new Date()
-        order.items.forEach((item) => {
-            if (item.item_status !== 'Returned' && item.item_status !== 'Cancelled') {
-                item.item_status = 'Cancelled'
-            }
-        })
-
-    } else if (status === "Returned") {
-        order.returned_at = new Date()
-        order.items.forEach((item) => {
-            if (item.item_status !== 'Returned' && item.item_status !== 'Cancelled') {
-                item.item_status = 'Returned'
-            }
-        })
-
-    } else if (status === "Delivered") {
-        order.delivered_at = new Date()
-        order.items.forEach((item) => {
-          
-            if (item.item_status !== 'Returned' && item.item_status !== 'Cancelled') {
-                item.item_status = 'Delivered'
-            }
-        })
-    }
-    await order.save()
-    res.status(httpStatus.OK).json({ success: true, status: order.status, message: "Order status updated" })
-})
-
-
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
+  }
+});
 
 const orderSearch = asynchandler(async (req, res) => {
-    const { page = 1, limit = 5, search = "", status, sort } = req.query
-
-    const filters = {
-        isAdmin: { $ne: true } 
-    }
-
-    if (status && status !== 'all') {
-        filters.status = status;
-    }
-
-    let sortOption;
-    switch (sort) {
-        case 'oldest':
-            sortOption = "createdAt"; 
-            break;
-        case 'price_high':
-            sortOption = "-total";
-            break;
-        case 'price_low':
-            sortOption = "total";
-            break;
-        case 'newest':
-        default:
-            sortOption = "-createdAt";
-    }
-
-    const result = await paginatehelper(Order, {
-        page,
-        limit,
-        filters,      
-        search,
-        searchFields: ["order_id", "address_name", "address_phone_number"],
-        sort: sortOption 
-    })
-
-    res.status(httpStatus.OK).json({
-        data: result.results,
-        currentPage: result.pagination.currentPage,
-        totalPages: result.pagination.totalPages,
-        limit: result.pagination.limit,
-        totalDocuments: result.pagination.totalDocuments
-    })
-})
+  try {
+    const result = await orderService.searchOrdersService(req.query);
+    res.status(httpStatus.OK).json(result);
+  } catch (error) {
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Search failed" });
+  }
+});
 
 const returnRequest = asynchandler(async (req, res) => {
-  const { orderId, itemId } = req.params
-  const { action } = req.body
+  const { orderId, itemId } = req.params;
+  const { action } = req.body;
 
-  const orderData = await Order.findById(orderId)
-  
-  const order = await Order.findOne(
-    { _id: orderId, "items._id": itemId },
-    { "items.$": 1 }
-  )
-
-  if (!order || order.items.length === 0) {
-    return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order or item not found." })
-  }
-  const userId = orderData.user_id
-  const item = order.items[0]
-  const variant = item.variant
-  const productId = item.product_id
-  const quantity = item.quantity
-  const discounted_price = item.discounted_price
-  const amount = quantity*discounted_price
-  const reason = "product return"
-  const type = "credit"
-
-  let newStatus
-  
-  if (action === "Return-Approved") {
-      addToWallet(userId,reason,type,amount,orderId)
-    newStatus = "Return-Approved"
-
-    await Product.findByIdAndUpdate(
-      productId,
-      { $inc: { [`variants.${variant}.stock`]: quantity } }
-    )
-
-  } else if (action === "Return-Rejected") {
-    newStatus = "Return-Rejected"
-
-  } else {
-    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid action." })
-  }
-
-  const updateResult = await Order.updateOne(
-    { _id: orderId, "items._id": itemId },
-    { $set: { "items.$.item_status": newStatus } }
-  )
-
-  if (updateResult.modifiedCount === 0) {
-    return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Order or item not updated." })
-  }
-
-  res.json({
-    success: true,
-    message: "Return status updated!",
-    newStatus,
-  })
-})
-
-const returnOrder = asynchandler(async(req,res)=>{
-    const orderId = req.params.id
-    const result = await Order.findByIdAndUpdate(orderId,{status:'Return'})
-    if(!result){
-        res.status(httpStatus.BAD_REQUEST).json({message:'can/\'t find the order with this id'})
+  try {
+    const newStatus = await orderService.processReturnRequest(
+      orderId,
+      itemId,
+      action
+    );
+    res.json({ success: true, message: "Return status updated!", newStatus });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .json({ success: false, message: error.message });
     }
-    res.status(httpStatus.OK).json({message:"order Return requiset successful"})
-})
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
+  }
+});
 
-module.exports={
-    getOrder,
-    getorderDetails,
-    updateOrder,
-    orderSearch,
-    returnRequest,
-    returnOrder
-    
-}
+const returnOrder = asynchandler(async (req, res) => {
+  try {
+    await orderService.markOrderAsReturnService(req.params.id);
+    res
+      .status(httpStatus.OK)
+      .json({ message: "Order Return request successful" });
+  } catch (error) {
+    res.status(httpStatus.BAD_REQUEST).json({ message: error.message });
+  }
+});
+
+export {
+  getOrder,
+  getorderDetails,
+  updateOrder,
+  orderSearch,
+  returnRequest,
+  returnOrder,
+};

@@ -1,0 +1,328 @@
+document.addEventListener('DOMContentLoaded', () => {
+        const variantsContainer = document.getElementById('variants-container')
+        const addVariantBtn = document.getElementById('btn-add-variant')
+        const form = document.getElementById('product-form')
+
+        let cropper
+        let variantIndex = 1
+        const variantImages = new Map()
+        let imageQueue = []
+        let currentVariantBlockForQueue = null
+        let currentVariantIndexForQueue = -1
+// form validation
+    
+        function showError(input,message){
+            input.classList.add('is-invalid')
+            const formGroup = input.closest('.form-group')
+            if(formGroup){
+                const error = document.createElement('small')
+                error.className = 'error-message'
+                error.textContent=message
+                formGroup.appendChild(error)
+            }
+        }
+
+        function clearError(){
+            document.querySelectorAll('.is-invalid').forEach((input)=>{
+                input.classList.remove('is-invalid')
+            })
+
+            document.querySelectorAll('.error-message').forEach((error)=>{
+                error.remove()
+            })
+
+            document.querySelectorAll('.required-star').forEach(star => {
+                star.remove()
+            })
+        }
+
+        function clearErrorForInput(input) {
+        input.classList.remove('is-invalid')
+
+        const formGroup = input.closest('.form-group')
+        if (!formGroup) return
+    
+        const error = formGroup.querySelector('.error-message')
+        if (error) error.remove()
+        
+        const star = formGroup.querySelector('.required-star')
+        if (star) star.remove()
+
+        const label = formGroup.querySelector('label')
+        if (label) label.removeAttribute('data-has-error')
+        }
+
+        const allInputs = form.querySelectorAll('input, select, textarea');
+
+        allInputs.forEach(input => {
+        input.addEventListener('input', () => {
+        if (input.value.trim() !== '') {
+            clearErrorForInput(input)
+        }
+        })
+
+        input.addEventListener('change', () => {
+        if (input.value.trim() !== '') {
+            clearErrorForInput(input)
+        }
+        })
+        })
+
+
+        function validateForm(){
+            clearError()
+            let isValid=true
+            const productName = form.querySelector('#name')
+            if(productName.value.trim()===''){
+                showError(productName,'Product name is required')
+                isValid=false
+            }
+
+            const category = form.querySelector('#category_id')
+            if(category.value===''){
+                showError(category,"pleasw select a category")
+                isValid=false
+            }
+
+            const brand = form.querySelector('#brand_id')
+            if(brand.value===''){
+                showError(brand, 'please select a brand')
+                isValid = false
+            }
+
+            const variantBlocks = form.querySelectorAll('.variant-block')
+            variantBlocks.forEach((block)=>{
+                const color = block.querySelector('input[name*="[color]"]')
+                if(color.value.trim()===''){
+                    showError(color,'color is required')
+                    isValid=false
+                }
+
+                const price = block.querySelector('input[name*="[price]"]')
+                if(price.value.trim()===''||parseFloat(price.value)<=0){
+                    showError(price,'price is need to be a positive number')
+                    isValid=false
+                }
+
+                const stock = block.querySelector('input[name*="[stock]"]')
+                if(stock.value.trim()===''||parseFloat(stock.value)<0){
+                    showError(stock,'stock is need to be a positive number')
+                    isValid = false
+                }
+
+                const sku = block.querySelector('input[name*="[SKU]"]')
+                if(sku.value.trim()===''){
+                    showError(sku,'SKU is required')
+                    isValid = false
+                }
+            })
+            return isValid
+        }
+
+        form.addEventListener('submit',async(e)=>{
+            e.preventDefault()
+
+            if(!validateForm()){
+                return
+            }
+
+            const formData = new FormData()
+            formData.append('name',form.querySelector('#name').value)
+            formData.append('description', form.querySelector('#description').value)
+            formData.append('category_id', form.querySelector('#category_id').value)
+            formData.append('brand_id', form.querySelector('#brand_id').value)
+            formData.append('status', form.querySelector('#status').value)
+
+            const currentVariantBlocks = Array.from(variantsContainer.children);
+            let imageValidationError = false;
+            const variantsData = []
+
+            for (let i = 0; i < currentVariantBlocks.length; i++) {
+            const block = currentVariantBlocks[i]
+            const originalIndex = parseInt(block.querySelector('input[name*="[color]"]').name.match(/\[(\d+)\]/)[1])
+            const blobs = variantImages.get(originalIndex)
+            
+
+            if (!blobs || blobs.length === 0) {
+            Swal.fire('Error', `Variant ${i + 1} must have at least one image.`, 'error')
+            imageValidationError = true
+            break
+        }
+
+        const variantObject = {
+            color: block.querySelector(`input[name="variants[${originalIndex}][color]"]`).value,
+            SKU: block.querySelector(`input[name="variants[${originalIndex}][SKU]"]`).value,
+            price: block.querySelector(`input[name="variants[${originalIndex}][price]"]`).value,
+            discounted_price: block.querySelector(`input[name="variants[${originalIndex}][discounted_price]"]`).value,
+            stock: block.querySelector(`input[name="variants[${originalIndex}][stock]"]`).value
+        }
+        variantsData.push(variantObject)
+
+        blobs.forEach((blob, fileIndex) => {
+            const fieldName = `variants[${i}][newImages]`; 
+            formData.append(fieldName, blob, `variant-${i}-image-${fileIndex}.webp`)
+        })
+    }
+
+    if(imageValidationError) return
+
+    formData.append('variants',JSON.stringify(variantsData))
+    try {
+        const response = await fetch('/admin/products', { method: 'POST', body: formData })
+        if (response.ok) {
+            window.location.href = '/admin/products'
+        } else {
+            const errorText = await response.text()
+            Swal.fire('Error', errorText, 'error')
+        }
+    } catch (error) {
+        Swal.fire('Error', 'An error occurred during submission.', 'error')
+    }
+
+        })
+
+        function showCropperModal(imageDataUrl) {
+            return Swal.fire({
+                title: 'Crop Your Image',
+                html: `<div style="max-height: 50vh;"><img id="cropper-image" src="${imageDataUrl}" style="max-width: 100%;"></div>`,
+                confirmButtonText: 'Crop & Add Image',
+                showCancelButton: true,
+                width: '800px',
+                background: '#000',
+                color: '#fff',
+                allowOutsideClick: false,
+
+                didOpen: () => {
+                    const image = document.getElementById('cropper-image');
+                    cropper = new Cropper(image, {
+                        aspectRatio: 1 / 1,
+                        viewMode: 1,
+                    })
+                },
+                willClose: () => {
+                    if (cropper) cropper.destroy()
+                },
+                preConfirm: () => {
+                    return new Promise((resolve) => {
+                        const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 })
+                        canvas.toBlob((blob) => {
+                            resolve(blob)
+                        }, 'image/webp', 0.9)
+                    })
+                }
+            })
+        }
+
+        function processImageQueue() {
+            if (imageQueue.length === 0) {
+                displayImagePreviews(currentVariantBlockForQueue)
+                return
+            }
+
+            const file = imageQueue.shift()
+            const reader = new FileReader()
+
+            reader.onload = () => {
+                showCropperModal(reader.result).then(result => {
+                    if (result.isConfirmed && result.value) {
+                        const croppedBlob = result.value
+                        variantImages.get(currentVariantIndexForQueue).push(croppedBlob)
+                    }
+
+                    if (result.isConfirmed) {
+                        processImageQueue()
+                    }
+                })
+            }
+            reader.readAsDataURL(file)
+        }
+
+        const initVariantBlock = (block, index) => {
+            const fileInput = block.querySelector('.variant-images')
+            variantImages.set(index, [])
+            fileInput.addEventListener('change', (e) => {
+                const files = e.target.files
+                if (files && files.length > 0) {
+                    imageQueue = Array.from(files)
+
+                    currentVariantBlockForQueue = block
+                    currentVariantIndexForQueue = index
+
+                    processImageQueue()
+                }
+                e.target.value = ''
+            })
+        }
+
+        const displayImagePreviews = (variantBlock) => {
+            const previewContainer = variantBlock.querySelector('.image-preview-container')
+            const currentIndex = Array.from(variantsContainer.children).indexOf(variantBlock)
+            const images = variantImages.get(currentIndex)
+
+            previewContainer.innerHTML = ''
+            images.forEach((blob, blobIndex) => {
+                const previewItem = document.createElement('div')
+                previewItem.className = 'image-preview-item'
+
+                const img = document.createElement('img')
+                img.src = URL.createObjectURL(blob);
+
+                const removeBtn = document.createElement('button')
+                removeBtn.className = 'remove-preview-btn'
+                removeBtn.innerHTML = '&times;'
+                removeBtn.type = 'button'
+                removeBtn.onclick = () => {
+                    images.splice(blobIndex, 1)
+                    displayImagePreviews(variantBlock)
+                }
+
+                previewItem.appendChild(img)
+                previewItem.appendChild(removeBtn)
+                previewContainer.appendChild(previewItem)
+            })
+        }
+
+        addVariantBtn.addEventListener('click', () => {
+            const newVariant = variantsContainer.children[0].cloneNode(true)
+            const newIndex = variantIndex++
+
+            const newFileInput = newVariant.querySelector('.variant-images');
+            const newFileLabel = newVariant.querySelector('.custom-file-button');
+            const newFileId = `actual-btn-${newIndex}`;
+
+            newFileInput.id = newFileId;
+            newFileLabel.setAttribute('for', newFileId);
+
+
+            newVariant.querySelectorAll('input').forEach(input => {
+                const name = input.getAttribute('name')
+                if (name) input.setAttribute('name', name.replace(/\[\d+\]/, `[${newIndex}]`))
+                if (input.type !== 'file') input.value = ''
+            })
+            newVariant.querySelector('.image-preview-container').innerHTML = ''
+            variantsContainer.appendChild(newVariant)
+            initVariantBlock(newVariant, newIndex)
+            updateRemoveButtons()
+        })
+
+        variantsContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('btn-remove-variant')) {
+                const block = e.target.closest('.variant-block')
+                const currentIndex = Array.from(variantsContainer.children).indexOf(block)
+                variantImages.delete(currentIndex)
+                block.remove()
+                updateRemoveButtons()
+            }
+        })
+
+        const updateRemoveButtons = () => {
+            const blocks = variantsContainer.querySelectorAll('.variant-block')
+            blocks.forEach(block => {
+                const removeBtn = block.querySelector('.btn-remove-variant')
+                if (removeBtn) removeBtn.style.display = blocks.length > 1 ? 'inline-block' : 'none'
+            })
+        }
+
+        initVariantBlock(variantsContainer.children[0], 0)
+        updateRemoveButtons()
+    })

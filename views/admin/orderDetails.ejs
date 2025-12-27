@@ -115,151 +115,51 @@
 
                 <!-- Right Column -->
                 <div>
-                    <div class="bg-[#1C1C1C] p-6 rounded-2xl border border-gray-700/50">
-                        <div class="pb-3 mb-4 border-b border-gray-700/50">
-                            <h3 class="text-xl font-semibold">Order Update</h3>
-                        </div>
-                        <div class="space-y-5">
-                            <div>
-                              <p class="text-gray-400">
-                                Ordered On : 
-                                <span class="text-gray-200"><%= new Date(data.order_date).toLocaleDateString('en-GB') %></span>
-                              </p>
-                            </div>
-
-                            <div>
-                              <p class="text-gray-400">
-                                Current State : 
-                                <span id="current-status" class="<%= data.status === 'Delivered' ? 'text-green-400 font-semibold' :
-                                  data.status === 'Cancelled' ? 'text-red-400 font-semibold' :
-                                  data.status === 'Returned' ? 'text-yellow-400 font-semibold' :
-                                  'text-blue-400 font-semibold' %>">
-                                    <%= data.status %>
-                                </span>
-                              </p>
-                            </div>
-
-                            
-                             <div>
-                                <label for="order-status" class="block text-gray-400 mb-2">Order Status</label>
-                               <select id="order-status" class="w-full bg-[#2D2D2D] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                  <% ['Pending', 'Shipped', 'Out for Delivery','Delivered'].forEach(status => { %>
-                                    <option value="<%= status %>" <%= data.status === status ? 'selected' : '' %>><%= status %></option>
-                                  <% }) %>
-                                </select>
-                            </div>
-                             <button class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200" id="update">
-                                Update
-                             </button>
-                        </div>
-                    </div>
-                </div>
+    <div id="order-update-panel" 
+         data-order-id="<%= data._id %>" 
+         data-current-status="<%= data.status %>"
+         class="bg-[#1C1C1C] p-6 rounded-2xl border border-gray-700/50">
+        
+        <div class="pb-3 mb-4 border-b border-gray-700/50">
+            <h3 class="text-xl font-semibold">Order Update</h3>
+        </div>
+        <div class="space-y-5">
+            <div>
+                <p class="text-gray-400">
+                    Ordered On : 
+                    <span class="text-gray-200"><%= new Date(data.order_date).toLocaleDateString('en-GB') %></span>
+                </p>
             </div>
-        </main>
+
+            <div>
+                <p class="text-gray-400">
+                    Current State : 
+                    <span id="current-status-display" class="<%= data.status === 'Delivered' ? 'text-green-400 font-semibold' :
+                      data.status === 'Cancelled' ? 'text-red-400 font-semibold' :
+                      data.status === 'Returned' ? 'text-yellow-400 font-semibold' :
+                      'text-blue-400 font-semibold' %>">
+                        <%= data.status %>
+                    </span>
+                </p>
+            </div>
+            
+            <div>
+                <label for="order-status" class="block text-gray-400 mb-2">Order Status</label>
+                <select id="order-status-select" class="w-full bg-[#2D2D2D] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <% ['Pending', 'Shipped', 'Out for Delivery','Delivered'].forEach(status => { %>
+                    <option value="<%= status %>" <%= data.status === status ? 'selected' : '' %>><%= status %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <button class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200" id="btn-update-status">
+                Update
+            </button>
+        </div>
     </div>
+</div>
+
+</main>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-
-  const allowedStatusFlow = {
-  "Pending": ["Shipped", "Out for Delivery", "Delivered"],
-  "Shipped": ["Out for Delivery", "Delivered"],
-  "Out for Delivery": ["Delivered"],
-  "Delivered": [],
-  "Cancelled": [],
-  "Returned": []
-  }
-
-  let currentStatus = '<%= data.status %>'
-  document.querySelector('#update').addEventListener('click', async () => {
-    const newStatus = document.querySelector('#order-status').value
-    const orderId = '<%= data._id %>'
-
-      if (!allowedStatusFlow[currentStatus].includes(newStatus)) {
-    return Swal.fire({
-      icon: "error",
-      title: "Invalid Status",
-      text: `You cannot change status from ${currentStatus} to ${newStatus}`,
-      confirmButtonColor: "#EF4444",
-    })
-  }
-  
-  
-
-  const statusSpan = document.querySelector('#current-status') 
-  try {
-    const response = await fetch(`/admin/updateOrder/${orderId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      })
-      if (response.ok) {
-        statusSpan.textContent = newStatus
-        statusSpan.className = newStatus === 'Delivered' ? 'text-green-400 font-semibold' :
-        newStatus === 'Cancelled' ? 'text-red-400 font-semibold' :
-        newStatus === 'Returned' ? 'text-yellow-400 font-semibold' :
-        'text-blue-400 font-semibold'
-
-        currentStatus=newStatus
-        Swal.fire({
-          icon: 'success',
-          title: 'Updated!',
-          text: 'Order status updated successfully!',
-          timer: 1500,
-          showConfirmButton: false
-        })
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops!',
-          text: 'Failed to update order.',
-          confirmButtonColor: '#EF4444'
-        })
-      }
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'Something went wrong while updating order.',
-        confirmButtonColor: '#EF4444'
-      })
-    }
-  })
-
-  document.querySelectorAll('.return-action-btn').forEach((btn) => {
-    
-    btn.addEventListener('click', async (e) => {
-        e.preventDefault()
-        
-        const orderId = e.currentTarget.dataset.orderId
-        const itemId = e.currentTarget.dataset.itemId
-        const action = e.currentTarget.dataset.action
-        const con = document.getElementById(itemId)
-        try {
-            const response = await fetch(`/admin/handleReturn/${orderId}/${itemId}`, { 
-                method: "PUT",   
-                headers: {
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ action:action })
-            })
-            
-            if (response.ok) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Updated!',
-                text: 'Order status updated successfully!',
-                timer: 1500,
-                showConfirmButton: false
-              })
-              con.style.display = "none";
-
-            } else {
-                console.error('Request failed')
-            }
-        } catch (err) {
-            console.error('Error:', err)
-        }
-    })
-})
-</script>
+<script src="/js/admin/orderDetails.js"></script>

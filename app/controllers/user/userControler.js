@@ -1,448 +1,305 @@
-const asynchandler =require('express-async-handler')
-const User = require('../../models/userSchema')
-const nodemailer = require('nodemailer')
-const bcrypt = require('bcrypt')
-const category = require('../../models/categorySchema')
-const product = require('../../models/productSchema')
-const banner = require('../../models/bannerSchema')
-const Wallet = require('../../models/walletSchema')
-const {addToWallet} = require('../../helpers/walletHelpers')
-const httpStatus = require('../../constants/httpStatus')
+import asynchandler from "express-async-handler";
+import httpStatus from "../../constants/httpStatus.js";
+import * as homeService from "../../service/user/homeService.js";
+import * as authService from "../../service/user/userControlerService.js";
 
+const loadhome = asynchandler(async (req, res) => {
+  const userId = req.session.user || req.user;
 
+  const data = await homeService.getHomePageData(userId);
 
-const loadhome = asynchandler(async(req,res)=>{
+  if (data.userData && data.userData.isBlocked) {
+    req.session.destroy();
+    return res.render("user/home", {
+      imgurl: data.mainBanner[0]?.image_url,
+      user: null,
+      products: data.products,
+      FeaturedProducts: data.featuredProducts,
+      productslot1: data.handPicked1,
+      productslot2: data.handPicked2,
+      productslot3: data.handPicked3,
+    });
+  }
 
-  const newProduct = await product.find({status:"active",isListed:true}).sort({ createdAt: -1 }).limit(4)
-  
-  const F_Products = await product.aggregate(
-    [ {$match:{status: "active",isListed: true}},
-      {$addFields: {maxPrice: {$max: "$variants.price"}}},
-      {$sort: { maxPrice: -1 }},
-      {$limit: 4}])
-  
-  const handPicked1 = await banner.find({type:"handpicked-1"})
-  const handPicked2 = await banner.find({type:"handpicked-2"})
-  const handPicked3 = await banner.find({type:"handpicked-3"})
-  const mainBanner = await banner.find({type:"main-banner"})
-  
-  const userId = req.session.user||req.user
-    if(userId){
-      const userData = await User.findById(userId)
-      
-      if(!userData){
-        req.session.user=null
-        return res.render("user/home",{imgurl:mainBanner[0].image_url,products:newProduct,FeaturedProducts:F_Products, productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
-      }
-      
-      if(userData.isBlocked){
-        req.session.destroy()
-        return res.render("user/home",{imgurl:mainBanner[0].image_url,user:null,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
-      }
-      console.log(userData)
-      return res.render("user/home",{imgurl:mainBanner[0].image_url,user:userData,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
-    }
-    res.render("user/home",{imgurl:mainBanner[0].image_url,user:null,products:newProduct,FeaturedProducts:F_Products,productslot1:handPicked1,productslot2:handPicked2,productslot3:handPicked3})
-  })
+  res.render("user/home", {
+    imgurl: data.mainBanner[0]?.image_url,
+    user: data.userData || null,
+    products: data.products,
+    FeaturedProducts: data.featuredProducts,
+    productslot1: data.handPicked1,
+    productslot2: data.handPicked2,
+    productslot3: data.handPicked3,
+  });
+});
 
-//login
-const loadlogin = (req,res)=>{
-  let errorMessage = null
+const loadlogin = (req, res) => {
+  let errorMessage = null;
   if (req.session.messages && req.session.messages.length > 0) {
-    errorMessage = req.session.messages[0]
-    req.session.messages = []
+    errorMessage = req.session.messages[0];
+    req.session.messages = [];
   }
-  if(req.session.user||req.user){
-    res.redirect('/')
-  }else{
+  if (req.session.user || req.user) return res.redirect("/");
+  res.render("user/login", { message: errorMessage });
+};
 
-    res.render('user/login',{ message: errorMessage })
+const loadsignup = (req, res) => {
+  if (req.session.user || req.user) return res.redirect("/");
+  res.render("user/signup");
+};
+
+const signup = asynchandler(async (req, res) => {
+  const { username, password, Confirm_password, email } = req.body;
+
+  if (password !== Confirm_password) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "Passwords do not match" });
   }
-}
-//signup
-const loadsignup = (req,res)=>{
-     if(req.session.user||req.user){
-    res.redirect('/')
-  }else{
 
-    res.render('user/signup')
-  }
-}
-
-const generateOtp = ()=>{
-    return Math.floor(1000+Math.random()*9000).toString()
-} 
-
-async function SendVerificationEmail(email, otp) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      auth: {
-        user: process.env.NODEMAILER_EMAIL,
-        pass: process.env.NODEMAILER_PASS,
-      },
-    })
+    const otp = await authService.initiateSignup(email);
 
-    const info = await transporter.sendMail({
-      from: `"TimeCraft" <${process.env.NODEMAILER_EMAIL}>`,
-      to: email,
-      subject: "🔐 Your OTP Code - Account Verification",
-      text: `Your OTP is ${otp}. It will expire in 10 minutes.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="color: #4CAF50; text-align: center;">Verify Your Account</h2>
-          <p>Thank you for signing up! Please use the One-Time Password (OTP) below to complete your registration:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <span style="padding: 15px 25px; font-size: 24px; font-weight: bold; letter-spacing: 3px; background: #4CAF50; color: #fff; border-radius: 8px;">
-              ${otp}
-            </span>
-          </div>
-          <p>This code will expire in <b>10 minutes</b>.</p>
-          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-          <p style="font-size: 12px; text-align: center; color: #888;">
-            © ${new Date().getFullYear()} TimeCraft. All rights reserved.
-          </p>
-        </div>
-      `,
-    })
+    req.session.otpContext = {
+      otp: otp,
+      email: email,
+      timestamp: Date.now(),
+      purpose: "signup",
+      userData: { username, password },
+    };
 
-    return info.accepted.length > 0
+    res.status(httpStatus.OK).json({ success: true, redirectUrl: "/otp" });
   } catch (error) {
-    console.error("Error sending email:", error)
-    return false
+    const status = error.message.includes("exists")
+      ? httpStatus.BAD_REQUEST
+      : httpStatus.INTERNAL_SERVER_ERROR;
+    res.status(status).json({ success: false, message: error.message });
   }
-}
-const signup = asynchandler(async(req, res) => {
-    const { username, password, Confirm_password, email } = req.body;
-    if (password !== Confirm_password) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Passwords do not match" })
-    }
+});
 
-    const finduser = await User.findOne({ email })
-    if (finduser) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "User with this email already exists" })
-    }
+const verifyOtp = asynchandler(async (req, res) => {
+  const { otp } = req.body;
 
-    const otp = generateOtp()
-    console.log(`<==${otp}>>signup otp`)
-    const emailSent = await SendVerificationEmail(email, otp)
-    if (!emailSent) {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to send OTP email.' })
-    }
-    
-    req.session.otpContext={
-      otp:otp,
-      email:email,
-      timestamp:Date.now(),
-      purpose: 'signup',
-      userData:{username,password}
-    }
-    
-    res.status(httpStatus.OK).json({
-        success: true,
-        redirectUrl: '/otp'
-    })
-})
-
-const securePassword = asynchandler(async(password)=>{
-    const passwordHash = await bcrypt.hash(password,10)
-    return passwordHash 
-})
-
-const verifyOtp = asynchandler(async(req,res)=>{
-  const {otp}= req.body
-  console.log(otp)
-
-  if(!req.session.otpContext||req.session.otpContext.purpose!=='signup'){
-     return res.status(httpStatus.BAD_REQUEST).json({success:false, message:"Invalid session. Please sign up again."})
+  if (!req.session.otpContext || req.session.otpContext.purpose !== "signup") {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "Invalid session." });
   }
 
-  const timeElapsed = (Date.now()-req.session.otpContext.timestamp)/1000
-
-  if (timeElapsed > 60) {
-    // delete req.session.otpContext
-    return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "OTP has expired. Please request a new one." })
+  const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000;
+  if (timeElapsed > 600) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "OTP has expired." });
   }
 
-  if(otp===req.session.otpContext.otp){
-    const user = req.session.otpContext.userData
-    const passwordHash = await securePassword(user.password)
-    const saveUserData = new User({
-      username:user.username,
-      email:req.session.otpContext.email,
-      password:passwordHash,
-      profile_photo: 'https://placehold.co/100x100/dfdcd9/31343C?text=' + user.username.charAt(0).toUpperCase()
-    })
-    await saveUserData.save()
+  if (otp === req.session.otpContext.otp) {
+    const { username, email, password } = req.session.otpContext.userData; // Note: using session data, not email from context to be safe
+    const emailToUse = req.session.otpContext.email;
 
-    const userWallet = new Wallet({
-      user_id:saveUserData._id,
-    })
+    await authService.completeUserRegistration(username, emailToUse, password);
 
-    await userWallet.save()
-
-    delete req.session.otpContext
-  
-    res.json({success:true,redirectUrl:"/referral"})
-  }else{
-    res.json({success:false,message:"Invalid OTP Please try angain"})
+    delete req.session.otpContext;
+    res.json({ success: true, redirectUrl: "/referral" });
+  } else {
+    res.json({ success: false, message: "Invalid OTP" });
   }
-})
+});
 
 const resendOtp = asynchandler(async (req, res) => {
-
-  if(!req.session.otpContext||!req.session.otpContext.email){
-    return res.status(httpStatus.BAD_REQUEST).json({
-      success: false,
-      message: "Email not found",
-    })
+  if (!req.session.otpContext || !req.session.otpContext.email) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "Email not found" });
   }
 
-  const {email,timestamp}= req.session.otpContext
+  const { email, timestamp } = req.session.otpContext;
+  const diffInSeconds = (Date.now() - timestamp) / 1000;
 
-    const now = Date.now();
-    const diffInSeconds = (now - timestamp) / 1000;
-    const cooldown = 30
-  if (diffInSeconds < cooldown) {
-    return res.status(httpStatus.BAD_REQUEST).json({
-      success: false,
-      message: "OTP still valid. Please wait before requesting a new one.",
-    })
+  if (diffInSeconds < 30) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({
+        success: false,
+        message: "Please wait before requesting new OTP.",
+      });
   }
 
-  const otp = generateOtp()
-  const emailSent = await SendVerificationEmail(email, otp)
-  if (emailSent) {
-    req.session.otpContext.otp = otp
-    req.session.otpContext.timestamp = Date.now()
-    console.log(`resend otp ${otp}`)
-    return res.status(httpStatus.OK).json({
-      success: true,
-      message: "OTP has been resent to your email",
-    })
-  } else {
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "Failed to resend OTP",
-    })
+  try {
+    const otp = await authService.resendOtpService(email);
+    req.session.otpContext.otp = otp;
+    req.session.otpContext.timestamp = Date.now();
+    res.status(httpStatus.OK).json({ success: true, message: "OTP resent" });
+  } catch (error) {
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: "Failed to resend OTP" });
   }
-})
+});
 
 const loadOtp = asynchandler((req, res) => {
-    if (!req.session.otpContext) {
-        return res.redirect('/signup')
-    }
-    if(req.session.otpContext.purpose === 'signup'){
-      res.render('user/otp')
-    }else if(req.session.otpContext.purpose === 'forgot-password'){
-      res.render('user/forgotOtp')
-    }else{
-      res.redirect('/login')
-    }
-})
+  if (!req.session.otpContext) return res.redirect("/signup");
 
-
-const login =asynchandler(async(req,res)=>{
-  const {email,password}=req.body
-  const finduser = await User.findOne({isAdmin:0,email:email})
-
-  if(!finduser){
-    return res.render('user/login',{message:"User not found"})
+  if (req.session.otpContext.purpose === "signup") {
+    res.render("user/otp");
+  } else if (req.session.otpContext.purpose === "forgot-password") {
+    res.render("user/forgotOtp");
+  } else {
+    res.redirect("/login");
   }
-  if(finduser.isBlocked){
-    return res.render('user/login',{message:"user is bolcked by admin"})
-  }
+});
 
-  if(!finduser.password){
-    return res.render('user/login',{message:"this account is google login please login with google"})
-  }
-  const passwordMatch = await bcrypt.compare(password,finduser.password)
-  if(!passwordMatch){
-    return res.render('user/login',{message:"incorrect password"})
-  }
+const login = asynchandler(async (req, res) => {
+  const { email, password } = req.body;
 
-  const isReferral = req.session.referalBy
-  console.log('😒',isReferral)
-    
-    if (isReferral) {
-        
-        if (isReferral !== finduser._id.toString()) {
-             const reason = "Referral Offer"
-             const type = "credit"
-             const amount = 500
+  try {
+    const user = await authService.authenticateUser(email, password);
 
-             try {
-                 await addToWallet(isReferral, reason, type, amount)
-                 await addToWallet(finduser._id, reason, type, amount)
-             } catch (err) {
-                 console.error("Wallet update failed", err)
-             }
-        }
-        req.session.referalBy = null
+    const referralId = req.session.referalBy;
+    if (referralId) {
+      await authService.processReferralBonus(referralId, user._id);
+      req.session.referalBy = null;
     }
 
-  req.session.user = finduser._id
-  res.redirect('/')
-})
+    req.session.user = user._id;
+    res.redirect("/");
+  } catch (error) {
+    res.render("user/login", { message: error.message });
+  }
+});
 
 const logout = (req, res, next) => {
-  req.logout(err => {       
+  req.logout((err) => {
     if (err) return next(err);
     req.session.destroy(() => {
-      res.clearCookie("user.sid")   
-      res.redirect('/');             
-    })
-  })
-}
-
+      res.clearCookie("user.sid");
+      res.redirect("/");
+    });
+  });
+};
 
 const loadforgotPassword = (req, res) => {
-    try {
-      if(!req.session.user){
-        res.render('user/forgotPassword')
-      }else{
-        res.redirect('/')
-      }
-    } catch (error) {
-        console.log("Error loading forgot password:", error)
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Server Error")
-    }
-}
-
+  if (!req.session.user) res.render("user/forgotPassword");
+  else res.redirect("/");
+};
 
 const sendForgotPasswordOTP = asynchandler(async (req, res) => {
-    const { email } = req.body
+  const { email } = req.body;
 
-    const finduser = await User.findOne({ email:email });
-    if (!finduser) {
-        return res.status(httpStatus.NOT_FOUND).json({
-            success: false,
-            message: "No account with that email address exists."
-        });
-    }
+  try {
+    const { otp, user } = await authService.initiateForgotPassword(email);
 
-    const otp = generateOtp();
-    const emailSent = await SendVerificationEmail(email, otp)
-    if (!emailSent) {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: "There was an error sending the email. Please try again."
-        });
-    }
-    console.log(`forgot pass ${otp}`)
-   req.session.otpContext = {
-    otp:otp,
-    email:email,
-    timestamp:Date.now(),
-    purpose:"forgot-password",
-    userId: finduser._id
-   }
+    req.session.otpContext = {
+      otp: otp,
+      email: email,
+      timestamp: Date.now(),
+      purpose: "forgot-password",
+      userId: user._id,
+    };
 
-    res.status(httpStatus.OK).json({
-        success: true,
-        redirectUrl: '/forgotOtp'
-    })
-})
-
-const getforgotOtp = asynchandler(async(req,res)=>{
-  if(req.session.otpContext.purpose === 'forgot-password'){
-    res.render('user/forgotOtp')
-  }           
-})
-
-const forgotverifyOtp = asynchandler(async(req, res) => {
-   const { otp } = req.body;
-
-    if (!req.session.otpContext || req.session.otpContext.purpose !== 'forgot-password') {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false,message: "Invalid session. Please try again." });
-    }
-
-    
-    const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000; 
-    if (timeElapsed > 60) {
-        // delete req.session.otpContext
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "OTP has expired. Please request a new one." })
-    }
-
-    if (otp === req.session.otpContext.otp) {
-        req.session.resetPassword = {
-            allowed: true,
-            userId: req.session.otpContext.userId
-        }
-      
-        delete req.session.otpContext
-
-        res.json({ success: true, redirectUrl: "/resetPassword" })
-    } else {
-        res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Invalid OTP. Please try again." })
-    }
-})
-
-const getRestPass =(req,res)=>{
-  if(req.session.resetPassword && req.session.resetPassword.allowed){
-    res.render('user/restpassword')
-  }else{
-    res.redirect('/forgotPassword')
+    res
+      .status(httpStatus.OK)
+      .json({ success: true, redirectUrl: "/forgotOtp" });
+  } catch (error) {
+    const status = error.message.includes("No account")
+      ? httpStatus.NOT_FOUND
+      : httpStatus.INTERNAL_SERVER_ERROR;
+    res.status(status).json({ success: false, message: error.message });
   }
-}
+});
 
-const resetpass = asynchandler(async(req,res)=>{
-
-  if(!req.session.resetPassword||!req.session.resetPassword.allowed){
-    return res.status(httpStatus.BAD_REQUEST).json({success:false,message:"Permission denied."})
+const getforgotOtp = asynchandler(async (req, res) => {
+  if (
+    req.session.otpContext &&
+    req.session.otpContext.purpose === "forgot-password"
+  ) {
+    res.render("user/forgotOtp");
+  } else {
+    res.redirect("/forgotPassword");
   }
-    const userId = req.session.resetPassword.userId
-    const password = req.body.password
+});
 
-    const hashedPass = await securePassword(password)
+const forgotverifyOtp = asynchandler(async (req, res) => {
+  const { otp } = req.body;
 
-    await User.findByIdAndUpdate(userId,{password:hashedPass})
-
-    delete req.session.resetPassword;
-
-    res.status(httpStatus.OK).json({ success:true, message: "Password is changed" })
-
-})
-
-const getReferral = asynchandler(async(req,res)=>{
-  res.render('user/referral')
-})
-
-const validateReferral = asynchandler(async(req,res)=>{
-  const {referralCode} = req.body
-  
-  const userReferred = await User.find({referralCode:referralCode})
-
-  console.log(userReferred[0]._id)
-  if(userReferred.length<1){
-    return res.status(httpStatus.BAD_REQUEST).json({message:"Invalid referral code."})
+  if (
+    !req.session.otpContext ||
+    req.session.otpContext.purpose !== "forgot-password"
+  ) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "Invalid session." });
   }
-  req.session.referalBy = userReferred[0]._id
-  res.status(httpStatus.OK).json({success:true})
-  
-})
 
+  if (otp === req.session.otpContext.otp) {
+    req.session.resetPassword = {
+      allowed: true,
+      userId: req.session.otpContext.userId,
+    };
+    delete req.session.otpContext;
+    res.json({ success: true, redirectUrl: "/resetPassword" });
+  } else {
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "Invalid OTP" });
+  }
+});
 
+const getRestPass = (req, res) => {
+  if (req.session.resetPassword && req.session.resetPassword.allowed) {
+    res.render("user/restpassword");
+  } else {
+    res.redirect("/forgotPassword");
+  }
+};
 
-module.exports = {
-    loadhome,
-    loadlogin,
-    login,
-    loadsignup,
-    signup,
-    verifyOtp,
-    resendOtp,
-    loadOtp,
-    logout,
-    loadforgotPassword,
-    sendForgotPasswordOTP,
-    forgotverifyOtp,
-    getforgotOtp,
-    getRestPass,
-    resetpass,
-    getReferral,
-    validateReferral
-}
+const resetpass = asynchandler(async (req, res) => {
+  if (!req.session.resetPassword || !req.session.resetPassword.allowed) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: "Permission denied." });
+  }
+
+  const userId = req.session.resetPassword.userId;
+  const { password } = req.body;
+
+  await authService.resetUserPassword(userId, password);
+  delete req.session.resetPassword;
+
+  res
+    .status(httpStatus.OK)
+    .json({ success: true, message: "Password is changed" });
+});
+
+const getReferral = asynchandler(async (req, res) => {
+  res.render("user/referral");
+});
+
+const validateReferral = asynchandler(async (req, res) => {
+  try {
+    const user = await authService.validateReferralCode(req.body.referralCode);
+    req.session.referalBy = user._id;
+    res.status(httpStatus.OK).json({ success: true });
+  } catch (error) {
+    res.status(httpStatus.BAD_REQUEST).json({ message: error.message });
+  }
+});
+
+export {
+  loadhome,
+  loadlogin,
+  login,
+  loadsignup,
+  signup,
+  verifyOtp,
+  resendOtp,
+  loadOtp,
+  logout,
+  loadforgotPassword,
+  sendForgotPasswordOTP,
+  forgotverifyOtp,
+  getforgotOtp,
+  getRestPass,
+  resetpass,
+  getReferral,
+  validateReferral,
+};

@@ -1,8 +1,8 @@
-const mongoose = require("mongoose")
-const {Schema}= mongoose
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const addressSchema = new Schema({
-  user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
   name: String,
   house_name: String,
   locality: String,
@@ -11,9 +11,9 @@ const addressSchema = new Schema({
   country: String,
   pincode: String,
   phone_number: String,
-  is_default: { type: Boolean, default: false }
+  is_default: { type: Boolean, default: false },
 });
 
-const Address = mongoose.model("Address",addressSchema)
+const Address = mongoose.model("Address", addressSchema);
 
-module.exports = Address
+export default Address;

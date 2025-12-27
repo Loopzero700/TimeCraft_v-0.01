@@ -1,254 +1,132 @@
-const asynchandler = require('express-async-handler')
-const Cart = require('../../models/cartSchema')
-const Product = require('../../models/productSchema')
-const Wishlist = require('../../models/wishlistSchema')
-const Coupon = require('../../models/couponSchema')
-const {getActiveOffers,applyOffersToProduct} = require('../../helpers/offerHelper')
-const httpStatus = require('../../constants/httpStatus')
-
+import asynchandler from "express-async-handler";
+import httpStatus from "../../constants/httpStatus.js";
+import { NotFoundError } from "../../helpers/errorClasses.js";
+import * as cartService from "../../service/user/userCartControlerService.js";
 
 const getCart = asynchandler(async (req, res) => {
   try {
-    const couponOffer = req.session.couponDiscount || 0
-    
-    const userId = req.session.user || req.user
-    const cartItems = await Cart.find({ user_id: userId })
-    const productList = await Promise.all(
-      cartItems.map(async (item) => {
-        const productData = await Product.findById(item.product_id)
-        if (!productData) return null
+    const userId = req.session.user || req.user;
+    const couponDiscount = req.session.couponDiscount || 0;
 
-        const activeOffers = await getActiveOffers()
-        const offerapplyedProduct = applyOffersToProduct(productData, activeOffers)
+    const cartProducts = await cartService.getUserCart(userId);
 
-        const variantIndex = item.variant
-        const variantData = offerapplyedProduct.variants[variantIndex]
-        const caId = item._id
-        if(variantData.stock == 0){
-          await Cart.findByIdAndDelete(caId)
-        }
-
-        return {
-          cart_id: item._id,
-          product_id: offerapplyedProduct._id,
-          name: offerapplyedProduct.name,
-          image: variantData.image_url[0],
-          price: variantData.discounted_price,
-          quantity: item.quantity,
-          variant: variantIndex,
-          stock: variantData.stock
-        }
-      })
-    )
-
-  
-
-    const validProducts = productList.filter(p => p !== null)
-    const sortedProduct = validProducts.toSorted((a, b) => a.price - b.price)
-    console.log(sortedProduct)
-
-    console.log(validProducts)
-    res.render('user/cart', {
+    res.render("user/cart", {
       user: userId,
-      cart: sortedProduct,
-      couponAmount:couponOffer
-    })
+      cart: cartProducts,
+      couponAmount: couponDiscount,
+    });
   } catch (error) {
-    console.error('Error fetching cart:', error)
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Something went wrong while loading the cart')
+    console.error("Error fetching cart:", error);
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .send("Something went wrong while loading the cart");
   }
-})
+});
 
 const addCart = asynchandler(async (req, res) => {
+  const userId = req.session.user || req.user;
+  if (!userId)
+    return res
+      .status(httpStatus.UNAUTHORIZED)
+      .json({ message: "Unauthorized" });
+
+  const { productId, variant, quantity } = req.body;
+
   try {
-    const userId = req.session.user || req.user
-    if (!userId) {
-    return res.status(httpStatus.UNAUTHORIZED).json({ message: 'Unauthorized' })
-    }
-
-    const { productId, variant, quantity} = req.body
-    const product = await Product.findById(productId)
-    if (!product) {
-      return res.status(httpStatus.NOT_FOUND).json({ success: false, message: "Product not found" })
-    }
-    let existingCart = await Cart.findOne({
-      user_id: userId,
-      product_id: productId,
-      variant: variant
-    })
-
-    if (existingCart) {
-      existingCart.quantity += Number(quantity) || 1
-      if(existingCart.quantity==6){
-      return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "You can only add up to 5 items.", cart: existingCart })  
-      }
-      await existingCart.save()
-      return res.status(httpStatus.OK).json({ success: true, message: "Cart updated", cart: existingCart })
-    }
-
-    const newCart = await Cart.create({
-      user_id: userId,
-      product_id: productId,
+    const result = await cartService.addToCartService(
+      userId,
+      productId,
       variant,
-      quantity: Number(quantity) || 1,
-      added_at: new Date()
-    })
+      quantity
+    );
 
-const wishlistData = await Wishlist.find({ user_id: userId, product_id: productId })
-
-if (wishlistData.length>0){
-  const wishlistId = wishlistData[0]._id
-
-  await Wishlist.findByIdAndDelete(wishlistId)
-  console.log("Wishlist item deleted successfully")
-} else {
-  console.log("No wishlist item found")
-}
-
-    res.status(httpStatus.CREATED).json({ success: true, message: "Item added to cart", cart: newCart })
+    if (result.action === "updated") {
+      return res
+        .status(httpStatus.OK)
+        .json({ success: true, message: "Cart updated", cart: result.cart });
+    }
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      message: "Item added to cart",
+      cart: result.cart,
+    });
   } catch (error) {
-    console.error("Add to cart error:", error)
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message: "Server error" })
+    if (error instanceof NotFoundError) {
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .json({ success: false, message: error.message });
+    }
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
   }
-})
+});
 
-const deleteCart = asynchandler(async(req,res)=>{
-  const cartId = req.params.id
-  const userId = req.session.user
-  if(!cartId){
-    return res.status(httpStatus.UNAUTHORIZED).json({message:"cart not founded"})
+const deleteCart = asynchandler(async (req, res) => {
+  try {
+    await cartService.removeItemFromCart(req.params.id);
+    res.status(httpStatus.OK).json({ message: "Item removed from the cart" });
+  } catch (error) {
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ message: "Failed to remove item" });
   }
-  await Cart.findByIdAndDelete(cartId)
-  res.status(httpStatus.OK).json({message:"item remove form the cart"})
-})
+});
 
-const dequabtity = asynchandler(async(req,res)=>{
-  const cartId = req.params.id
-  if(!cartId){
-    return
-  }
-  await Cart.findByIdAndUpdate(cartId, { $inc: { quantity: -1 } })
-  res.status(httpStatus.OK).json({message:"quabtity decrase by one"})
-})
+const dequabtity = asynchandler(async (req, res) => {
+  await cartService.updateItemQuantity(req.params.id, -1);
+  res.status(httpStatus.OK).json({ message: "Quantity decreased by one" });
+});
 
-const inquabtity = asynchandler(async(req,res)=>{
-  const cartId = req.params.id
-  if(!cartId){
-    return
-  }
-  await Cart.findByIdAndUpdate(cartId, { $inc: { quantity: 1 } })
-  res.status(httpStatus.OK).json({message:"quabtity incrase by one"})
-})
-
+const inquabtity = asynchandler(async (req, res) => {
+  await cartService.updateItemQuantity(req.params.id, 1);
+  res.status(httpStatus.OK).json({ message: "Quantity increased by one" });
+});
 
 const applyCoupon = asynchandler(async (req, res) => {
-    const { code } = req.body
-    const userId = req.user || req.session.user
+  const { code } = req.body;
+  const userId = req.user || req.session.user;
 
-    if (!code) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon code required" })
-    }
+  try {
+    const result = await cartService.validateAndApplyCoupon(userId, code);
 
-    const coupon = await Coupon.findOne({ code: code })
-    req.session.couponId = coupon._id
-    console.log('🧟‍♂️',req.session.couponId)
-    if (!coupon) {
-        return res.status(404).json({ success: false, message: "Invalid coupon code" })
-    }
-
-    if (coupon.status !== "active") {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon is not active" })
-    }
-
-    const now = new Date()
-    if (coupon.expiryDate < now) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon has expired" })
-    }
-
-    if (coupon.usersUsed.length >= coupon.maxUsers) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Coupon usage limit reached" })
-    }
-
-    if (coupon.usersUsed.includes(userId)) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "You have already used this coupon" })
-    }
-
-    const cartItems = await Cart.find({ user_id: userId }).populate("product_id")
-    
-    if (!cartItems || cartItems.length === 0) {
-        return res.status(httpStatus.BAD_REQUEST).json({ success: false, message: "Cart is empty" })
-    }
-
-    const activeOffers = await getActiveOffers()
-    
-    let subtotal = 0
-
-    for (const item of cartItems) {
-
-        const productWithOffers = applyOffersToProduct(item.product_id, activeOffers)
-        
-        const variantData = productWithOffers.variants[item.variant]
-      
-        const price = variantData.discounted_price || variantData.price
-        
-        subtotal += price * item.quantity
-    }
-
-    if (subtotal < coupon.minPurchase) {
-        return res.status(httpStatus.BAD_REQUEST).json({
-            success: false,
-            message: `Minimum purchase ₹${coupon.minPurchase} required`
-        })
-    }
-  
-    let discount = 0
-
-    if (coupon.discountType === "percentage") {
-        discount = Math.round((subtotal * coupon.discountAmount) / 100)
-        if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-            discount = coupon.maxDiscount
-        }
-    } else if (coupon.discountType === "fixed") {
-        discount = coupon.discountAmount
-    }
-
-    
-    if (discount > subtotal) discount = subtotal
-    
-    req.session.appliedCouponId = coupon._id
-    req.session.couponDiscount = discount
+    req.session.appliedCouponId = result.couponId;
+    req.session.couponDiscount = result.discount;
 
     return res.status(httpStatus.OK).json({
-        success: true,
-        message: "Coupon applied successfully",
-        coupon: {
-            code: coupon.code,
-            discountType: coupon.discountType,
-            discountAmount: coupon.discountAmount
-        },
-        subtotal,
-        discount,
-        grandTotal: subtotal - discount
-    })
-})
+      success: true,
+      message: "Coupon applied successfully",
+      coupon: result.couponDetails,
+      subtotal: result.subtotal,
+      discount: result.discount,
+      grandTotal: result.grandTotal,
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
+  }
+});
 
 const removeCoupon = asynchandler(async (req, res) => {
-    req.session.appliedCouponId = null
-    return res.status(httpStatus.OK).json({ 
-        success: true, 
-        message: "Coupon removed successfully" 
-    })
-})
+  req.session.appliedCouponId = null;
+  req.session.couponDiscount = 0;
 
+  return res.status(httpStatus.OK).json({
+    success: true,
+    message: "Coupon removed successfully",
+  });
+});
 
-module.exports = {
-    getCart,
-    addCart,
-    deleteCart,
-    dequabtity,
-    inquabtity,
-    applyCoupon,
-    removeCoupon
-}
-    
-
+export {
+  getCart,
+  addCart,
+  deleteCart,
+  dequabtity,
+  inquabtity,
+  applyCoupon,
+  removeCoupon,
+};

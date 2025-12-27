@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | TimeCraft</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Map Container aspect ratio */
+        .map-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.75rem;
+        }
+        .map-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Subtle Entrance Animation */
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased selection:bg-black selection:text-white flex flex-col min-h-screen">
+
+    <main class="container mx-auto px-4 py-8 md:py-16 max-w-7xl flex-grow">
+        
+        <!-- Back Button -->
+        <div class="mb-8 fade-in-up">
+            <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black transition-colors group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                Back to Home
+            </a>
+        </div>
+
+        <!-- Page Title -->
+        <div class="text-center mb-16 fade-in-up">
+            <span class="text-xs font-bold tracking-widest text-gray-500 uppercase mb-3 block">Customer Support</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 tracking-tight">Get in Touch</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Have a question about a timepiece? Need help with an order? 
+                The TimeCraft support team is here to assist you.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            
+            <!-- Left Column: Info & Map (Span 5 columns) -->
+            <div class="lg:col-span-5 space-y-6 fade-in-up delay-100">
+                
+                <!-- Info Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
+                    <!-- Phone Card -->
+                    <div class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gray-50 text-black rounded-xl flex items-center justify-center shrink-0 group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                                <i class="fa-solid fa-phone text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-1">Call Us</h3>
+                                <p class="text-gray-500 text-sm mb-2">Mon-Fri from 8am to 5pm.</p>
+                                <a href="tel:+917594019711" class="text-black font-semibold hover:underline decoration-2 underline-offset-4">+91 75940 19711</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Card -->
+                    <div class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-gray-50 text-black rounded-xl flex items-center justify-center shrink-0 group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                                <i class="fa-solid fa-envelope text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-1">Email Us</h3>
+                                <p class="text-gray-500 text-sm mb-2">We'll respond within 24 hours.</p>
+                                <a href="mailto:support@timecraft.com" class="text-black font-semibold hover:underline decoration-2 underline-offset-4 break-all">support@timecraft.com</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <h3 class="font-bold text-xl">Visit Our Boutique</h3>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6 pl-2 border-l-2 border-gray-200 ml-3">
+                        123 Horology Avenue, Tech Park District,<br>
+                        Kochi, Kerala, India - 682001
+                    </p>
+                    
+                    <div class="map-container bg-gray-100 ring-1 ring-gray-200">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d251482.4485633587!2d76.16084638128393!3d9.982680911850387!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080d514abec6bf%3A0xbd582caa5844192!2sKochi%2C%20Kerala!5e0!3m2!1sen!2sin!4v1703666000000!5m2!1sen!2sin" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="grayscale hover:grayscale-0 transition-all duration-500"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Contact Form (Span 7 columns) -->
+            <div class="lg:col-span-7 bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 fade-in-up delay-200">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Send us a Message</h2>
+                    <p class="text-gray-500 mt-2">Fill out the form below and we'll get back to you shortly.</p>
+                </div>
+                
+                <form action="#" method="POST" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Name Input -->
+                        <div class="space-y-2">
+                            <label for="name" class="text-sm font-semibold text-gray-700">Full Name</label>
+                            <input type="text" id="name" name="name" placeholder="John Doe" 
+                                class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-gray-200 border focus:border-black focus:ring-1 focus:ring-black outline-none transition-all placeholder:text-gray-400">
+                        </div>
+                        <!-- Email Input -->
+                        <div class="space-y-2">
+                            <label for="email" class="text-sm font-semibold text-gray-700">Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="john@example.com" 
+                                class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-gray-200 border focus:border-black focus:ring-1 focus:ring-black outline-none transition-all placeholder:text-gray-400">
+                        </div>
+                    </div>
+
+                    <!-- Subject Select -->
+                    <div class="space-y-2">
+                        <label for="subject" class="text-sm font-semibold text-gray-700">Subject</label>
+                        <div class="relative">
+                            <select id="subject" name="subject" 
+                                class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-gray-200 border focus:border-black focus:ring-1 focus:ring-black outline-none transition-all appearance-none cursor-pointer text-gray-700">
+                                <option value="support">Order Support</option>
+                                <option value="sales">Sales & Inquiries</option>
+                                <option value="returns">Returns & Warranty</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message Textarea -->
+                    <div class="space-y-2">
+                        <label for="message" class="text-sm font-semibold text-gray-700">Message</label>
+                        <textarea id="message" name="message" rows="5" placeholder="How can we help you?" 
+                            class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-gray-200 border focus:border-black focus:ring-1 focus:ring-black outline-none transition-all placeholder:text-gray-400 resize-none"></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                        class="group w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-900 transform active:scale-[0.99] transition-all duration-200 shadow-lg hover:shadow-xl flex justify-center items-center gap-3">
+                        <span>Send Message</span>
+                        <i class="fa-solid fa-paper-plane text-sm group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- FAQ Section -->
+        <section class="mt-24 border-t border-gray-200 pt-16 fade-in-up delay-300">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
+                <p class="text-gray-500 mt-2">Quick answers to common questions.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-4 mx-auto md:mx-0">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">What is the warranty period?</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">All TimeCraft watches come with a comprehensive 2-year international warranty covering movement and manufacturing defects.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-4 mx-auto md:mx-0">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">How do I track my order?</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Once shipped, you will receive an email with a tracking number. You can also track it in your profile dashboard.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300">
+                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-4 mx-auto md:mx-0">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Do you offer returns?</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">Yes, we offer a 14-day return policy for unworn watches in their original packaging with tags attached.</p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+    
+</body>
+</html>

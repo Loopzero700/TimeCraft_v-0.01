@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | TimeCraft</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Subtle Entrance Animation */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased selection:bg-black selection:text-white flex flex-col min-h-screen">
+
+    <main class="container mx-auto px-4 py-8 md:py-16 max-w-7xl flex-grow">
+        
+        <!-- Back Button -->
+        <div class="mb-8 fade-in-up">
+            <a href="/" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black transition-colors group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                Back to Home
+            </a>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="text-center mb-20 fade-in-up">
+            <span class="text-xs font-bold tracking-widest text-gray-500 uppercase mb-3 block">Our Heritage</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 tracking-tight">Crafting Moments,<br>Defining Time.</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                At TimeCraft, we believe a watch is more than an instrument to measure time—it is a testament to history, art, and the moments that matter most.
+            </p>
+        </div>
+
+        <!-- Our Story Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24 fade-in-up delay-100">
+            <!-- Story Image -->
+            <div class="relative h-[500px] w-full rounded-3xl overflow-hidden shadow-xl shadow-gray-200/50 group">
+                <img src="https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?q=80&w=1470&auto=format&fit=crop" 
+                     alt="Vintage Watchmaker's Desk" 
+                     class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700">
+                <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500"></div>
+            </div>
+            
+            <!-- Content -->
+            <div class="space-y-6 lg:pl-10">
+                <h2 class="text-3xl font-bold text-gray-900">The TimeCraft Journey</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    Founded in the heart of Kochi, TimeCraft began with a singular vision: to bridge the gap between traditional horology and modern aesthetics. What started as a small workshop restoring vintage timepieces has grown into a brand that celebrates the art of watchmaking.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Our designs are inspired by the duality of time—fleeting yet constant. We source the finest materials from around the globe, ensuring that every TimeCraft watch is not just an accessory, but a companion for life's journey.
+                </p>
+                <div class="pt-4">
+                    <div class="flex items-center gap-4">
+                        <div class="h-px bg-gray-200 flex-grow"></div>
+                        <span class="text-sm font-semibold text-gray-400 uppercase tracking-widest">Est. 2020</span>
+                        <div class="h-px bg-gray-200 flex-grow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Values Section -->
+        <div class="bg-white rounded-3xl p-8 md:p-16 shadow-xl shadow-gray-200/50 border border-gray-100 mb-24 fade-in-up delay-200">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Our Core Values</h2>
+                <p class="text-gray-500 mt-2">The principles that guide every hand that touches a TimeCraft watch.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Value 1 -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-gem text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-3">Uncompromising Quality</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        From sapphire crystals to surgical-grade steel, we never cut corners. Every component is rigorously tested to withstand the test of time.
+                    </p>
+                </div>
+
+                <!-- Value 2 -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-compass-drafting text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-3">Design Integrity</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Minimalist yet functional. Our designs strip away the unnecessary, leaving only what is essential and beautiful.
+                    </p>
+                </div>
+
+                <!-- Value 3 -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-hand-holding-heart text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-3">Customer First</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        We believe in building relationships, not just selling watches. Our support team is always here to ensure your experience is flawless.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Craftsmanship Section (Reverse Layout) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16 fade-in-up delay-300">
+            <!-- Content -->
+            <div class="space-y-6 lg:order-1 order-2">
+                <h2 class="text-3xl font-bold text-gray-900">Precision Engineering</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    Behind every TimeCraft face lies a complex dance of gears and springs. We partner with the world's leading movement manufacturers to ensure accuracy within seconds per day.
+                </p>
+                <ul class="space-y-4 pt-2">
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <i class="fa-solid fa-check text-green-600"></i>
+                        <span>Automatic & Quartz Movements</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <i class="fa-solid fa-check text-green-600"></i>
+                        <span>316L Stainless Steel Cases</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-700">
+                        <i class="fa-solid fa-check text-green-600"></i>
+                        <span>Scratch-Resistant Glass</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Craftsmanship Image -->
+            <div class="relative h-[400px] w-full bg-gray-900 rounded-3xl overflow-hidden shadow-xl lg:order-2 order-1 group">
+                <img src="https://images.unsplash.com/photo-1612817159949-195b6eb9e31a?q=80&w=2071&auto=format&fit=crop" 
+                     alt="Watch Movement Macro" 
+                     class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-90">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            </div>
+        </div>
+
+        <!-- Closing Statement -->
+        <div class="text-center pt-12 pb-8 border-t border-gray-200 mt-12 fade-in-up delay-300">
+            <h3 class="text-2xl font-serif italic text-gray-900 mb-6">"Time is the only luxury we can't buy back."</h3>
+            <a href="/shop" class="inline-block bg-black text-white font-bold py-4 px-10 rounded-xl hover:bg-gray-800 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
+                Explore the Collection
+            </a>
+        </div>
+
+    </main>
+    
+</body>
+</html>
