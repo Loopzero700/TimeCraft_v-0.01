@@ -1,6 +1,6 @@
 # ⏱️ TimeCraft
 
-> **Craft your time. Master your productivity.**
+> **Timeless Elegance. Modern Shopping.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D%2014.0.0-brightgreen)
@@ -8,28 +8,29 @@
 
 ## 📌 About The Project
 
-**TimeCraft** is a full-stack time and productivity management web application built using **Node.js, Express, MongoDB, and EJS**.
+**TimeCraft** is a full-stack **E-commerce web application for selling luxury watches**, built using **Node.js, Express, MongoDB, and EJS**.
 
 This project is designed with an **interview and real-world application mindset**, strictly avoiding "tutorial hell" patterns. It demonstrates:
 * Clean MVC architecture
 * Scalable backend structure
-* Role-based access control
-* Secure session handling
+* Role-based access control (Admin/User)
+* Secure payment & order handling
 
-> 💡 **Note:** This is not just a tutorial project — it reflects how real production-level Node.js applications are structured.
+> 💡 **Note:** This is not just a tutorial project — it reflects how real production-level E-commerce applications are structured.
 
 ---
 
 ## 🚀 Features
 
-* **🔐 User Authentication & Session Management:** Secure login/signup flows.
-* **👥 Role-Based Access Control (RBAC):** Distinct permissions for **Admins** and **Users**.
-* **🗂️ Task & Time Management:** Create, update, and track daily tasks.
-* **📊 Structured Dashboard Flow:** Intuitive data visualization.
+* **🔐 User Authentication:** Secure login/signup with session management.
+* **👥 Role-Based Access Control (RBAC):**
+    * **Admin:** Manage products, categories, orders, and users.
+    * **User:** Browse watches, add to cart, and manage profile.
+* **🛍️ Product Management:** View details, filter by category, and search watches.
+* **🛒 Shopping Cart & Checkout:** Seamless cart management and secure checkout flow.
+* **💳 Payment Integration:** Integrated with **Razorpay** for secure transactions.
 * **🧩 MVC Architecture:** Separation of concerns for maintainability.
-* **🛡️ Centralized Error Handling:** Robust error management logic.
 * **📱 Fully Responsive UI:** Optimized for Desktop, Tablet, and Mobile via Tailwind CSS.
-* **🧪 Clean Code:** Linted and formatted using **ESLint**.
 
 ---
 
@@ -50,9 +51,9 @@ This project is designed with an **interview and real-world application mindset*
 ### Tools & Utilities
 * **ESLint** (Linting)
 * **Multer** (File Uploads)
-* **WebSockets** (Real-time updates)
-* **MongoDB Compass**
-
+* **Cloudinary** (Image Management)
+* **Nodemailer** (Email Services)
+* **Razorpay** (Payments)
 ---
 
 ## 🧱 Architecture Overview
