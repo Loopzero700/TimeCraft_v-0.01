@@ -5,7 +5,7 @@
     const street = document.getElementById('street')
     const city = document.getElementById('city')
     const state = document.getElementById('state')
-    const Pincode = document.getElementById('Pincode')
+    const Pincode = document.getElementById('pincode')
     const Country = document.getElementById('country')
 
     const error1 = document.getElementById("error1");

@@ -8,11 +8,11 @@ import { addToWallet } from '../../helpers/walletHelpers.js';
 import { createRazorpayOrder, verifyRazorpaySignature } from '../../helpers/Razorpay.js';
 import { NotFoundError } from '../../helpers/errorClasses.js';
 
-// --- Service Methods ---
+
 
 export const getUserOrders = async (userId, query) => {
     const { page, limit, filter, search } = query;
-    const searchQuery = search || query.query || ""; // Handle different query param names
+    const searchQuery = search || query.query || "";
 
     let queryFilters = { user_id: userId };
 
@@ -111,7 +111,7 @@ export const cancelSingleOrderItem = async (userId, orderId, itemId) => {
     const fieldPath = `variants.${variant}.stock`;
     await Product.findByIdAndUpdate(product_id, { $inc: { [fieldPath]: quantity } });
 
-    // 2. Refund to Wallet (if not COD)
+
     const singleItemPrice = item.discounted_price || item.price;
     const priceToDeduct = singleItemPrice * quantity;
 
@@ -119,12 +119,12 @@ export const cancelSingleOrderItem = async (userId, orderId, itemId) => {
         await addToWallet(userId, "Product cancelled", "credit", priceToDeduct, orderId);
     }
 
-    // 3. Update Order
+    
     item.item_status = "Cancelled";
     order.total -= priceToDeduct;
     await order.save();
     
-    // 4. Check if whole order status changes
+    
     await checkAndUpdateOrderStatus(orderId);
 
     return { message: "Item has been cancelled successfully" };
@@ -194,7 +194,6 @@ export const cancelFullOrder = async (userId, orderId) => {
 export const retryRazorpayPayment = async (orderId) => {
     const orderData = await Order.findById(orderId);
     if (!orderData) throw new NotFoundError("Order not found");
-    
     return await createRazorpayOrder(orderData.total);
 };
 
@@ -220,7 +219,6 @@ export const generateInvoiceStream = async (orderId, res) => {
     
     doc.pipe(res);
 
-    // --- PDF Styling Logic ---
     doc.font('Helvetica-Bold').fontSize(26).fillColor('#000').text('TimeCraft', { align: 'center' }).moveDown(0.3);
     doc.font('Helvetica').fontSize(12).fillColor('#555').text('Palakkad, Kerala, India', { align: 'center' }).moveDown(1);
     

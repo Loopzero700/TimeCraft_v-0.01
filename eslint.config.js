@@ -11,7 +11,7 @@ export default [
   // Ignore folders
   // ========================
   {
-    ignores: ["node_modules/", "public/vendor/", "dist/", "build/"],
+    ignores: ["node_modules/", "public/vendor/"],
   },
 
   // ========================

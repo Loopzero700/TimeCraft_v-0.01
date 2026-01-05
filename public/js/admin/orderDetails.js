@@ -1,15 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. Order Status Update Logic ---
     const updatePanel = document.getElementById('order-update-panel');
     const updateBtn = document.getElementById('btn-update-status');
     const statusSelect = document.getElementById('order-status-select');
     const statusDisplay = document.getElementById('current-status-display');
 
-    // Only run if elements exist
+    
     if (updatePanel && updateBtn) {
         
-        // Read initial values from HTML data attributes
+    
         let currentStatus = updatePanel.getAttribute('data-current-status');
         const orderId = updatePanel.getAttribute('data-order-id');
 
@@ -25,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBtn.addEventListener('click', async () => {
             const newStatus = statusSelect.value;
 
-            // Validate Status Flow
+        
             if (allowedStatusFlow[currentStatus] && !allowedStatusFlow[currentStatus].includes(newStatus)) {
                 return Swal.fire({
                     icon: "error",
@@ -43,20 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (response.ok) {
-                    // Update Text
+    
                     statusDisplay.textContent = newStatus;
                     
-                    // Update Color Classes
-                    statusDisplay.className = ''; // Clear old classes
-                    let colorClass = 'text-blue-400 font-semibold'; // Default
+    
+                    statusDisplay.className = ''; 
+                    let colorClass = 'text-blue-400 font-semibold'; 
                     if (newStatus === 'Delivered') colorClass = 'text-green-400 font-semibold';
                     else if (newStatus === 'Cancelled') colorClass = 'text-red-400 font-semibold';
                     else if (newStatus === 'Returned') colorClass = 'text-yellow-400 font-semibold';
                     statusDisplay.classList.add(...colorClass.split(' '));
 
-                    // Update local variable
+    
                     currentStatus = newStatus;
-                    // Update the data attribute strictly for consistency
+                    
                     updatePanel.setAttribute('data-current-status', newStatus);
 
                     Swal.fire({
@@ -86,8 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 2. Return Request Logic ---
-    // These buttons already had data attributes in your original code, so they work easily here.
+
     const returnButtons = document.querySelectorAll('.return-action-btn');
 
     returnButtons.forEach((btn) => {
@@ -117,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         showConfirmButton: false
                     });
                     
-                    // Hide the return request box
                     if (itemContainer) {
                         itemContainer.style.display = "none";
                     }

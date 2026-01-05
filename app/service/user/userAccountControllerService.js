@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { cloudinary } from '../../middleware/cloudinaryConfig.js';
 import { NotFoundError } from '../../helpers/errorClasses.js';
 
-// --- Helpers ---
+
 const securePassword = async (password) => {
     return await bcrypt.hash(password, 10);
 };
@@ -53,7 +53,7 @@ const sendEmail = async (email, otp) => {
     }
 };
 
-// --- User Profile Services ---
+
 
 export const getUserById = async (userId) => {
     return await User.findById(userId);
@@ -111,7 +111,7 @@ export const uploadProfileImage = async (userId, fileBuffer) => {
     return uploaded.secure_url;
 };
 
-// --- Address Services ---
+
 
 export const getUserAddresses = async (userId) => {
     return await Address.find({ user_id: userId });
@@ -124,11 +124,11 @@ export const getAddressById = async (addressId) => {
 };
 
 export const addUserAddress = async (userId, data) => {
-    // 1. Check if user has any address
+   
     const isAddress = await Address.findOne({ user_id: userId });
     let isDefault = false;
 
-    // 2. Logic to determine if this should be default
+   
     if (!isAddress) {
         isDefault = true;
     } else if (data.isDefault === "on") {
@@ -159,7 +159,7 @@ export const deleteUserAddress = async (addressId) => {
     const address = await Address.findById(addressId);
     if (!address) throw new NotFoundError("Address not found");
 
-    // If deleting the default address, make another one default automatically
+   
     if (address.is_default) {
         const newDefault = await Address.findOne({ user_id: address.user_id, _id: { $ne: addressId } });
         if (newDefault) {
@@ -175,18 +175,18 @@ export const updateUserAddress = async (userId, addressId, data) => {
 
     let isDefault = false;
 
-    // Logic for swapping default status
+
     if (!data.isDefault && address.is_default === true) {
-        // Trying to uncheck default: Find another address to make default
+
         const anyDefault = await Address.findOne({ user_id: userId, is_default: true, _id: { $ne: addressId } });
         if (!anyDefault) {
-            // Force set another one as default if user tries to have NO default
+
              await Address.updateOne(
                 { user_id: userId, _id: { $ne: addressId } },
                 { $set: { is_default: true } }
             );
         }
-    } else if (data.isDefault) { // If user checked "Make Default"
+    } else if (data.isDefault) { 
         await Address.updateMany(
             { user_id: userId, _id: { $ne: addressId } },
             { $set: { is_default: false } }

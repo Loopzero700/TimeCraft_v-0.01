@@ -1,3 +1,9 @@
+document.addEventListener('DOMContentLoaded',()=>{
+    if(couponCode){
+        couponapply(true)
+    }
+}) 
+
  const productItems = document.querySelectorAll('.product-item')
             const formatCurrency = (amount) =>{
                 return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount).replace('₹', '₹')
@@ -33,6 +39,7 @@
                         const response = await fetch(`/cart/dequabtity/${cartId}`,{method:"PATCH"})
                         if(response.ok){
                             quantityInput.value = quantity - 1
+                            couponapply(false)
                             updateItemTotal(item)
                         }
                     }
@@ -45,6 +52,7 @@
                     const response = await fetch(`/cart/inquabtity/${cartId}`,{method:"PATCH"})
                     if(response.ok){
                         quantityInput.value = quantity + 1
+                        couponapply(false)
                         updateItemTotal(item)
                     }
                 }
@@ -68,13 +76,14 @@
                 showConfirmButton: false
               })
               document.getElementById(cartId)?.remove()
-               setTimeout(() => {
-                let subtotal = 0
-                document.querySelectorAll('.product-item').forEach(item => {
-                const price = parseFloat(item.querySelector('.price').dataset.price)
-                const quantity = parseInt(item.querySelector('.quantity').value)
-                subtotal += price * quantity
-                })
+              setTimeout(() => {
+                  let subtotal = 0
+                  document.querySelectorAll('.product-item').forEach(item => {
+                      const price = parseFloat(item.querySelector('.price').dataset.price)
+                      const quantity = parseInt(item.querySelector('.quantity').value)
+                      subtotal += price * quantity
+                    })
+                    couponapply(false)
                 document.getElementById('subtotal').textContent = `₹${subtotal}`
                 document.getElementById('grand-total').textContent = `₹${subtotal}`
                 },300)
@@ -89,23 +98,56 @@
             })
         })
 
-        document.getElementById('checkoutBtn').addEventListener('click',async(e)=>{
-            e.preventDefault()
-            window.location.href = '/checkout'
-        })
+        document.getElementById('checkoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+        
+            try {
+                const response = await fetch('/validate-stock', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            
+                const data = await response.json();
+            
+                if (data.success) {
+                    
+                    window.location.href = '/checkout';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Out of Stock',
+                        text: data.message,
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking stock:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again.'
+                });
+            }
+        });
 
         let appliedCoupon = null
         let discountAmount = 0
         let subtotal = 0
 
-            document.getElementById("applyCouponBtn").addEventListener("click", async () => {
+            document.getElementById("applyCouponBtn").addEventListener("click", async () => { couponapply(true) })
+        
+            const couponapply = async(apply)=> {
+
             const code = document.getElementById("couponInput").value.trim().toUpperCase()
             const msg = document.getElementById("couponMessage")
             const applyBtn = document.getElementById("applyCouponBtn")
                 
             if (!code) {
-                msg.textContent = "Please enter a coupon code."
-                msg.className = "text-red-600 text-sm mt-2"
+                if(apply){
+                    msg.textContent = "Please enter a coupon code."
+                    msg.className = "text-red-600 text-sm mt-2"
+                    }
                 return
             }
         
@@ -144,7 +186,8 @@
                 msg.textContent = "Something went wrong. Please try again."
                 msg.className = "text-red-600 text-sm mt-2"
             }
-        })
+            }
+        
 
             document.getElementById("removeCouponBtn").addEventListener("click", async () => {
                 try {
@@ -157,6 +200,7 @@
                     if (result.success) {
                         appliedCoupon = null
                         discountAmount = 0
+                        couponCode = null
 
                         document.getElementById("discountRow").classList.add("hidden")
                         document.getElementById("discountAmount").textContent = "- ₹0"

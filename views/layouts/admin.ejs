@@ -23,17 +23,17 @@
 
   <div class="layout">
     <nav class="sidebar" id="sidebar">
-      <ul>
-        <li class="active"><i class="fas fa-tachometer-alt"></i><a href="/admin"><span> Dashboard</span></a></li>
-        <li><i class="fas fa-boxes"></i><a href="/admin/products"><span> Products</span></a></li>
-        <li><i class="fas fa-users"></i><a href="/admin/customers"><span> Customers</span></a></li>
-        <li><i class="fas fa-shopping-cart"></i><a href="/admin/order"><span> Orders</span></a></li>
-        <li><i class="fas fa-tags"></i><a href="/admin/coupon"><span> Coupons</span></a></li>
-        <li><i class="fas fa-sitemap"></i><a href="/admin/category"><span> Category</span></a></li>
-        <li><i class="fas fa-bookmark"></i><a href="/admin/brand"><span> Brands</span></a></li>
-        <li><i class="fas fa-gift"></i><a href="/admin/offer"><span> Offers</span></a></li>
-        <li><i class="fas fa-image"></i><a href="/admin/banner"><span> Banner</span></a></li>
-        <li><i class="fas fa-chart-bar"></i><a href="/admin/salesreprot"><span> Sales Report</span></a></li>
+      <ul class="sidebar">
+        <li class="Dashboard"><i class="fas fa-tachometer-alt"></i><a href="/admin"><span> Dashboard</span></a></li>
+        <li class="Products"><i class="fas fa-boxes"></i><a href="/admin/products"><span> Products</span></a></li>
+        <li class="Customers"><i class="fas fa-users"></i><a href="/admin/customers"><span> Customers</span></a></li>
+        <li class="Orders"><i class="fas fa-shopping-cart"></i><a href="/admin/order"><span> Orders</span></a></li>
+        <li class="Coupons"><i class="fas fa-tags"></i><a href="/admin/coupon"><span> Coupons</span></a></li>
+        <li class="Category"><i class="fas fa-sitemap"></i><a href="/admin/category"><span> Category</span></a></li>
+        <li class="Brands"><i class="fas fa-bookmark"></i><a href="/admin/brand"><span> Brands</span></a></li>
+        <li class="Offers"><i class="fas fa-gift"></i><a href="/admin/offer"><span> Offers</span></a></li>
+        <li class="Banner"><i class="fas fa-image"></i><a href="/admin/banner"><span> Banner</span></a></li>
+        <li class="Sales"><i class="fas fa-chart-bar"></i><a href="/admin/salesreprot"><span> Sales Report</span></a></li>
         <li><i class="fas fa-sign-out-alt"></i><a href="/admin/logout"><span> Logout</span></a></li>
       </ul>
     </nav>
@@ -55,3 +55,40 @@
   </script>
 </body>
 </html>
+
+<script>
+  
+  const path = window.location.pathname
+  console.log(path)
+  if(path=='/admin'){
+    document.querySelector('.Dashboard').classList.add('active')
+  }
+  if(path==='/admin/products'||path==='/admin/addproduct'||path == "/admin/editproduct"){
+    document.querySelector('.Products').classList.add('active')
+  }
+  if(path === '/admin/customers'){
+    document.querySelector('.Customers').classList.add('active')
+  }
+  if(path === '/admin/order'){
+    document.querySelector('.Orders').classList.add('active')
+  }
+  if(path === '/admin/coupon'||path === '/admin/addcoupon'){
+    document.querySelector('.Coupons').classList.add('active')
+  }
+  if(path === '/admin/category' || path === '/admin/addCategory'){
+    document.querySelector('.Category').classList.add('active')
+  }
+  if(path === '/admin/brand' || path === '/admin/addbrand'){
+    document.querySelector('.Brands').classList.add('active')
+  }
+  if(path === '/admin/offer' || path === '/admin/addOffer'){
+    document.querySelector('.Offers').classList.add('active')
+  }
+  if(path === '/admin/banner'){
+    document.querySelector('.Banner').classList.add('active')
+  }
+  if(path === '/admin/salesreprot'){
+    document.querySelector('.Sales').classList.add('active')
+  }
+
+</script>

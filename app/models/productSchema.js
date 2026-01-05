@@ -49,11 +49,25 @@ const productSchema = new Schema(
         high_res_image_url: [String],
       },
     ],
+    sorting_price: { type: Number, default: 0 },
   },
   {
     timestamps: true,
   }
 );
+
+productSchema.pre('save', function(next) {
+  if (this.variants && this.variants.length > 0) {
+    const variant = this.variants[0];   
+  
+    if (variant.discounted_price && variant.discounted_price > 0) {
+      this.sorting_price = variant.discounted_price;
+    } else {
+      this.sorting_price = variant.price;
+    }
+  }
+  next();
+})
 
 const Product = mongoose.model("Product", productSchema);
 

@@ -1,4 +1,5 @@
 import Offer from "../models/offerSchema.js";
+import Product from "../models/productSchema.js";
 
 const getActiveOffers = async () => {
   const today = new Date();
@@ -44,7 +45,7 @@ const applyOffersToProduct = (product, activeOffers) => {
     const basePrice = variant.price;
 
     if (!bestOffer) {
-      variant.discounted_price = basePrice;
+      variant.discounted_price = null;
     }
 
     if (bestOffer) {
@@ -56,7 +57,18 @@ const applyOffersToProduct = (product, activeOffers) => {
       }
     }
   });
+  fixPrices()
   return product;
 };
+
+const fixPrices = async () => {
+  const products = await Product.find({});
+  
+  for (let p of products) {
+    await p.save(); 
+  }
+  
+};
+
 
 export { getActiveOffers, applyOffersToProduct };

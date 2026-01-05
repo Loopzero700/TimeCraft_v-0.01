@@ -21,13 +21,6 @@ const categorySchema = new Schema(
       type: String,
       trim: true,
     },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

@@ -18,7 +18,11 @@ export const getCategories = async (query) => {
 };
 
 export const createNewCategory = async (name, description) => {
-  const categoryExists = await Category.findOne({ name });
+  const categoryExists = await Category.findOne({name: { 
+    $regex: `^${name}$`, 
+    $options: "i"  
+  } });
+  
   if (categoryExists) {
     throw new Error("Category already exists");
   }
@@ -86,10 +90,14 @@ export const getCategoryById = async (categoryId) => {
 };
 
 export const updateCategoryService = async (categoryId, name, description) => {
-  const existingCategory = await Category.findOne({
-    name: name,
-    _id: { $ne: categoryId },
-  });
+const existingCategory = await Category.findOne({
+  name: { 
+    $regex: `^${name}$`, 
+    $options: "i"  
+  },
+  _id: { $ne: categoryId }
+});
+
 
   if (existingCategory) {
     throw new Error("A category with this name already exists.");

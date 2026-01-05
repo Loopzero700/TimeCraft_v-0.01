@@ -26,32 +26,29 @@
                 </svg>
             </div>
             
-            <!-- Main Heading -->
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Your Cart is Empty</h1>
             
-            <!-- Informational Text -->
             <p class="text-gray-600 mb-8 text-lg">Looks like you haven't added anything yet. Let's find something for you!</p>
             
-            <!-- Call to Action Button -->
             <a href="/shop" class="inline-block bg-black text-white font-bold py-4 px-10 rounded-xl shadow-lg hover:bg-gray-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1">
                 Continue Shopping
             </a>
             
-            <!-- Divider -->
+            
             <div class="my-8 border-t border-gray-200"></div>
 
         </div>
     </div>
 
                 <%}else{%>
-             <!-- Main Content -->
+             
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 class="text-3xl font-bold text-gray-800 mb-8">My Cart</h1>
 
         <div class="flex flex-col lg:flex-row gap-12">
             <div class="flex-grow">
                 <div class="bg-white rounded-lg shadow-md">
-                    <!-- Cart Header -->
+             
                     <div class="hidden md:grid grid-cols-6 gap-4 font-semibold text-gray-600 bg-gray-100 p-4 rounded-t-lg">
                         <div class="col-span-3">Product</div>
                         <div class="text-center">Price</div>
@@ -59,7 +56,7 @@
                         <div class="text-right">Total</div>
                     </div>
                     <%cart.forEach(cart=>{%>
-                    <!-- Cart Product 1 -->
+                
                     <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center p-4 border-b product-item" id="<%=cart.cart_id%>">
                         <div class="col-span-1 md:col-span-3 flex items-center gap-4">
                             <img src="<%=cart.image%>" alt="Chronograph Men's Watch" class="rounded-md w-20 h-20 object-cover">
@@ -128,7 +125,7 @@
                             id="couponInput" 
                             placeholder="Enter coupon code"
                             class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                            value=""
+                            value="<%=couponCode?couponCode:''%>"
                         >
 
                         <button 
@@ -158,6 +155,9 @@
     </main>
     <%}%>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let couponCode = "<%= couponCode || '' %>";
+</script>
     <script src="/js/user/cart.js"></script>
 
 

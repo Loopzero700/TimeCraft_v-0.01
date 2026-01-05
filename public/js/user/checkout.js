@@ -67,6 +67,22 @@
             orderNowBtn.addEventListener('click', async (e) => {
             e.preventDefault()
 
+            const response = await fetch('/validate-stock', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (!data.success) {
+                Swal.fire({
+                icon: 'error',
+                title: 'Out of Stock',
+                text: data.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            })
+                return 
+            }
+
             const selectedRadioBtnAddress = document.querySelector('input[name="address"]:checked')
             if (!selectedRadioBtnAddress) {
                 return Swal.fire({

@@ -1,10 +1,13 @@
 import asynchandler from "express-async-handler";
 import httpStatus from "../../constants/httpStatus.js";
+import validateStock from "../../helpers/validateStock.js"
 import * as checkoutService from "../../service/user/userCheckoutControlerService.js";
 
 const getCheckout = asynchandler(async (req, res) => {
   const userId = req.session.user || req.user;
   const appliedCouponId = req.session.appliedCouponId;
+
+
 
   const checkoutData = await checkoutService.getCheckoutPageData(
     userId,
@@ -73,6 +76,10 @@ const orderWallet = asynchandler(async (req, res) => {
       couponId
     );
 
+    delete req.session.couponId;
+    delete req.session.couponDiscount;
+    delete req.session.appliedCouponId;
+
     res.status(httpStatus.OK).json({
       success: true,
       message: "Order created successfully",
@@ -95,6 +102,7 @@ const razorpayOrder = asynchandler(async (req, res) => {
       userId,
       discountAmount
     );
+
     res.status(httpStatus.OK).json(order);
   } catch (error) {
     res
@@ -116,6 +124,11 @@ const verifyRazorpay = asynchandler(async (req, res) => {
       discountAmount,
       couponId
     );
+
+    delete req.session.couponId;
+    delete req.session.couponDiscount;
+    delete req.session.appliedCouponId;
+
     res
       .status(httpStatus.OK)
       .json({
@@ -143,6 +156,11 @@ const paymentFailed = asynchandler(async (req, res) => {
       discountAmount,
       couponId
     );
+
+    delete req.session.couponId;
+    delete req.session.couponDiscount;
+    delete req.session.appliedCouponId;
+
     res
       .status(httpStatus.BAD_REQUEST)
       .json({
@@ -156,6 +174,24 @@ const paymentFailed = asynchandler(async (req, res) => {
   }
 });
 
+const checkStockBeforeCheckout = async (req, res) => {
+    try {
+        const userId = req.session.user || req.user;
+        const result = await validateStock(userId);
+
+        if (result.status) {
+           
+            res.json({ success: true });
+        } else {
+           
+            res.json({ success: false, message: result.message });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+}
+
 export {
   getCheckout,
   addAddress,
@@ -164,4 +200,5 @@ export {
   razorpayOrder,
   verifyRazorpay,
   paymentFailed,
+  checkStockBeforeCheckout
 };

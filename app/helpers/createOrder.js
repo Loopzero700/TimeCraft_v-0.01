@@ -21,31 +21,39 @@ export async function createOrderDocument(
   let totalDiscountDistributed = 0;
 
   const itemsWithDiscount = orderItems.map((item, index) => {
-    const lineTotal = item.discounted_price * item.quantity;
-    let discountForThisItem = 0;
+  const baseUnitPrice =
+    typeof item.discounted_price === "number"
+      ? item.discounted_price
+      : item.price;
 
-    if (discountAmount > 0) {
-      if (index === orderItems.length - 1) {
-        discountForThisItem = discountAmount - totalDiscountDistributed;
-      } else {
-        const rawShare = (lineTotal / totalAmount) * discountAmount;
-        discountForThisItem = Math.round(rawShare * 100) / 100;
-        totalDiscountDistributed += discountForThisItem;
-      }
+  const lineTotal = baseUnitPrice * item.quantity;
+  let discountForThisItem = 0;
+
+  if (discountAmount > 0) {
+    if (index === orderItems.length - 1) {
+      discountForThisItem = discountAmount - totalDiscountDistributed;
+    } else {
+      const rawShare = (lineTotal / totalAmount) * discountAmount;
+      discountForThisItem = Math.round(rawShare * 100) / 100;
+      totalDiscountDistributed += discountForThisItem;
     }
+  }
 
-    const effectiveUnitPrice =
-      (lineTotal - discountForThisItem) / item.quantity;
+  const effectiveUnitPrice =
+    (lineTotal - discountForThisItem) / item.quantity;
 
-    return {
-      product_id: item.product_id,
-      variant: item.variant,
-      quantity: item.quantity,
-      price: item.discounted_price,
-      discounted_price: effectiveUnitPrice,
-      item_status: "Ordered",
-    };
-  });
+  return {
+    product_id: item.product_id,
+    variant: item.variant,
+    quantity: item.quantity,
+
+    price: baseUnitPrice,                 
+    discounted_price: effectiveUnitPrice, 
+
+    item_status: "Ordered",
+  };
+});
+
 
   const newOrder = new Order({
     order_id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -68,6 +76,8 @@ export async function createOrderDocument(
 
     items: itemsWithDiscount,
   });
+
+  
 
   await newOrder.save();
   if (discountAmount) {

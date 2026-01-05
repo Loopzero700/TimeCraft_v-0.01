@@ -86,14 +86,14 @@ const verifyOtp = asynchandler(async (req, res) => {
   }
 
   const timeElapsed = (Date.now() - req.session.otpContext.timestamp) / 1000;
-  if (timeElapsed > 600) {
+  if (timeElapsed > 60) {
     return res
       .status(httpStatus.BAD_REQUEST)
       .json({ success: false, message: "OTP has expired." });
   }
 
   if (otp === req.session.otpContext.otp) {
-    const { username, email, password } = req.session.otpContext.userData; // Note: using session data, not email from context to be safe
+    const { username, email, password } = req.session.otpContext.userData;
     const emailToUse = req.session.otpContext.email;
 
     await authService.completeUserRegistration(username, emailToUse, password);
@@ -116,16 +116,15 @@ const resendOtp = asynchandler(async (req, res) => {
   const diffInSeconds = (Date.now() - timestamp) / 1000;
 
   if (diffInSeconds < 30) {
-    return res
-      .status(httpStatus.BAD_REQUEST)
-      .json({
-        success: false,
-        message: "Please wait before requesting new OTP.",
-      });
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      message: "Please wait before requesting new OTP.",
+    });
   }
 
   try {
     const otp = await authService.resendOtpService(email);
+    console.log("resend🔙", otp);
     req.session.otpContext.otp = otp;
     req.session.otpContext.timestamp = Date.now();
     res.status(httpStatus.OK).json({ success: true, message: "OTP resent" });
@@ -271,13 +270,28 @@ const resetpass = asynchandler(async (req, res) => {
 });
 
 const getReferral = asynchandler(async (req, res) => {
+  const user = req.user || req.session.user;
+
+  if (user) {
+    if (Date.now() - user.created_at > 200) {
+      return res.redirect("/");
+    }
+  }
   res.render("user/referral");
 });
 
 const validateReferral = asynchandler(async (req, res) => {
+  const newuser = req.user || req.session.user;
   try {
     const user = await authService.validateReferralCode(req.body.referralCode);
     req.session.referalBy = user._id;
+    if (newuser) {
+      const referralId = req.session.referalBy;
+      if (referralId) {
+        await authService.processReferralBonus(referralId, newuser._id);
+        req.session.referalBy = null;
+      }
+    }
     res.status(httpStatus.OK).json({ success: true });
   } catch (error) {
     res.status(httpStatus.BAD_REQUEST).json({ message: error.message });

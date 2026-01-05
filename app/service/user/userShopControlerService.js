@@ -58,9 +58,9 @@ const buildFilters = (queryParams, activeCategoryIds, activeBrandIds) => {
 const getSortOption = (sortParam) => {
   switch (sortParam) {
     case "price-asc":
-      return { "variants.discounted_price": 1 };
+      return { "sorting_price": 1 };
     case "price-desc":
-      return { "variants.discounted_price": -1 };
+      return { "sorting_price": -1 };
     case "az":
       return { name: 1 };
     case "za":

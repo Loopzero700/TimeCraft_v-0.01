@@ -60,6 +60,9 @@ router.post("/resetpass", userController.resetpass);
 router.get("/referral", userController.getReferral);
 router.post("/validate-referral", userController.validateReferral);
 
+//vaildation
+router.get('/validate-stock', userCheckoutController.checkStockBeforeCheckout);
+
 // Oauth
 router.get(
   "/auth/google",
@@ -71,7 +74,7 @@ router.get(
     failureRedirect: "/login",
     failureMessage: true,
   }),
-  (req, res) => res.redirect("/")
+  (req, res) => res.redirect("/referral")
 );
 
 // =================== SHOP & PRODUCT ===================

@@ -7,13 +7,14 @@ const getCart = asynchandler(async (req, res) => {
   try {
     const userId = req.session.user || req.user;
     const couponDiscount = req.session.couponDiscount || 0;
-
+    const couponCode = req.session.couponCode || 0;
     const cartProducts = await cartService.getUserCart(userId);
 
     res.render("user/cart", {
       user: userId,
       cart: cartProducts,
       couponAmount: couponDiscount,
+      couponCode: couponCode,
     });
   } catch (error) {
     console.error("Error fetching cart:", error);
@@ -92,6 +93,7 @@ const applyCoupon = asynchandler(async (req, res) => {
 
     req.session.appliedCouponId = result.couponId;
     req.session.couponDiscount = result.discount;
+    req.session.couponCode = code;
 
     return res.status(httpStatus.OK).json({
       success: true,
@@ -114,6 +116,7 @@ const applyCoupon = asynchandler(async (req, res) => {
 const removeCoupon = asynchandler(async (req, res) => {
   req.session.appliedCouponId = null;
   req.session.couponDiscount = 0;
+  req.session.couponCode = 0;
 
   return res.status(httpStatus.OK).json({
     success: true,

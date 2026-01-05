@@ -104,6 +104,7 @@ const loadeditCategory = asynchandler(async (req, res) => {
 
 const editCategory = asynchandler(async (req, res) => {
   const { name, description } = req.body;
+  
   try {
     await categoryService.updateCategoryService(
       req.params.id,

@@ -58,6 +58,7 @@ export const initiateSignup = async (email) => {
     }
     const otp = generateOtp();
     const sent = await sendEmail(email, otp);
+    console.log("⭕",otp)
     if (!sent) throw new Error("Failed to send OTP email");
     return otp;
 };

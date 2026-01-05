@@ -32,7 +32,7 @@
     <div class="column-name">Name</div>
     <div class="column-email">Email</div>
     <div class="column-mobile">Mobile</div>
-    <div class="column-address">Address</div>
+    <!-- <div class="column-address">Address</div> -->
     <div class="column-action">Action</div>
   </div>
 
@@ -45,9 +45,9 @@
           <div class="column-name"><%= cust.username %></div>
           <div class="column-email"><%= cust.email %></div>
           <div class="column-mobile"><%= cust.phone || '-' %></div>
-          <div class="column-address">
+          <!-- <div class="column-address">
             <%= cust.address ? `${cust.address.house_name}, ${cust.address.city}` : 'No Address' %>
-          </div>
+          </div> -->
           <div class="column-action">
             <a href="#"
                class="btn-toggle <%= cust.isBlocked ? 'btn-unblock' : 'btn-block' %>"

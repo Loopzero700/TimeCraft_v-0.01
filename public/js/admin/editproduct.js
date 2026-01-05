@@ -38,11 +38,26 @@
     function validateForm() {
     clearError()
     let isValid = true
-    const productName = form.querySelector('#name')
-    if (productName.value.trim() === '') {
-        showError(productName, 'Product name is required')
-        isValid = false
-    }
+    const productName = form.querySelector('#name');
+    const value = productName.value.trim();
+          if (value === "") {
+          showError(productName, "Name is required")
+          isValid = false
+                
+        } else if (value.length < 3 || value.length > 50) {
+          showError(
+            productName,
+            "Product name must be between 3 and 50 characters"
+          )
+          isValid = false
+        
+        } else if (!/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(value)) {
+          showError(
+            productName,
+            "Name can contain only letters and single spaces"
+          )
+          isValid = false
+        }
 
     const category = form.querySelector('#category_id')
     if (!category.value) {
@@ -70,8 +85,8 @@
             isValid = false
         }
         const price = block.querySelector('input[name*="[price]"]')
-        if (!price.value || parseFloat(price.value) <= 0) {
-            showError(price, 'Price must be positive')
+        if (!price.value || parseFloat(price.value) <= 50) {
+            showError(price, 'price is need to be more than 50')
             isValid = false
         }
         const stock = block.querySelector('input[name*="[stock]"]')
@@ -96,7 +111,7 @@
         
         const imageCount = variant.querySelectorAll('.image-preview-item').length
         
-        if (imageCount === 0) {
+        if (imageCount < 3) {
             e.preventDefault()
             isValid = false
             
@@ -105,7 +120,7 @@
             Swal.fire({
                 icon: 'warning',
                 title: 'Missing Image',
-                text: `Please add at least one image for the ${colorName} variant.`,
+                text: `Please add at least three image for the ${colorName} variant.`,
                 background: '#1c1c1c',
                 color: '#e0e0e0',
                 confirmButtonColor: '#d33'

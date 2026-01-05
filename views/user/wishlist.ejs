@@ -1,4 +1,4 @@
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -14,51 +14,63 @@
 
 <body class="bg-white text-gray-800">
 
-    <!-- Main Content: Wishlist -->
     <main class="container mx-auto px-6 py-12 md:py-20">
         <h1 class="text-3xl font-semibold mb-8">My Wishlist</h1>
 
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <!-- Wishlist Header -->
-            <div class="bg-gray-200 text-gray-600 uppercase text-sm font-semibold">
-                <div class="flex py-3 px-6">
-                    <div class="w-2/5">Product</div>
-                    <div class="w-2/5 text-center">Details</div>
-                    <div class="w-1/5 text-right">Price</div>
+        <% if (typeof wishlist !== 'undefined' && wishlist.length > 0) { %>
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-gray-200 text-gray-600 uppercase text-sm font-semibold">
+                    <div class="flex py-3 px-6">
+                        <div class="w-2/5">Product</div>
+                        <div class="w-2/5 text-center">Details</div>
+                        <div class="w-1/5 text-right">Price</div>
+                    </div>
                 </div>
+
+                <% wishlist.forEach((item) => { %>
+                    <div class="divide-y divide-gray-200" id="<%=item.wishlist_id%>">
+                        <div class="flex flex-wrap items-center py-6 px-6 relative">
+                            <div class="w-full md:w-1/5 mb-4 md:mb-0">
+                                <img src="<%= item.variants[item.variant].image_url[0] %>" alt="<%=item.name%>" class="rounded-lg mx-auto md:mx-0">
+                            </div>
+                            <div class="w-full md:w-3/5 md:pl-8 text-center md:text-left">
+                                <h3 class="text-lg font-semibold"><%=item.name%></h3>
+                                <% if(item.status == 'inactive') { %>
+                                    <h4 class="text-red-500">Product is currently unavailable</h4>
+                                <% } else if(item.variants[item.variant].stock == 0) { %>
+                                    <h4 class="text-red-500">Out of stock</h4>
+                                <% } else { %>
+                                    <button data-id="<%=item._id%>" data-variant="<%=item.variant%>" data-btnid="<%=item.wishlist_id%>" id="addCartbtn" class="mt-4 bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition duration-300">Add To Cart</button>
+                                <% } %>
+                            </div>
+                            <div class="w-full md:w-1/5 text-center md:text-right mt-4 md:mt-0">
+                                <p class="text-lg font-semibold">₹<%=item.variants[item.variant].discounted_price%></p>
+                            </div>
+                            <a data-id="<%=item.wishlist_id%>" class="absolute top-4 right-4 text-xs text-gray-500 hover:text-red-600 cursor-pointer" id="remove-btn">Remove</a>
+                        </div>
+                    </div>
+                    <hr>
+                <% }) %>
             </div>
 
-          <%wishlist.forEach((item)=>{%>
-            <div class="divide-y divide-gray-200" id="<%=item.wishlist_id%>">
-                <!-- Item 1 -->
-                <div class="flex flex-wrap items-center py-6 px-6 relative">
-                    <div class="w-full md:w-1/5 mb-4 md:mb-0">
-                        <img src="<%= item.variants[item.variant].image_url[0] %>" alt="<%=item.name%>" class="rounded-lg mx-auto md:mx-0">
-                    </div>
-                    <div class="w-full md:w-3/5 md:pl-8 text-center md:text-left">
-                        <h3 class="text-lg font-semibold"><%=item.name%></h3>
-                        <%if(item.status=='inactive'){%>
-                          <h4 class="text-danger">Product is currently unavailable</h4>
-                          <%}else if(item.variants[item.variant].stock==0){%>
-                            <h4 class="text-danger">out of stock</h4>
-                            <%}else {%>
-                              <button  data-id="<%=item._id%>" data-variant="<%=item.variant%>" data-btnid="<%=item.wishlist_id%>" id="addCartbtn" class="mt-4 bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition duration-300">Add To Cart</button>
+        <% } else { %>
 
-                            <%}%>
-                    </div>
-                    <div class="w-full md:w-1/5 text-center md:text-right mt-4 md:mt-0">
-                        <p class="text-lg font-semibold">₹<%=item.variants[item.variant].discounted_price%></p>
-                    </div>
-                    <a data-id="<%=item.wishlist_id%>" class="absolute top-4 right-4 text-xs text-gray-500 hover:text-red-600 cursor-pointer" id="remove-btn">Remove</a>
+            <div class="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-lg">
+                <div class="text-gray-300 mb-6">
+                    <i class="fa-regular fa-heart text-6xl"></i>
                 </div>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Your wishlist is empty</h2>
+                <p class="text-gray-500 mb-8 text-center max-w-md">Looks like you haven't added anything to your wishlist yet. Explore our products and find something you love!</p>
+                <a href="/shop" class="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition duration-300 shadow-md">
+                    Start Shopping
+                </a>
             </div>
-            <hr>
-            <%})%>
-        </div>
+
+        <% } %>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script src="/js/user/wishlist.js"></script>
-
-
+</body>

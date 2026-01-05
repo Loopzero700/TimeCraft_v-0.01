@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let imageQueue = []
         let currentVariantBlockForQueue = null
         let currentVariantIndexForQueue = -1
-// form validation
     
         function showError(input,message){
             input.classList.add('is-invalid')
@@ -23,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function clearError(){
+            
             document.querySelectorAll('.is-invalid').forEach((input)=>{
                 input.classList.remove('is-invalid')
             })
@@ -69,54 +69,70 @@ document.addEventListener('DOMContentLoaded', () => {
         })
 
 
-        function validateForm(){
-            clearError()
-            let isValid=true
-            const productName = form.querySelector('#name')
-            if(productName.value.trim()===''){
-                showError(productName,'Product name is required')
-                isValid=false
+        function validateForm() {
+          clearError();
+          let isValid = true;
+          
+        const productName = form.querySelector("#name");
+        const value = productName.value.trim();
+          if (value === "") {
+          showError(productName, "Name is required")
+          isValid = false
+                
+        } else if (value.length < 3 || value.length > 50) {
+          showError(
+            productName,
+            "Product name must be between 3 and 50 characters"
+          )
+          isValid = false
+        
+        } else if (!/^[A-Za-z]+(?:\s[A-Za-z]+)*$/.test(value)) {
+          showError(
+            productName,
+            "Name can contain only letters and single spaces"
+          )
+          isValid = false
+        }
+
+          const category = form.querySelector("#category_id");
+          if (category.value === "") {
+            showError(category, "pleasw select a category");
+            isValid = false;
+          }
+
+          const brand = form.querySelector("#brand_id");
+          if (brand.value === "") {
+            showError(brand, "please select a brand");
+            isValid = false;
+          }
+
+          const variantBlocks = form.querySelectorAll(".variant-block");
+          variantBlocks.forEach((block) => {
+            const color = block.querySelector('input[name*="[color]"]');
+            if (color.value.trim() === "") {
+              showError(color, "color is required");
+              isValid = false;
             }
 
-            const category = form.querySelector('#category_id')
-            if(category.value===''){
-                showError(category,"pleasw select a category")
-                isValid=false
+            const price = block.querySelector('input[name*="[price]"]');
+            if (price.value.trim() === "" || parseFloat(price.value) <= 50) {
+              showError(price, "price is need to be more than 50");
+              isValid = false;
             }
 
-            const brand = form.querySelector('#brand_id')
-            if(brand.value===''){
-                showError(brand, 'please select a brand')
-                isValid = false
+            const stock = block.querySelector('input[name*="[stock]"]');
+            if (stock.value.trim() === "" || parseFloat(stock.value) < 0) {
+              showError(stock, "stock is need to be a positive number");
+              isValid = false;
             }
 
-            const variantBlocks = form.querySelectorAll('.variant-block')
-            variantBlocks.forEach((block)=>{
-                const color = block.querySelector('input[name*="[color]"]')
-                if(color.value.trim()===''){
-                    showError(color,'color is required')
-                    isValid=false
-                }
-
-                const price = block.querySelector('input[name*="[price]"]')
-                if(price.value.trim()===''||parseFloat(price.value)<=0){
-                    showError(price,'price is need to be a positive number')
-                    isValid=false
-                }
-
-                const stock = block.querySelector('input[name*="[stock]"]')
-                if(stock.value.trim()===''||parseFloat(stock.value)<0){
-                    showError(stock,'stock is need to be a positive number')
-                    isValid = false
-                }
-
-                const sku = block.querySelector('input[name*="[SKU]"]')
-                if(sku.value.trim()===''){
-                    showError(sku,'SKU is required')
-                    isValid = false
-                }
-            })
-            return isValid
+            const sku = block.querySelector('input[name*="[SKU]"]');
+            if (sku.value.trim() === "") {
+              showError(sku, "SKU is required");
+              isValid = false;
+            }
+          });
+          return isValid;
         }
 
         form.addEventListener('submit',async(e)=>{
@@ -143,8 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const blobs = variantImages.get(originalIndex)
             
 
-            if (!blobs || blobs.length === 0) {
-            Swal.fire('Error', `Variant ${i + 1} must have at least one image.`, 'error')
+            if (!blobs || blobs.length <3) {
+            Swal.fire('Error', `Variant ${i + 1} must have at least three image.`, 'error')
             imageValidationError = true
             break
         }
@@ -153,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
             color: block.querySelector(`input[name="variants[${originalIndex}][color]"]`).value,
             SKU: block.querySelector(`input[name="variants[${originalIndex}][SKU]"]`).value,
             price: block.querySelector(`input[name="variants[${originalIndex}][price]"]`).value,
-            discounted_price: block.querySelector(`input[name="variants[${originalIndex}][discounted_price]"]`).value,
             stock: block.querySelector(`input[name="variants[${originalIndex}][stock]"]`).value
         }
         variantsData.push(variantObject)
@@ -167,15 +182,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if(imageValidationError) return
 
     formData.append('variants',JSON.stringify(variantsData))
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) return; 
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Processing..."
     try {
         const response = await fetch('/admin/products', { method: 'POST', body: formData })
         if (response.ok) {
             window.location.href = '/admin/products'
         } else {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Add Product";
             const errorText = await response.text()
             Swal.fire('Error', errorText, 'error')
         }
     } catch (error) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Add Product";
         Swal.fire('Error', 'An error occurred during submission.', 'error')
     }
 

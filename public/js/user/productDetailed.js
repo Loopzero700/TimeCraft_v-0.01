@@ -22,9 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     if (response.ok) {
                         Swal.fire({
-                            title: 'Wishlist ❤️',
+                            title: data.message ==="Item already in the cart❗" ? 'Item in the Cart' : 'Added to Wishlist ❤️',
                             text: data.message || 'Item saved successfully!',
-                            icon: 'success',
+                            icon: data.message ==="Item already in the cart❗" ? 'warning' : 'success', 
                             timer: 1500,
                             showConfirmButton: false
                         }).then(()=>{
@@ -132,61 +132,70 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeZoom()
 
         $('.thumbnails').on('click','.thumbnail-img',function(){
-            const newImageSrc = $(this).attr('src')
+                    const newImageSrc = $(this).attr('src')
 
-            $('#main-product-image').attr('src',newImageSrc)
+                    $('#main-product-image').attr('src',newImageSrc)
 
-            $('.zoomContainer').remove()
-            $('#main-product-image').data('zoom-image',newImageSrc)
-            initializeZoom()
+                    $('.zoomContainer').remove()
+                    $('#main-product-image').data('zoom-image',newImageSrc)
+                    initializeZoom()
 
-            $('.thumbnail-img').removeClass('active')
-            $(this).addClass('active')
-        })
-
-        $('input[name="color"]').on('change',function(){
-
+                    $('.thumbnail-img').removeClass('active')
+                    $(this).addClass('active')
+                })
+            
+                $('input[name="color"]').on('change', function() {
             const selectedIndex = $(this).data('index')
             const selectedVariant = productData.variants[selectedIndex]
-
-            $('.price-main').text(`₹${selectedVariant.discounted_price}`)
-            $('.price-original').text(`₹${selectedVariant.price}`)
-
+                
             const originalPrice = selectedVariant.price
-            const discountedPrice = selectedVariant.discounted_price
-            const discount = Math.round(((originalPrice-discountedPrice)/originalPrice)*100)
+            let discountedPrice = selectedVariant.discounted_price
+                
+            if (!discountedPrice || discountedPrice > originalPrice) {
+                discountedPrice = originalPrice
+            }
+        
+            $('.price-main').text(`₹${discountedPrice}`)
+            $('.price-original').text(`₹${originalPrice}`)
+        
+            let discount = 0
+            if (originalPrice > discountedPrice) {
+                discount = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+            }
+        
             const stock = selectedVariant.stock
-
-         if (stock <= 0) {
-            $('.actions-container').hide()
-            $('.out-Of-stock').show()
-        } else {
- 
-            $('.actions-container').show()
-            $('.out-Of-stock').hide()
+        
+            if (stock <= 0) {
+                $('.actions-container').hide()
+                $('.out-Of-stock').show()
+            } else {
+                $('.actions-container').show()
+                $('.out-Of-stock').hide()
             }
-
-            if(discount>0){
+        
+            if (discount > 0) {
                 $('.price-discount').text(`${discount}% off`).show()
-            }else{
+                $('.price-original').show()
+            } else {
                 $('.price-discount').hide()
+                $('.price-original').hide()
             }
-
+        
             $('.sku').text(`SKU: ${selectedVariant.SKU}`)
-
+        
             const thumbnailsContainer = $('.thumbnails')
             thumbnailsContainer.empty()
-
-            selectedVariant.image_url.forEach((image,index)=>{
-                const thumbnailHtml=`<img src="${image}" alt="Watch Thumbnail" class="thumbnail-img ${index === 0 ? 'active' : ''}">`
+        
+            selectedVariant.image_url.forEach((image, index) => {
+                const thumbnailHtml = `<img src="${image}" alt="Watch Thumbnail" class="thumbnail-img ${index === 0 ? 'active' : ''}">`
                 thumbnailsContainer.append(thumbnailHtml)
             })
-
+        
             const firstImage = selectedVariant.image_url[0]
-            $('#main-product-image').attr('src',firstImage)
-
+            $('#main-product-image').attr('src', firstImage)
+        
             $(".zoomContainer").remove()
-            $('#main-product-image').data('zoom-image',firstImage)
+            $('#main-product-image').data('zoom-image', firstImage)
             initializeZoom()
         })
     })

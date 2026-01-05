@@ -71,6 +71,12 @@
             showError("min-purchase", "Minimum purchase must be greater than zero.")
             hasError = true
         }
+
+        if (discountType.value === 'fixed' && 
+            Number(minPurchase.value) <= Number(discountAmount.value)) {
+            showError("min-purchase", "For fixed coupons, minimum purchase must be greater than the discount amount.")
+            hasError = true
+        }
         
         if (hasError) return
         

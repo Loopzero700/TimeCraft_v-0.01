@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     if (response.ok) {
                         Swal.fire({
-                            title: 'Added to Wishlist ❤️',
+                            title: data.message ==="Item already in the cart❗" ? 'Item in the Cart' : 'Added to Wishlist ❤️',
                             text: data.message || 'Item saved successfully!',
-                            icon: 'success',
+                            icon: data.message ==="Item already in the cart❗" ? 'warning' : 'success', 
                             timer: 1500,
                             showConfirmButton: false
                         }).then(()=>{

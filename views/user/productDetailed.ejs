@@ -57,19 +57,34 @@
             </div>
             
             <div class="price-container">
-                <span class="price-main">₹<%= productData.variants[0].discounted_price %></span>
-                <span class="price-original">₹<%= productData.variants[0].price %></span>
-                <% const originalPrice=productData.variants[0].price; const
-                    discountedPrice=productData.variants[0].discounted_price; const discount=Math.round(((originalPrice
-                    - discountedPrice) / originalPrice) * 100); %>
+    <% 
+        const variant = productData.variants[0];
+        const originalPrice = variant.price;
+                
+        let currentPrice = variant.discounted_price; 
+        let discount = 0;
 
-                    <span class="price-discount"
-                    style="<%= discount > 0 ? 'display: inline-block;' : 'display: none;' %>">
-                    <% if (discount> 0) { %>
-                        <%= discount %>% off
-                        <% } %>
-                    </span>
-            </div>
+        if (!currentPrice) {
+            currentPrice = originalPrice;
+        } 
+        
+        else if (currentPrice < originalPrice) {
+            discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100); 
+        }
+    %>
+
+    <span class="price-main">₹<%= currentPrice %></span>
+    
+    <% if (discount > 0) { %>
+        <span class="price-original">₹<%= originalPrice %></span>
+    <% } %>
+    
+    <% if (discount > 0) { %>
+        <span class="price-discount">
+            <%= discount %>% off
+        </span>
+    <% } %>
+</div>
             
             <div class="product-info">
                 <h3 class="info-title">Product Details</h3>
@@ -126,6 +141,11 @@
         <h2 class="section-title centered">Similar Collection</h2>
         <div class="similar-grid">
             <%cat.forEach(function(product){%>
+                <%let discountPrice = product.variants[0].discounted_price
+                  if(!discountPrice){
+                    discountPrice = product.variants[0].price
+                  }  
+                %>
                 <div class="product-card">
                     <div class="product-card-image-wrapper">
                         <a href="/product/<%= product._id %>"> <img src="<%=product.variants[0].image_url[0]%>"
@@ -138,11 +158,13 @@
                     </h3>
                     <p class="product-card-price">
                         <span class="font-bold">
-                            ₹<%=product.variants[0].discounted_price%>
+                            ₹<%=discountPrice%>
                         </span>
+                        <%if(product.variants[0].discounted_price){%>
                         <span class="line-through">
                             ₹<%=product.variants[0].price%>
                         </span>
+                        <%}%>
                     </p>
                 </div>
                 <%})%>

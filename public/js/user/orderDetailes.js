@@ -3,7 +3,7 @@
     btn.addEventListener("click", async (e) => {
       e.preventDefault()
       const itemId = e.currentTarget.dataset.id
-      const orderId = "<%= data._id %>"
+      
 
       Swal.fire({
         title: 'Are you sure?',
@@ -62,7 +62,6 @@
     btn.addEventListener("click", async (e) => {
       e.preventDefault()
       const itemId = e.currentTarget.dataset.rid
-      const orderId = "<%= data._id %>"
 
       Swal.fire({
            title: 'Enter your reason for return',
