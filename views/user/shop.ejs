@@ -134,10 +134,9 @@
                             </div>
                         </a>
                    <% if (variant.stock > 0) { %>
-                      <button class="add-to-cart-btn btn-primary" 
-                              data-product-id="<%= product._id %>" 
-                              data-variant-id="<%= variant._id %>"> <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                      </button>
+                        <button class="add-to-cart-btn" data-id="<%= product._id %>">
+                          <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                        </button>
                     <% } else { %>
                       <button class="add-to-cart-btn btn-disabled" disabled>
                         <i class="fa-solid fa-ban"></i> Out of Stock
