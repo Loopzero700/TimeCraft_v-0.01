@@ -16,6 +16,8 @@ import { NotFoundError } from "./app/helpers/errorClasses.js";
 import HttpStatus from "./app/constants/httpStatus.js";
 const app = express();
 
+app.set("trust proxy", 1);
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -29,7 +31,7 @@ const userSession = session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false,
+    secure: (process.env.NODE_ENV === 'production'),
     httpOnly: true,
     maxAge: MaxAgeSession,
   },
@@ -41,7 +43,7 @@ const adminSession = session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false,
+    secure: (process.env.NODE_ENV === 'production'),
     httpOnly: true,
     maxAge: MaxAgeSession,
   },

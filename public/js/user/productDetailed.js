@@ -97,9 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
     $(document).ready(function() {
 
         const productId = productData._id
-        const socket = new WebSocket('ws://localhost:5000')
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const host = window.location.host;
+        const socket = new WebSocket(`${protocol}${host}`);
 
-        socket.onopen=()=>{
+        socket.onopen=()=>{i
             console.log('WebSocket connection established.')
             socket.send(JSON.stringify({
                 event: 'viewing_product',
