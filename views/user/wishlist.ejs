@@ -45,7 +45,7 @@
                                 <% } %>
                             </div>
                             <div class="w-full md:w-1/5 text-center md:text-right mt-4 md:mt-0">
-                                <p class="text-lg font-semibold">₹<%=item.variants[item.variant].discounted_price%></p>
+                                <p class="text-lg font-semibold">₹<%=item.variants[item.variant]?.discounted_price || item.variants[item.variant]?.price%></p>
                             </div>
                             <a data-id="<%=item.wishlist_id%>" class="absolute top-4 right-4 text-xs text-gray-500 hover:text-red-600 cursor-pointer" id="remove-btn">Remove</a>
                         </div>
