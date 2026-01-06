@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const host = window.location.host;
         const socket = new WebSocket(`${protocol}${host}`);
 
-        socket.onopen=()=>{i
+        socket.onopen=()=>{
             console.log('WebSocket connection established.')
             socket.send(JSON.stringify({
                 event: 'viewing_product',
