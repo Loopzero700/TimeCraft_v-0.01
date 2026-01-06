@@ -177,7 +177,7 @@ const logout = (req, res, next) => {
 };
 
 const loadforgotPassword = (req, res) => {
-  if (!req.session.user) res.render("user/forgotPassword");
+  if (!req.session.user) res.render("user/forgotpassword");
   else res.redirect("/");
 };
 
