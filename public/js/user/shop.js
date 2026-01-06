@@ -186,6 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ? '<i class="fa-solid fa-heart heart-icon"></i>'
                                     : '<i class="fa-regular fa-heart heart-icon"></i>';
 
+                const productBtn = product.variants[0].stock!==0 ? ` <button class="add-to-cart-btn" data-id="${product._id}">
+                                                                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                                                                    </button>`
+                                                                    : `<button class="add-to-cart-btn btn-disabled" disabled>
+                                                                    <i class="fa-solid fa-ban"></i> Out of Stock </button>`
 
                 productCard.innerHTML = `
                     <a href="/product/${product._id}">
@@ -202,9 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p class="product-price">${priceHtml}</p>
                         </div>
                     </a>
-                    <button class="add-to-cart-btn" data-id="${product._id}">
-                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                    </button>
+                    ${productBtn}
                 `;
                 productGrid.appendChild(productCard)
             })
