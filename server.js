@@ -98,7 +98,7 @@ app.use((err, req, res, next) => {
 
   if (err.statusCode === HttpStatus.NOT_FOUND) {
     if (req.originalUrl.startsWith("/admin")) {
-      return res.status(HttpStatus.NOT_FOUND).render("admin/pageNotFound", {
+      return res.status(HttpStatus.NOT_FOUND).render("user/pageNotFound", {
         layout: "layouts/admin-layout",
         title: "Page Not Found",
         errorMessage: err.message,
