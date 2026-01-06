@@ -49,19 +49,19 @@ const adminSession = session({
   },
 });
 
-// app.use(morgan("dev"))
+app.use(morgan("dev"))
 
-// function connectToDatabase() {
-//   try {
-//     logger.info('Database connected successfully!')
-//   } catch (err) {
-//     logger.error('Failed to connect to database:', err.message)
-//   }
-// }
+function connectToDatabase() {
+  try {
+    logger.info('Database connected successfully!')
+  } catch (err) {
+    logger.error('Failed to connect to database:', err.message)
+  }
+}
 
-// connectToDatabase()
-// logger.warn('This is a warning message.')
-// logger.debug('This is a debug message (only shows in development).')
+connectToDatabase()
+logger.warn('This is a warning message.')
+logger.debug('This is a debug message (only shows in development).')
 
 app.use((req, res, next) => {
   res.set("cache-control", "no-store");
