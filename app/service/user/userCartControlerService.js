@@ -57,6 +57,13 @@ export const addToCartService = async (userId, productId, variant, quantity) => 
         variant: variant
     });
 
+    if(existingCart){
+        const newQuantity = existingCart.quantity + qty;
+        if(product.variants[variant].stock<newQuantity){
+            throw new Error(`This product is only ${product.variants[variant].stock} item in stock !`)
+        }
+    }
+
     if (existingCart) {
         const newQuantity = existingCart.quantity + qty;
         if (newQuantity > 5) {
