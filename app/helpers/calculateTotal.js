@@ -32,7 +32,7 @@ const calculateCartDetails = async (userId) => {
       );
     }
 
-    totalAmount += variantData.discounted_price || variantData.price * item.quantity;
+    totalAmount += variantData.discounted_price*item.quantity || variantData.price * item.quantity;
     orderItems.push({
       product_id: item.product_id,
       variant: item.variant,
