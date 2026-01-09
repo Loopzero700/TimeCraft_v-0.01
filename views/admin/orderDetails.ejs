@@ -41,7 +41,7 @@
     </div>
 
     <div class="space-y-4" id="product-list">
-        <% products.forEach(item => { %>
+        <% products.forEach((item,i)=> { %>
             <div class="flex justify-between items-center text-gray-300">
                 <p><%= item.name.length > 14 ? item.name.substring(0, 14) + '...' : item.name %></p>
                 <p class="bg-[#2D2D2D] border border-gray-600 px-3 py-1 rounded-md"><%= item.quantity %></p>
@@ -49,8 +49,7 @@
                 <p class="<%= item.status === 'Returned' ? 'text-yellow-400 font-semibold' : '' %>">
                     <%= item.status %>
                 </p>
-                
-                <p>₹<%= item.discounted_price || item.variant.price*item.quantity %></p>
+                 <p>₹<%= (data.items[i]?.discounted_price ?? data.items[i]?.price) * item.quantity %></p>
             </div>
 
             <% if (item.status === 'Returned') { %>
