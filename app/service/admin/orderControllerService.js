@@ -149,9 +149,13 @@ export const processReturnRequest = async (orderId, itemId, action) => {
 
     let newStatus;
 
+    const product = await Product.findById(product_id)
+    const productName = product.name 
+    const productVariant = product.variants[variant].SKU
+
     if (action === "Return-Approved") {
     
-        await addToWallet(userId, "product return", "credit", amount, orderId);
+        await addToWallet(userId, `product ${productName}(${productVariant}) return`, "credit", amount, orderId);
         newStatus = "Return-Approved";
 
     

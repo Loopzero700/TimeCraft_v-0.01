@@ -111,12 +111,15 @@ export const cancelSingleOrderItem = async (userId, orderId, itemId) => {
     const fieldPath = `variants.${variant}.stock`;
     await Product.findByIdAndUpdate(product_id, { $inc: { [fieldPath]: quantity } });
 
+    const product = await Product.findById(product_id)
+    const productName = product.name
+    const productvariant = product.variants[variant].SKU
 
     const singleItemPrice = item.discounted_price || item.price;
     const priceToDeduct = singleItemPrice * quantity;
 
     if (order.payment_method !== "COD") {
-        await addToWallet(userId, "Product cancelled", "credit", priceToDeduct, orderId);
+        await addToWallet(userId, `Product ${productName}(${productvariant}) cancelled`, "credit", priceToDeduct, orderId);
     }
 
     
@@ -172,7 +175,7 @@ export const cancelFullOrder = async (userId, orderId) => {
 
     // 2. Refund Wallet (if not COD)
     if (orderData.payment_method !== "COD") {
-        await addToWallet(userId, "Order cancelled", "credit", orderData.total, orderId);
+        await addToWallet(userId, `Order cancelled ${orderData.order_id}` , "credit", orderData.total, orderId);
     }
 
     // 3. Update Statuses
