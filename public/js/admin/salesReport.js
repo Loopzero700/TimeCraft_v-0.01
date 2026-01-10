@@ -195,11 +195,41 @@
         function applyCustomFilter() {
             const start = document.getElementById('startDate').value
             const end = document.getElementById('endDate').value
+    
+           if (!start || !end) {
+                  Swal.fire({
+                    title: "Warning!",
+                    text: "Please select both start and end dates.",
+                    icon: "warning"
+                  });
+                  return;
+                }
+            
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+            
+                if (startDate > endDate) {
+                  Swal.fire({
+                    title: "Invalid Date!",
+                    text: "Start date cannot be greater than end date.",
+                    icon: "warning"
+                  });
+                  return;
+                }
+            
 
-            if (!start || !end) {
-                alert("Please select both start and end dates.")
-                return
-            }
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                endDate.setHours(0, 0, 0, 0);
+            
+                if (endDate > today) {
+                  Swal.fire({
+                    title: "Invalid Date!",
+                    text: "End date cannot be in the future.",
+                    icon: "warning"
+                  });
+                  return;
+                }
 
             state.filterType = 'Custom'
             state.startDate = start
