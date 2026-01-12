@@ -26,6 +26,7 @@
             const shippingSummary = document.getElementById('shippingSummary')
             function updateShippingSummary() {
                 const selectedRadio = document.querySelector('input[name="address"]:checked')
+                if(selectedRadio){
                 const selectedLabel = selectedRadio.closest('label')
                 const detailsContainer = selectedLabel.querySelector('.address-details')
                 if (detailsContainer) {
@@ -53,6 +54,7 @@
                     }
                 })
             }
+        }
             
             addressRadios.forEach(radio => {
                 radio.addEventListener('change', updateShippingSummary)
