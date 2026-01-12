@@ -10,7 +10,7 @@ const getCart = asynchandler(async (req, res) => {
     const couponCode = req.session.couponCode || 0;
     const cartProducts = await cartService.getUserCart(userId);
 
-    
+
 
     res.render("user/cart", {
       user: userId,
@@ -77,12 +77,14 @@ const deleteCart = asynchandler(async (req, res) => {
 });
 
 const dequabtity = asynchandler(async (req, res) => {
-  await cartService.updateItemQuantity(req.params.id, -1);
+  const quantity = req.body.quantity
+  await cartService.updateItemQuantity(req.params.id, quantity);
   res.status(httpStatus.OK).json({ message: "Quantity decreased by one" });
 });
 
 const inquabtity = asynchandler(async (req, res) => {
-  await cartService.updateItemQuantity(req.params.id, 1);
+  const quantity = req.body.quantity
+  await cartService.updateItemQuantity(req.params.id, quantity);
   res.status(httpStatus.OK).json({ message: "Quantity increased by one" });
 });
 

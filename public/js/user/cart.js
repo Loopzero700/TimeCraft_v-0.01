@@ -53,7 +53,11 @@ document.addEventListener('DOMContentLoaded',()=>{
                   ? `/cart/inquabtity/${cartId}`
                   : `/cart/dequabtity/${cartId}`
             
-                const response = await fetch(url, { method: "PATCH" })
+                const response = await fetch(url, { 
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ quantity: newQty })
+                })
             
                 if (response.ok) {
                   couponapply(false)

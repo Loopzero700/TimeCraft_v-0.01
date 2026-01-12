@@ -94,7 +94,7 @@ export const addToCartService = async (userId, productId, variant, quantity) => 
 
 export const updateItemQuantity = async (cartId, change) => {
     if (!cartId) throw new Error("Cart ID required");
-    return await Cart.findByIdAndUpdate(cartId, { $inc: { quantity: change } });
+    return await Cart.findByIdAndUpdate(cartId, { quantity: change  });
 };
 
 export const removeItemFromCart = async (cartId) => {
