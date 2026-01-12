@@ -28,36 +28,62 @@ document.addEventListener('DOMContentLoaded',()=>{
                 document.getElementById('subtotal').textContent = formatCurrency(subtotal)
                 document.getElementById('grand-total').textContent = formatCurrency(subtotal)
             }
+
+            //add debounce to the btn of plus and minus
+           function debounce(fn, delay = 300) {
+              let timer
+              return (...args) => {
+                clearTimeout(timer)
+                timer = setTimeout(() => fn(...args), delay)
+              }
+            }
+
             productItems.forEach(item => {
-                const minusBtn = item.querySelector('.minus-btn')
-                const plusBtn = item.querySelector('.plus-btn')
-                const quantityInput = item.querySelector('.quantity')
-                minusBtn.addEventListener('click', async(e) => {
-                    let quantity = parseInt(quantityInput.value)
-                    const cartId = e.currentTarget.dataset.id
-                    if (quantity > 1) {
-                        const response = await fetch(`/cart/dequabtity/${cartId}`,{method:"PATCH"})
-                        if(response.ok){
-                            quantityInput.value = quantity - 1
-                            couponapply(false)
-                            updateItemTotal(item)
-                        }
-                    }
-                })
-                plusBtn.addEventListener('click', async(e) => {
-                    let quantity = parseInt(quantityInput.value)
-                    const cartId = e.currentTarget.dataset.id
-                    const stock = e.currentTarget.dataset.stock
-                    if (quantity < stock && quantity < 5) {
-                    const response = await fetch(`/cart/inquabtity/${cartId}`,{method:"PATCH"})
-                    if(response.ok){
-                        quantityInput.value = quantity + 1
-                        couponapply(false)
-                        updateItemTotal(item)
-                    }
+            
+              const minusBtn = item.querySelector('.minus-btn')
+              const plusBtn = item.querySelector('.plus-btn')
+              const quantityInput = item.querySelector('.quantity')
+            
+              const cartId = minusBtn.dataset.id
+              const stock = parseInt(plusBtn.dataset.stock)
+            
+    
+              const debouncedUpdateQuantity = debounce(async (type, newQty) => {
+                const url = type === "inc"
+                  ? `/cart/inquabtity/${cartId}`
+                  : `/cart/dequabtity/${cartId}`
+            
+                const response = await fetch(url, { method: "PATCH" })
+            
+                if (response.ok) {
+                  couponapply(false)
+                  updateItemTotal(item)
+                } else {
+                  console.log("failed to update quantity")
                 }
-                })
+              }, 350)
+          
+              minusBtn.addEventListener('click', (e) => {
+                let quantity = parseInt(quantityInput.value)
+            
+                if (quantity > 1) {
+                  quantityInput.value = quantity - 1
+                  debouncedUpdateQuantity("dec", quantity - 1)
+                }
+              })
+          
+              plusBtn.addEventListener('click', (e) => {
+                let quantity = parseInt(quantityInput.value)
+            
+                if (quantity < stock && quantity < 5) {
+                  quantityInput.value = quantity + 1
+                
+                  debouncedUpdateQuantity("inc", quantity + 1)
+                }
+              })
+          
             })
+
             updateOrderSummary()
         
 
