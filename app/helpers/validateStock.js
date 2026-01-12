@@ -16,6 +16,11 @@ const validateStock = async (userId) => {
             status: false, 
             message: `Out of Stock: ${product.name} (${variant.color})` 
         };
+    }else if(product.status==='inactive' || !product.isListed){
+        return { 
+            status: false, 
+            message: `${product.name} is currntly unavailable` 
+        };
     }
   }
 

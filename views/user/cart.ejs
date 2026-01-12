@@ -63,11 +63,14 @@
                             <div>
                                 <p class="font-semibold text-gray-800"><%=cart.name%></p>
                                 <button class="text-red-500 text-sm font-medium hover:underline" id="removebtn" data-id="<%=cart.cart_id%>">Remove</button>
-                                <%if(cart.stock<1){%>
-                                    <p class="text-sm text-red-600">Out of Stock</p>
-                                    <%}else{%>
-                                    <p class="text-sm text-green-600">In Stock</p>
-                                    <%}%>
+                              <% if (!cart.isListed || cart.status==='inactive') { %>
+                                  <p class="text-sm text-gray-500">Unavailable</p>
+                              <% } else if (cart.stock <= 0) { %>
+                                  <p class="text-sm text-red-600">Out of Stock</p>
+                              <% } else { %>
+                                  <p class="text-sm text-green-600">In Stock</p>
+                              <% } %>
+                              
                                     <p><%=cart.stock%></p>
                             </div>
                         </div>

@@ -10,6 +10,8 @@ const getCart = asynchandler(async (req, res) => {
     const couponCode = req.session.couponCode || 0;
     const cartProducts = await cartService.getUserCart(userId);
 
+    
+
     res.render("user/cart", {
       user: userId,
       cart: cartProducts,

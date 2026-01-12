@@ -36,7 +36,9 @@ export const getUserCart = async (userId) => {
                 price: variantData.discounted_price || variantData.price,
                 quantity: item.quantity,
                 variant: variantIndex,
-                stock: variantData.stock
+                stock: variantData.stock,
+                status: productData.status,
+                isListed : productData.isListed
             };
         })
     );
