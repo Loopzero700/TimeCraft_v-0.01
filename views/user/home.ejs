@@ -26,7 +26,7 @@
               <h3>
                 <%= product.name %>
               </h3>
-              <p class="product-price">₹<%= `${product.variants[0].price}` %>
+              <p class="product-price"> <%= `₹${product.variants[0].discounted_price ? product.variants[0].discounted_price : product.variants[0].price}` %>
               </p>
             </div>
           </div>
@@ -57,7 +57,7 @@
               <%= product.name %>
             </h3>
             <p class="product-price">
-              <%=`₹${product.variants[0].price}` %>
+              <%= `₹${product.variants[0].discounted_price ? product.variants[0].discounted_price : product.variants[0].price}` %>
             </p>
           </div>
         </div>
