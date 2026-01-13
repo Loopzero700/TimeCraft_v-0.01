@@ -25,7 +25,6 @@ async function fetchData(pageOverride) {
           
           const displayId = (page - 1) * limit + index + 1
           
-          const address = cust.address ? `${cust.address.house_name}, ${cust.address.city}` : 'No Address'
           const mobile = cust.phone || '-'
         
           const btnClass = cust.isBlocked ? 'btn-unblock' : 'btn-block'
@@ -38,7 +37,6 @@ async function fetchData(pageOverride) {
               <div class="column-name">${cust.username}</div>
               <div class="column-email">${cust.email}</div>
               <div class="column-mobile">${mobile}</div>
-              <div class="column-address">${address}</div>
               <div class="column-action">
                 <a href="#"
                    class="btn-toggle ${btnClass}"
