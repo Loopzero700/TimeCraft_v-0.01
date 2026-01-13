@@ -38,7 +38,7 @@ const addOrder = asynchandler(async (req, res) => {
   const userId = req.user || req.session.user;
   const { addressId } = req.body;
 
-  const couponId = req.session.couponId;
+  const couponId = req.session.appliedCouponId;
   const discountAmount = req.session.couponDiscount || 0;
 
   try {
@@ -52,6 +52,7 @@ const addOrder = asynchandler(async (req, res) => {
     delete req.session.couponId;
     delete req.session.couponDiscount;
     delete req.session.appliedCouponId;
+    delete req.session.couponCode;
 
     res
       .status(httpStatus.OK)
@@ -65,7 +66,7 @@ const orderWallet = asynchandler(async (req, res) => {
   const userId = req.user || req.session.user;
   const { addressId } = req.body;
 
-  const couponId = req.session.couponId;
+  const couponId = req.session.appliedCouponId;
   const discountAmount = req.session.couponDiscount || 0;
 
   try {
@@ -79,6 +80,7 @@ const orderWallet = asynchandler(async (req, res) => {
     delete req.session.couponId;
     delete req.session.couponDiscount;
     delete req.session.appliedCouponId;
+    delete req.session.couponCode;
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -114,7 +116,7 @@ const razorpayOrder = asynchandler(async (req, res) => {
 const verifyRazorpay = asynchandler(async (req, res) => {
   const userId = req.user || req.session.user;
 
-  const couponId = req.session.couponId;
+  const couponId = req.session.appliedCouponId;
   const discountAmount = req.session.couponDiscount || 0;
 
   try {
@@ -128,6 +130,7 @@ const verifyRazorpay = asynchandler(async (req, res) => {
     delete req.session.couponId;
     delete req.session.couponDiscount;
     delete req.session.appliedCouponId;
+    delete req.session.couponCode;
 
     res
       .status(httpStatus.OK)
@@ -145,7 +148,7 @@ const paymentFailed = asynchandler(async (req, res) => {
   const userId = req.user || req.session.user;
   const { addressId, paymentMethod } = req.body;
 
-  const couponId = req.session.couponId || null;
+  const couponId = req.session.appliedCouponId || null;
   const discountAmount = req.session.couponDiscount || 0;
 
   try {
@@ -160,6 +163,7 @@ const paymentFailed = asynchandler(async (req, res) => {
     delete req.session.couponId;
     delete req.session.couponDiscount;
     delete req.session.appliedCouponId;
+    delete req.session.couponCode;
 
     res
       .status(httpStatus.BAD_REQUEST)
