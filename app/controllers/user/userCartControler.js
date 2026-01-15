@@ -31,7 +31,7 @@ const addCart = asynchandler(async (req, res) => {
   if (!userId)
     return res
       .status(httpStatus.UNAUTHORIZED)
-      .json({ message: "Unauthorized" });
+      .json({ message: "You need to login first to add items to your cart." });
 
   const { productId, variant, quantity } = req.body;
 

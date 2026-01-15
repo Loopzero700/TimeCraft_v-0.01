@@ -26,10 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ productId })
                     })
                     const data = await response.json()
-                    if (response.status === 401 || data.message === "user not found") {
-                        window.location.href = data.url || '/login'
-                        return
-                    }
+                   
                     if (response.ok) {
                         Swal.fire({
                             title: data.message ==="Item already in the cart❗" ? 'Item in the Cart' : 'Added to Wishlist ❤️',
@@ -46,6 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             title: 'Error!',
                             text: data.message || 'Failed to add item.',
                             icon: 'error'
+                        }).then(()=>{
+                             if (response.status === 401 || data.message === "You need to login first to add items to your wishList.") {
+                                window.location.href = data.url || '/login'
+                                return
+                            }
                         })
                     }
                 } catch (err) {
@@ -87,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             title: "Error!",
                             text: data.message || "Failed to add item to cart.",
                             icon: "error"
+                        }).then(()=>{
+                            if(response.status === 401){
+                                window.location.href = '/login'
+                            }
                         })
                     }
                 } catch (error) {

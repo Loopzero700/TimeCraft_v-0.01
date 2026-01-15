@@ -27,7 +27,7 @@ const addWishlist = asynchandler(async (req, res) => {
   if (!userId) {
     return res
       .status(httpStatus.UNAUTHORIZED)
-      .json({ message: "User not found", Url: "/" });
+      .json({ message: "You need to login first to add items to your wishList.", Url: "/" });
   }
 
   try {

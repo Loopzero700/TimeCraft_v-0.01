@@ -17,9 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                     const data = await response.json()
                     const heartIcon = document.querySelector('.heart-Icon')
-                    if(response.status===401){
-                        window.location.href='/login'
-                    }
+            
                     if (response.ok) {
                         Swal.fire({
                             title: data.message ==="Item already in the cart❗" ? 'Item in the Cart' : 'Added to Wishlist ❤️',
@@ -42,6 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             title: 'Error!',
                             text: data.message || 'Failed to add item.',
                             icon: 'error'
+                        }).then(()=>{
+                        if (response.status === 401 || data.message === "user not found") {
+                            window.location.href = '/login'
+                            return
+                        }
                         })
                     }
                 } catch (err) {
@@ -66,11 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         })
                     })
                     const data = await response.json()
-
-                    if (response.status === 401 || data.message === "user not found") {
-                       window.location.href = '/login'
-                        return
-                        }
                     
                     if (response.ok) {
                         Swal.fire({
@@ -85,6 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             title: 'Error!',
                             text: data.message || 'Failed to add item.',
                             icon: 'error'
+                        }).then(()=>{
+                        if (response.status === 401 || data.message === "user not found") {
+                            window.location.href = '/login'
+                            return
+                        }
                         })
                     }
                 } catch (err) {
@@ -237,6 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
           title: "Error!",
           text: data.message || "Failed to add item to cart.",
           icon: "error"
+        }).then(()=>{
+            window.location.href = '/login'
         })
       }
     } catch (error) {
