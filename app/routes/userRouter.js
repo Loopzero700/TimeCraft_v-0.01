@@ -63,6 +63,9 @@ router.post("/validate-referral", userController.validateReferral);
 //vaildation
 router.get('/validate-stock', userCheckoutController.checkStockBeforeCheckout);
 
+//counts
+router.get('/cart/counts', userController.getCount)
+
 // Oauth
 router.get(
   "/auth/google",

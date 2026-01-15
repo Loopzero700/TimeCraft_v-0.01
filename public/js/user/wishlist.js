@@ -13,6 +13,7 @@
                     showConfirmButton: false
                   })
                   document.getElementById(`${wishlistId}`).remove()
+                  window.updateCartCount();
                 }else{
                     Swal.fire({ title: 'Error!', text: 'Failed to remove form wishlist.', icon: 'error' })
                 }

@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             showConfirmButton: false
                         }).then(()=>{
                             fetchProducts()
+                            window.updateCartCount();
                         })
                     } else {
                         Swal.fire({
@@ -80,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             timer: 1500,
                             showConfirmButton: false
                         })
+                        window.updateCartCount();
                     } else {
                         Swal.fire({
                             title: "Error!",

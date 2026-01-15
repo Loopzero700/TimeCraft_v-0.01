@@ -47,8 +47,15 @@
 
 
     <div class="header-icons">
-      <a href="/Wishlist"><span class="material-symbols-outlined">favorite</span></a>
-      <a href="/cart"><span class="material-symbols-outlined">shopping_cart</span></a>
+    <a href="/Wishlist" class="icon-container">
+    <span class="material-symbols-outlined">favorite</span>
+    <span id="wishlist-badge" class="badge hidden">0</span>
+  </a>
+
+  <a href="/cart" class="icon-container">
+    <span class="material-symbols-outlined">shopping_cart</span>
+    <span id="cart-badge" class="badge hidden">0</span>
+  </a>
 
      
       <% if (typeof user !== 'undefined' && user) { %>
@@ -136,6 +143,45 @@
               }
           }
         })
+
+
+      window.updateCartCount = async function() {
+
+        try {
+          const respons = await fetch('/cart/counts')
+
+          if(respons.ok){
+            const data = await respons.json()
+
+            console.log(data)
+
+            const wishlistBadge = document.getElementById('wishlist-badge')
+            if(data.wishlistCount > 0){
+              wishlistBadge.innerText = data.wishlistCount;
+              wishlistBadge.classList.remove('hidden')
+            }else{
+              wishlistBadge.classList.add('hidden')
+            }
+
+            const cartBadge = document.getElementById('cart-badge')
+            if(data.cartCount > 0){
+              cartBadge.innerText = data.cartCount;
+              cartBadge.classList.remove('hidden')
+            }else{
+              cartBadge.classList.add('hidden')
+            }
+
+          }
+
+        } catch (error) {
+          console.log(error)
+        }
+
+      }
+
+      document.addEventListener('DOMContentLoaded',()=>{
+        window.updateCartCount()
+      })
     
 </script>
 

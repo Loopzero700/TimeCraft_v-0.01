@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded',()=>{
                 document.getElementById('subtotal').textContent = `₹${subtotal}`
                 document.getElementById('grand-total').textContent = `₹${subtotal}`
                 },300)
+                window.updateCartCount();
             } else {
               Swal.fire({ title: 'Error!', text: 'Failed to remove cart.', icon: 'error' })
             }

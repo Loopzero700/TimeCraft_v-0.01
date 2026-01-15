@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             timer: 1500,
                             showConfirmButton: false
                         }).then(()=>{
+                            window.updateCartCount();
                             if(heartIcon.classList.contains('fa-solid')){
                                 heartIcon.classList.remove('fa-solid')
                                 heartIcon.classList.add('fa-regular')
@@ -230,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
           timer: 1500,
           showConfirmButton: false
         })
+        window.updateCartCount();
       } else {
         Swal.fire({
           title: "Error!",

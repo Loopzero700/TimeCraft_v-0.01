@@ -2,6 +2,8 @@ import asynchandler from "express-async-handler";
 import httpStatus from "../../constants/httpStatus.js";
 import * as homeService from "../../service/user/homeService.js";
 import * as authService from "../../service/user/userControlerService.js";
+import Wishlist from "../../models/wishlistSchema.js";
+import Cart from "../../models/cartSchema.js";
 
 const loadhome = asynchandler(async (req, res) => {
   const userId = req.session.user || req.user;
@@ -298,6 +300,26 @@ const validateReferral = asynchandler(async (req, res) => {
   }
 });
 
+const getCount = asynchandler(async(req,res)=>{
+  try {
+    const userId = req.session.user;
+
+    const [cart, wishlist] = await Promise.all([
+      Cart.find({ user_id: userId }).countDocuments(),
+      Wishlist.find({ user_id: userId }).countDocuments()
+    ])
+
+    res.json({ 
+      cartCount:cart, 
+      wishlistCount:wishlist 
+    });
+
+  } catch (error) {
+    console.error("Error fetching counts:", error);
+    res.status(500).json({ error: "Failed to fetch counts" });
+  }
+})
+
 export {
   loadhome,
   loadlogin,
@@ -316,4 +338,5 @@ export {
   resetpass,
   getReferral,
   validateReferral,
+  getCount
 };
