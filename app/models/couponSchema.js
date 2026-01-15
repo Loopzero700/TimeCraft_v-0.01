@@ -31,6 +31,11 @@ const couponSchema = new Schema(
       min: [0.01, "Discount amount must be positive"],
     },
 
+    startingDate: {
+      type: Date,
+      require: [true, "Starting date is required"]
+    },
+
     expiryDate: {
       type: Date,
       required: [true, "Expiry date is required"],

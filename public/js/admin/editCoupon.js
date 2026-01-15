@@ -3,6 +3,7 @@ const couponCode = document.querySelector('#coupon-code')
 const discountType = document.querySelector('#discount-type')
 const discountAmount = document.querySelector('#discount-amount')
 const expiryDate = document.querySelector('#expiry-date')
+const startingDate = document.querySelector('#starting-date')
 const maxUsers = document.querySelector('#max-users')
 const maxDiscount = document.querySelector('#maxDiscount')
 const minPurchase = document.querySelector('#min-purchase')
@@ -57,13 +58,27 @@ form.addEventListener('submit', async (e) => {
     }
 
     
-    const today = new Date().setHours(0, 0, 0, 0)
-    const selected = new Date(expiryDate.value).setHours(0, 0, 0, 0)
+     const today = new Date()
+        today.setHours(0, 0, 0, 0)
+            
+        const start = new Date(startingDate.value)
+        start.setHours(0, 0, 0, 0)
+            
+        const end = new Date(expiryDate.value)
+        end.setHours(0, 0, 0, 0)
+        
+        if (!expiryDate.value) {
+          showError("expiry-date", "Expiry date is required.")
+          hasError = true
+        } else if (end <= start) {
+          showError("expiry-date", "Expiry date must be greater than starting date.")
+          hasError = true
+        }
 
-    if (!expiryDate.value || selected <= today) {
-        showError("expiry-date", "Expiry date must be a future date.")
-        hasError = true
-    }
+       if (!startingDate.value || start < today) {
+          showError("starting-date", "Starting date must not be a past date.")
+          hasError = true
+        }
 
     
     if (!maxUsers.value || Number(maxUsers.value) <= 0) {
