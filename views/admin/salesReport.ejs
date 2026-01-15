@@ -54,11 +54,20 @@
                             <button onclick="toggleCustomDate()" class="w-full text-left px-3 py-2 rounded-md text-sm text-gray-400 hover:bg-[#252525]">Custom Range</button>
                         </div>
                         
-                        <div id="customDateInputs" class="hidden mt-4 space-y-3 pt-3 border-t border-[#333]">
-                            <input type="date" id="startDate" class="w-full bg-[#0F0F0F] border border-[#333] rounded px-2 py-1.5 text-xs text-gray-300 focus:border-[#FF7F50] outline-none">
-                            <input type="date" id="endDate" class="w-full bg-[#0F0F0F] border border-[#333] rounded px-2 py-1.5 text-xs text-gray-300 focus:border-[#FF7F50] outline-none">
-                            <button onclick="applyCustomFilter()" class="w-full mt-2 bg-[#FF7F50] hover:bg-[#E06840] text-white text-xs font-bold py-2 rounded transition-colors">Apply</button>
-                        </div>
+                       <div id="customDateInputs" class="hidden mt-4 space-y-3 pt-3 border-t border-[#333]">
+    
+    <div>
+        <label for="startDate" class="block text-xs font-medium text-gray-300 mb-1 ml-1">Starting Date</label>
+        <input type="date" id="startDate" class="w-full bg-[#82817f] border border-[#333] rounded px-2 py-1.5 text-xs text-gray-300 focus:border-[#FF7F50] outline-none">
+    </div>
+
+    <div>
+        <label for="endDate" class="block text-xs font-medium text-gray-300 mb-1 ml-1">Ending Date</label>
+        <input type="date" id="endDate" class="w-full bg-[#82817f] border border-[#333] rounded px-2 py-1.5 text-xs text-gray-300 focus:border-[#FF7F50] outline-none">
+    </div>
+
+    <button onclick="applyCustomFilter()" class="w-full mt-2 bg-[#FF7F50] hover:bg-[#E06840] text-white text-xs font-bold py-2 rounded transition-colors">Apply</button>
+</div>
                     </div>
                 </div>
             </div>
