@@ -83,6 +83,14 @@ document.addEventListener('DOMContentLoaded',()=>{
                   quantityInput.value = quantity + 1
                 
                   debouncedUpdateQuantity("inc", quantity + 1)
+                }else{
+                    Swal.fire({
+                      icon: 'warning',
+                      title: 'Limit Reached',
+                      text: 'You can only add up to 5 items.',
+                      confirmButtonColor: '#3085d6', 
+                      confirmButtonText: 'Okay'
+                    });
                 }
               })
           
