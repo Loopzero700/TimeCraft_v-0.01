@@ -38,6 +38,18 @@ export const createNewCoupon = async (couponData) => {
 };
 
 export const updateCouponStatus = async (couponId, status) => {
+  const couponData = await Coupon.findById('couponId')
+
+  const {code} = couponData
+
+  const existingCoupon = await Coupon.findOne({
+    code: { $regex: new RegExp(`^${code}$`, "i") },
+  });
+
+  if (existingCoupon) {
+    throw new Error("A coupon with this code already exists.");
+  }
+
   const coupon = await Coupon.findByIdAndUpdate(
     couponId,
     { status: status },
