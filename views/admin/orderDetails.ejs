@@ -145,7 +145,7 @@
             <div>
                 <label for="order-status" class="block text-gray-400 mb-2">Order Status</label>
                 <select id="order-status-select" class="w-full bg-[#2D2D2D] border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    <% ['Pending', 'Shipped', 'Out for Delivery','Delivered'].forEach(status => { %>
+                    <% ['Pending', 'Order placed', 'Shipped', 'Out for Delivery','Delivered'].forEach(status => { %>
                     <option value="<%= status %>" <%= data.status === status ? 'selected' : '' %>><%= status %></option>
                     <% }) %>
                 </select>

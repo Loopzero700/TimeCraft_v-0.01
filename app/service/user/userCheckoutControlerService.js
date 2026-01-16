@@ -125,6 +125,10 @@ export const placeCODOrder = async (
 
   await internalFinalizeOrder(userId, order.items);
 
+   await Order.findByIdAndUpdate(order._id, {
+      $set: { status: "Order placed" },
+    });
+
   return order;
 };
 
@@ -158,6 +162,10 @@ export const placeWalletOrder = async (
     await debitFromWallet(userId, "product purchase", finalPrice, order._id);
 
     await internalFinalizeOrder(userId, order.items);
+
+    await Order.findByIdAndUpdate(order._id, {
+      $set: { status: "Order placed" },
+    });
 
     return order;
   } catch (paymentError) {
@@ -196,6 +204,9 @@ export const verifyAndPlaceRazorpayOrder = async (
     couponId
   );
   await internalFinalizeOrder(userId, order.items);
+   await Order.findByIdAndUpdate(order._id, {
+      $set: { status: "Order placed" },
+    });
 
   return order;
 };

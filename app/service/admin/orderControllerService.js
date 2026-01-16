@@ -52,7 +52,7 @@ export const getOrderDetailsById = async (orderId) => {
 };
 
 export const updateOrderStatusService = async (orderId, status) => {
-    const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled", "Returned", "Out for Delivery"];
+    const validStatuses = [" Order placed", "Pending", "Shipped", "Delivered", "Cancelled", "Returned", "Out for Delivery"];
     if (!validStatuses.includes(status)) {
         throw new Error("Invalid status");
     }

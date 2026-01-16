@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const orderId = updatePanel.getAttribute('data-order-id');
 
         const allowedStatusFlow = {
-            "Pending": ["Shipped", "Out for Delivery", "Delivered", "Cancelled"],
+            "Pending": [ "Order placed", "Shipped", "Out for Delivery", "Delivered", "Cancelled"],
+            "Order placed": ["Shipped", "Out for Delivery", "Delivered", "Cancelled"],
             "Shipped": ["Out for Delivery", "Delivered"],
             "Out for Delivery": ["Delivered"],
             "Delivered": [],
