@@ -59,7 +59,7 @@
         <div>
             <label for="coupon-code" class="block text-sm font-medium text-brand-text-dim mb-2">Coupon Code</label>
             <input type="text" id="coupon-code" name="code" class="w-full bg-brand-input border border-brand-border text-brand-text-light rounded-lg p-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                   value="<%= coupon.code %>" >
+                   value="<%= coupon.code %>" onblur="this.value = this.value.trim()" >
             <p class="text-red-500 text-sm mt-1 hidden" id="error-coupon-code"></p>
         </div>
 

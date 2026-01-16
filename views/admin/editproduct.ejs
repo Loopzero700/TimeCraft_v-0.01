@@ -27,7 +27,7 @@
 
         <div class="form-section">
             <div class="form-grid">
-                <div class="form-group"><label for="name">Product Name *</label><input type="text" id="name" name="name" value="<%= product.name %>" required></div>
+                <div class="form-group"><label for="name">Product Name *</label><input type="text" id="name" name="name" value="<%= product.name %>" onblur="this.value = this.value.trim()" required></div>
                 <div class="form-group"><label for="category_id">Category *</label><select id="category_id" name="category_id" required><% categories.forEach(cat => { %><option value="<%= cat._id %>" <%= product.category.equals(cat._id) ? 'selected' : '' %>><%= cat.name %></option><% }); %></select></div>
                 <div class="form-group"><label for="brand_id">Brand *</label><select id="brand_id" name="brand_id" required><% brands.forEach(brand => { %><option value="<%= brand._id %>" <%= product.brand.equals(brand._id) ? 'selected' : '' %>><%= brand.brandName %></option><% }); %></select></div>
                 <div class="form-group"><label for="status">Status</label><select id="status" name="status" required><option value="active" <%= product.status === 'active' ? 'selected' : '' %>>Active</option><option value="inactive" <%= product.status === 'inactive' ? 'selected' : '' %>>Inactive</option></select></div>

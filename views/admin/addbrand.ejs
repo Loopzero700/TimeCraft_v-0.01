@@ -26,7 +26,7 @@
     <form id="add-brand-form">
         <div class="form-group">
             <label for="brandName">Brand Name</label>
-            <input type="text" id="brandName" name="brandName" placeholder="Enter brand name" required>
+            <input type="text" id="brandName" name="brandName" placeholder="Enter brand name" onblur="this.value = this.value.trim()" required>
         </div>
 
         <div class="form-group">

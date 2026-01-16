@@ -33,7 +33,8 @@
                     type="text" 
                     id="categoryName" 
                     name="name" 
-                    placeholder="e.g., Men's Watches" 
+                    placeholder="e.g., Men's Watches"
+                    onblur="this.value = this.value.trim()"
                     required
                 >
                 <div id="name-error" class="error-message"></div>

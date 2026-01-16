@@ -36,6 +36,7 @@
                     name="name" 
                     placeholder="e.g., Men's Watches" 
                     value="<%=category.name%>"
+                    onblur="this.value = this.value.trim()"
                     required
                 >
                 <div id="name-error" class="error-message"></div>
