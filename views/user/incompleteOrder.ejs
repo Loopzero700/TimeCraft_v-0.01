@@ -6,7 +6,6 @@
     <title>Incompleted Order!</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -67,9 +66,11 @@
                             <a href="/shop" class="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out">
                                 Continue Shopping
                             </a>
-                            <a href="/account/orders" class="w-full sm:w-auto px-8 py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-300 ease-in-out">
-                                Track Your Order
-                            </a>
+
+                            <button 
+                                class="text-sm w-full sm:w-auto font-bold bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-900 transition duration-300 shadow-sm retry-btn" data-id="<%=orderData._id%>">
+                                Retry Payment
+                            </button>
                         </div>
                         
                     </div>
@@ -83,5 +84,9 @@
         </div>
     </div>
 
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/user/incompleteOrder.js"></script>
 </body>
 </html>
+
