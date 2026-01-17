@@ -51,6 +51,7 @@ document.querySelectorAll('#addCartbtn').forEach((btn) => {
           timer: 1500,
           showConfirmButton: false
         })
+        window.updateCartCount();
         document.getElementById(btnId)?.remove()
       } else {
         Swal.fire({
