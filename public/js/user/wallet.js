@@ -54,6 +54,7 @@ const addAmountBtn = document.querySelector('.addAmount')
                             icon: 'success'
                         }).then(() => {
                             
+                            loadTransactions(1)
                             
                             const currentBalanceStr = amountDisplay.textContent.trim()
                             
