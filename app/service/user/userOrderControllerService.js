@@ -203,7 +203,7 @@ export const retryRazorpayPayment = async (orderId) => {
 export const verifyRetryPayment = async (orderId, response) => {
     const isValid = await verifyRazorpaySignature(response);
     if (isValid) {
-        await Order.findByIdAndUpdate(orderId, { payment_status: "Paid" });
+        await Order.findByIdAndUpdate(orderId, { payment_status: "Paid" , status : "Order placed" });
         return true;
     }
     return false;
