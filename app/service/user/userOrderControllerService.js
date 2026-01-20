@@ -98,7 +98,7 @@ export const cancelSingleOrderItem = async (userId, orderId, itemId) => {
     const order = await Order.findById(orderId);
     if (!order) throw new NotFoundError("Order not found");
 
-    if (order.status !== "Pending") {
+    if (order.status !== "Pending" && order.status !== "Order placed") {
         throw new Error("Order cannot be cancelled. It is already being processed or has shipped.");
     }
 
