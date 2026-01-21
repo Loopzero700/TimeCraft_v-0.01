@@ -170,6 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         
             const stock = selectedVariant.stock
+
+            $('.stock').text(`stock:${stock}`)
         
             if (stock <= 0) {
                 $('.actions-container').hide()
