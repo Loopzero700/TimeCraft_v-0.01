@@ -261,3 +261,73 @@ document.addEventListener('DOMContentLoaded',()=>{
                     })
                 }
             })
+
+            document.addEventListener('DOMContentLoaded', () => {
+
+    
+    const toggleBtn = document.getElementById('toggleCouponsBtn');
+    const container = document.getElementById('availableCouponsContainer');
+    const arrow = document.getElementById('arrowIcon');
+    let couponsLoaded = false;
+
+    toggleBtn.addEventListener('click', async () => {
+        container.classList.toggle('hidden');
+        arrow.classList.toggle('rotate-180');
+
+        if (!container.classList.contains('hidden') && !couponsLoaded) {
+            await fetchAvailableCoupons();
+        }
+    });
+
+    async function fetchAvailableCoupons() {
+        try {
+            const response = await fetch('/api/coupons/available'); 
+            const data = await response.json();
+
+            if (data.success && data.coupons.length > 0) {
+                renderCoupons(data.coupons);
+                couponsLoaded = true;
+            } else {
+                container.innerHTML = '<p class="text-xs text-center text-gray-500">No active coupons available.</p>';
+            }
+        } catch (error) {
+            console.error('Error fetching coupons:', error);
+            container.innerHTML = '<p class="text-xs text-center text-red-500">Failed to load coupons.</p>';
+        }
+    }
+
+    function renderCoupons(coupons) {
+        container.innerHTML = ''; 
+        
+        coupons.forEach(coupon => {
+            const div = document.createElement('div');
+            div.className = 'border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative group';
+            div.onclick = () => window.applyCouponFromList(coupon.code);
+
+            const expiryDate = new Date(coupon.expiryDate).toLocaleDateString();
+
+            div.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-gray-800 text-sm">${coupon.code}</span>
+                        <p class="text-xs text-gray-500 mt-1">${coupon.description || 'Save on your order'}</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Expires: ${expiryDate}</p>
+                    </div>
+                    <div class="text-black bg-white border border-gray-200 shadow-sm px-2 py-1 rounded text-xs font-semibold group-hover:bg-black group-hover:text-white transition">
+                        APPLY
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    window.applyCouponFromList = (code) => {
+        const input = document.getElementById('couponInput');
+        input.value = code;
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        document.getElementById('applyCouponBtn').click();
+    };
+});

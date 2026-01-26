@@ -2,6 +2,7 @@ import asynchandler from "express-async-handler";
 import httpStatus from "../../constants/httpStatus.js";
 import { NotFoundError } from "../../helpers/errorClasses.js";
 import * as cartService from "../../service/user/userCartControlerService.js";
+import Coupon from "../../models/couponSchema.js";
 
 const getCart = asynchandler(async (req, res) => {
   try {
@@ -128,6 +129,29 @@ const removeCoupon = asynchandler(async (req, res) => {
   });
 });
 
+
+const getAvailableCoupons = async (req, res) => {
+  try {
+    const currentDate = new Date();
+    
+    const coupons = await Coupon.find({status:"active",expiryDate: { $gte: currentDate }})
+    console.log('hi iam here',coupons)
+
+        res.json({
+            success: true,
+            coupons: coupons
+        });
+
+    } catch (error) {
+        console.error("Error fetching coupons:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+
 export {
   getCart,
   addCart,
@@ -136,4 +160,5 @@ export {
   inquabtity,
   applyCoupon,
   removeCoupon,
+  getAvailableCoupons
 };

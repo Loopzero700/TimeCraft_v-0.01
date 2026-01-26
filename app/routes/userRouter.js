@@ -154,6 +154,7 @@ router.patch("/cart/dequabtity/:id", userCartController.dequabtity);
 router.patch("/cart/inquabtity/:id", userCartController.inquabtity);
 router.post("/apply_coupon", userAuth, userCartController.applyCoupon);
 router.delete("/remove_coupon", userCartController.removeCoupon);
+router.get('/api/coupons/available', userCartController.getAvailableCoupons);
 
 // =================== CHECKOUT ===================
 router.get("/Checkout", userAuth, noCache, userCheckoutController.getCheckout);

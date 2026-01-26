@@ -137,21 +137,35 @@
                             APPLY
                         </button>
                     </div>
-                
-                    <button 
-                        id="removeCouponBtn" 
-                        class="hidden mt-3 text-red-500 underline text-sm <%= couponAmount ? '' : 'hidden' %>">
-                        Remove Coupon
-                    </button>
+                    
+                    <p id="couponMessage" class="text-sm mt-2"></p>
+        </div>
+        <button 
+            id="removeCouponBtn" 
+            class="hidden mt-3 text-red-500 underline text-sm <%= couponAmount ? '' : 'hidden' %>">
+            Remove Coupon
+        </button>
+
+            <div class="mt-4 border-t border-gray-100 pt-4">
+                <button id="toggleCouponsBtn" class="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-black focus:outline-none">
+                    <span>Available Coupons</span>
+                    <svg id="arrowIcon" class="w-4 h-4 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+            
+                <div id="availableCouponsContainer" class="hidden mt-3 space-y-3 max-h-64 overflow-y-auto">
+                    <div class="text-center text-gray-500 text-xs py-2">Loading coupons...</div>
+                </div>
+            </div>
+            <button class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-gray-800 transition-colors" id="checkoutBtn">
+                CHECKOUT
+            </button>
+
                 
                     <p id="couponMessage" class="text-sm mt-2"></p>
                 </div>
 
-
-                    
-                    <button class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg mt-6 hover:bg-gray-800 transition-colors" id="checkoutBtn">
-                        CHECKOUT
-                    </button>
                 </div>
             </div>
         </div>
