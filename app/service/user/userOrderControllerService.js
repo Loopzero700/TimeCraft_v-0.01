@@ -211,60 +211,178 @@ export const verifyRetryPayment = async (orderId, response) => {
 
 // --- PDF Generation ---
 
+// export const generateInvoiceStream = async (orderId, res) => {
+//     const order = await Order.findById(orderId).populate('items.product_id').lean();
+//     if (!order) throw new NotFoundError('Order not found');
+
+//     const doc = new PDFDocument({ margin: 50 });
+
+//     res.setHeader('Content-Type', 'application/pdf');
+//     res.setHeader('Content-Disposition', `attachment; filename=Invoice-${order.order_id}.pdf`);
+    
+//     doc.pipe(res);
+
+//     doc.font('Helvetica-Bold').fontSize(26).fillColor('#000').text('TimeCraft', { align: 'center' }).moveDown(0.3);
+//     doc.font('Helvetica').fontSize(12).fillColor('#555').text('Palakkad, Kerala, India', { align: 'center' }).moveDown(1);
+    
+//     doc.fontSize(14).fillColor('#000')
+//        .text(`Invoice: ${order.order_id}`)
+//        .text(`Date: ${new Date(order.order_date).toDateString()}`)
+//        .text(`Payment: ${order.payment_method}`)
+//        .moveDown(1);
+
+//     doc.font('Helvetica-Bold').text('Shipping Address:')
+//        .font('Helvetica')
+//        .text(`${order.address_name}\n${order.address_house_name}, ${order.address_locality}\n${order.address_city}, ${order.address_state} - ${order.address_pincode}\n${order.address_country}\nPhone: ${order.address_phone_number}`)
+//        .moveDown(1);
+
+//     const tableTopY = doc.y;
+//     doc.font('Helvetica-Bold')
+//        .text('Item', 50, tableTopY, { width: 200 })
+//        .text('Qty', 250, tableTopY, { width: 50, align: 'right' })
+//        .text('Price', 300, tableTopY, { width: 100, align: 'right' })
+//        .text('Total', 400, tableTopY, { width: 100, align: 'right' });
+
+//     doc.moveDown(0.5).moveTo(50, doc.y).lineTo(500, doc.y).stroke();
+
+//     order.items.forEach((item) => {
+//         const product = item.product_id;
+//         const itemPrice = item.discounted_price || item.price;
+//         const total = itemPrice * item.quantity;
+        
+//         doc.moveDown(0.5);
+//         const rowY = doc.y;
+//         doc.font('Helvetica')
+//            .text(product.name, 50, rowY, { width: 200 })
+//            .text(item.quantity, 250, rowY, { width: 50, align: 'right' })
+//            .text(`₹ ${itemPrice}`, 300, rowY, { width: 100, align: 'right' })
+//            .text(`₹ ${total}`, 400, rowY, { width: 100, align: 'right' });
+//     });
+
+//     doc.moveDown(1);
+//     doc.font('Helvetica-Bold').text(`Subtotal: ₹ ${order.subtotal}`, { align: 'right' });
+//     doc.text(`Shipping: Free`, { align: 'right' });
+//     doc.text(`Total: ₹ ${order.total}`, { align: 'right' });
+
+//     doc.moveDown(1).fontSize(10).fillColor('#777').text('Thank you for shopping with TimeCraft!', { align: 'center' });
+    
+//     doc.end();
+// };
+
+
 export const generateInvoiceStream = async (orderId, res) => {
     const order = await Order.findById(orderId).populate('items.product_id').lean();
     if (!order) throw new NotFoundError('Order not found');
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    // Helpers
+    const formatCurrency = (amount) => `Rs. ${parseFloat(amount).toFixed(2)}`;
+    const generateHr = (doc, y) => {
+        doc.strokeColor('#aaaaaa').lineWidth(1).moveTo(50, y).lineTo(550, y).stroke();
+    };
+
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=Invoice-${order.order_id}.pdf`);
-    
     doc.pipe(res);
 
-    doc.font('Helvetica-Bold').fontSize(26).fillColor('#000').text('TimeCraft', { align: 'center' }).moveDown(0.3);
-    doc.font('Helvetica').fontSize(12).fillColor('#555').text('Palakkad, Kerala, India', { align: 'center' }).moveDown(1);
+    const topY = 50;
     
-    doc.fontSize(14).fillColor('#000')
-       .text(`Invoice: ${order.order_id}`)
-       .text(`Date: ${new Date(order.order_date).toDateString()}`)
-       .text(`Payment: ${order.payment_method}`)
-       .moveDown(1);
+    doc.fontSize(20).text('TimeCraft', 50, topY + 15);
+    
+    doc.fontSize(10).font('Helvetica').fillColor('#444444');
+    doc.text('123 Watch Tower, Main Street', 50, topY + 40);
+    doc.text('Palakkad, Kerala, 678001', 50, topY + 55);
+    doc.text('India', 50, topY + 70);
+    doc.text('Email: support@timecraft.com', 50, topY + 85);
 
-    doc.font('Helvetica-Bold').text('Shipping Address:')
-       .font('Helvetica')
-       .text(`${order.address_name}\n${order.address_house_name}, ${order.address_locality}\n${order.address_city}, ${order.address_state} - ${order.address_pincode}\n${order.address_country}\nPhone: ${order.address_phone_number}`)
-       .moveDown(1);
+    doc.fontSize(10).font('Helvetica-Bold').fillColor('#000000');
+    doc.text('INVOICE', 200, topY, { align: 'right' });
+    
+    doc.font('Helvetica').text(`Invoice No: ${order.order_id}`, 200, topY + 15, { align: 'right' });
+    
+    const orderDate = order.order_date || order.createdAt || new Date(); 
+    doc.text(`Date: ${new Date(orderDate).toLocaleDateString()}`, 200, topY + 30, { align: 'right' });
+    
+    doc.text(`Status: ${order.status}`, 200, topY + 45, { align: 'right' });
+    doc.text(`Payment: ${order.payment_method} (${order.payment_status})`, 200, topY + 60, { align: 'right' });
 
-    const tableTopY = doc.y;
-    doc.font('Helvetica-Bold')
-       .text('Item', 50, tableTopY, { width: 200 })
-       .text('Qty', 250, tableTopY, { width: 50, align: 'right' })
-       .text('Price', 300, tableTopY, { width: 100, align: 'right' })
-       .text('Total', 400, tableTopY, { width: 100, align: 'right' });
+    generateHr(doc, 145);
 
-    doc.moveDown(0.5).moveTo(50, doc.y).lineTo(500, doc.y).stroke();
+    const customerY = 165;
+    doc.fontSize(10).font('Helvetica-Bold').text('Bill To:', 50, customerY);
+    
+    doc.fontSize(10).font('Helvetica').text(order.address_name, 50, customerY + 15);
+    
+    let addressLines = [];
+    if (order.address_house_name) addressLines.push(order.address_house_name);
+    if (order.address_locality) addressLines.push(order.address_locality);
+    if (order.address_city) addressLines.push(order.address_city);
+    
+    const addressLine1 = addressLines.join(', ');
+    const addressLine2 = `${order.address_state}, ${order.address_country} - ${order.address_pincode}`;
+    
+    doc.text(addressLine1, 50, customerY + 30);
+    doc.text(addressLine2, 50, customerY + 45);
+    doc.text(`Phone: ${order.address_phone_number}`, 50, customerY + 60);
 
-    order.items.forEach((item) => {
+    const invoiceTableTop = 240;
+
+    doc.rect(50, invoiceTableTop, 500, 20).fill('#ecf0f1');
+    
+    doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold');
+    doc.text('#', 60, invoiceTableTop + 5);
+    doc.text('Item', 100, invoiceTableTop + 5);
+    doc.text('Price', 280, invoiceTableTop + 5, { width: 90, align: 'right' });
+    doc.text('Qty', 370, invoiceTableTop + 5, { width: 50, align: 'right' });
+    doc.text('Total', 450, invoiceTableTop + 5, { width: 90, align: 'right' });
+
+    let i = 0;
+    let position = invoiceTableTop + 30;
+
+    doc.font('Helvetica');
+    order.items.forEach((item, index) => {
         const product = item.product_id;
         const itemPrice = item.discounted_price || item.price;
-        const total = itemPrice * item.quantity;
-        
-        doc.moveDown(0.5);
-        const rowY = doc.y;
-        doc.font('Helvetica')
-           .text(product.name, 50, rowY, { width: 200 })
-           .text(item.quantity, 250, rowY, { width: 50, align: 'right' })
-           .text(`₹ ${itemPrice}`, 300, rowY, { width: 100, align: 'right' })
-           .text(`₹ ${total}`, 400, rowY, { width: 100, align: 'right' });
+        const itemTotal = itemPrice * item.quantity;
+
+        if (position > 700) {
+            doc.addPage();
+            position = 50;
+        }
+
+        doc.fontSize(10).text(index + 1, 60, position);
+        doc.text(product.name || 'Product', 100, position, { width: 180 });
+        doc.text(formatCurrency(itemPrice), 280, position, { width: 90, align: 'right' });
+        doc.text(item.quantity, 370, position, { width: 50, align: 'right' });
+        doc.text(formatCurrency(itemTotal), 450, position, { width: 90, align: 'right' });
+
+        generateHr(doc, position + 20);
+        position += 30;
     });
 
-    doc.moveDown(1);
-    doc.font('Helvetica-Bold').text(`Subtotal: ₹ ${order.subtotal}`, { align: 'right' });
-    doc.text(`Shipping: Free`, { align: 'right' });
-    doc.text(`Total: ₹ ${order.total}`, { align: 'right' });
+    const subtotalPosition = position + 20;
 
-    doc.moveDown(1).fontSize(10).fillColor('#777').text('Thank you for shopping with TimeCraft!', { align: 'center' });
-    
+    doc.font('Helvetica-Bold');
+    doc.text('Subtotal:', 380, subtotalPosition, { width: 100, align: 'right' });
+    doc.text(formatCurrency(order.subtotal), 480, subtotalPosition, { width: 60, align: 'right' });
+
+    doc.font('Helvetica');
+    doc.text('Shipping:', 380, subtotalPosition + 15, { width: 100, align: 'right' });
+    doc.text('Free', 480, subtotalPosition + 15, { width: 60, align: 'right' });
+
+    doc.strokeColor('#000000').lineWidth(1)
+       .moveTo(380, subtotalPosition + 30)
+       .lineTo(550, subtotalPosition + 30).stroke();
+
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Total:', 380, subtotalPosition + 40, { width: 100, align: 'right' });
+    doc.text(formatCurrency(order.total), 480, subtotalPosition + 40, { width: 60, align: 'right' });
+
+    const bottomY = 700;
+    doc.fontSize(8).font('Helvetica').fillColor('#555555');
+    doc.text('Thank you for shopping with TimeCraft!', 50, bottomY + 50, { align: 'center' });
+
     doc.end();
 };
